@@ -37,7 +37,7 @@ namespace Zongsoft.Data
 		protected DataService(string name, Zongsoft.Services.IServiceProvider serviceProvider)
 		{
 			if(string.IsNullOrWhiteSpace(name))
-				throw new ArgumentNullException(nameof(name);
+				throw new ArgumentNullException(nameof(name));
 			if(serviceProvider == null)
 				throw new ArgumentNullException(nameof(serviceProvider));
 
