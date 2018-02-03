@@ -1,6 +1,6 @@
 ﻿@echo off
 
-SET msbuild="C:\Program Files (x86)\MSBuild\14.0\Bin\MSBuild.exe"
+SET msbuild="C:\Program Files (x86)\Microsoft Visual Studio\2017\Enterprise\MSBuild\15.0\Bin\MSBuild.exe"
 SET current=%cd%
 
 setlocal EnableDelayedExpansion
@@ -15,10 +15,14 @@ SET proj_7="%current%\Zongsoft.Security\src\Zongsoft.Security.sln"
 SET proj_8="%current%\Zongsoft.Security.Web\src\Zongsoft.Security.Web.sln"
 SET proj_9="%current%\Zongsoft.Externals.Json\src\Zongsoft.Externals.Json.sln"
 SET proj_10="%current%\Zongsoft.Externals.Redis\src\Zongsoft.Externals.Redis.sln"
-SET proj_11="%current%\Zongsoft.Externals.Aliyun\src\Zongsoft.Externals.Aliyun.sln"
-SET proj_12="%current%\Zongsoft.Externals.Juhe\src\Zongsoft.Externals.Juhe.sln"
+SET proj_11="%current%\Zongsoft.Externals.Alimap\src\Zongsoft.Externals.Alimap.sln"
+SET proj_12="%current%\Zongsoft.Externals.Aliyun\src\Zongsoft.Externals.Aliyun.sln"
 
-for /L %%i in (1,1,12) do (
+SET proj_13="%current%\Zongsoft.Community\src\Zongsoft.Community\Zongsoft.Community.sln"
+SET proj_14="%current%\Zongsoft.Community\src\Zongsoft.Community.Web\Zongsoft.Community.Web.sln"
+
+
+for /L %%i in (1,1,14) do (
 	if exist !proj_%%i! (
 		@echo [%%i] !proj_%%i!
 		%msbuild% !proj_%%i! /t:rebuild /clp:ErrorsOnly,PerformanceSummary,NoSummary /v:minimal
@@ -30,7 +34,7 @@ for /L %%i in (1,1,12) do (
 
 			if errorlevel 2 goto EXIT
 		)
-	) else @echo The !proj_%%i! file is not exists.
+	) else @echo [%%i] The '!proj_%%i!' file is not exists.
 )
 
 :EXIT
