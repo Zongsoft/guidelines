@@ -19,14 +19,14 @@ SET proj_7="%current%\Zongsoft.Plugins.Web\src\Zongsoft.Plugins.Web.sln"
 SET proj_8="%current%\Zongsoft.Scheduling\src\Zongsoft.Scheduling.sln"
 SET proj_9="%current%\Zongsoft.Scheduling\cron\Zongsoft.Scheduling.Cron.sln"
 SET proj_10="%current%\Zongsoft.Security\src\Zongsoft.Security.sln"
-SET proj_11="%current%\Zongsoft.Security.Web\src\Zongsoft.Security.Web.sln"
+SET proj_11="%current%\Zongsoft.Security\src\api\Zongsoft.Security.Web.sln"
 SET proj_12="%current%\Zongsoft.Externals.Json\src\Zongsoft.Externals.Json.sln"
 SET proj_13="%current%\Zongsoft.Externals.Redis\src\Zongsoft.Externals.Redis.sln"
 SET proj_14="%current%\Zongsoft.Externals.Alimap\src\Zongsoft.Externals.Alimap.sln"
 SET proj_15="%current%\Zongsoft.Externals.Aliyun\src\Zongsoft.Externals.Aliyun.sln"
 
 SET proj_16="%current%\Zongsoft.Community\src\Zongsoft.Community.sln"
-SET proj_17="%current%\Zongsoft.Community\src\web\Zongsoft.Community.Web.sln"
+SET proj_17="%current%\Zongsoft.Community\src\api\Zongsoft.Community.Web.sln"
 
 
 for /L %%i in (1,1,17) do (
