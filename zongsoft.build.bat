@@ -24,12 +24,13 @@ SET proj_12="%current%\Zongsoft.Externals.Json\src\Zongsoft.Externals.Json.sln"
 SET proj_13="%current%\Zongsoft.Externals.Redis\src\Zongsoft.Externals.Redis.sln"
 SET proj_14="%current%\Zongsoft.Externals.Alimap\src\Zongsoft.Externals.Alimap.sln"
 SET proj_15="%current%\Zongsoft.Externals.Aliyun\src\Zongsoft.Externals.Aliyun.sln"
+SET proj_16="%current%\Zongsoft.Externals.Wechat\src\Zongsoft.Externals.Wechat.sln"
 
-SET proj_16="%current%\Zongsoft.Community\src\Zongsoft.Community.sln"
-SET proj_17="%current%\Zongsoft.Community\src\api\Zongsoft.Community.Web.sln"
+SET proj_17="%current%\Zongsoft.Community\src\Zongsoft.Community.sln"
+SET proj_18="%current%\Zongsoft.Community\src\api\Zongsoft.Community.Web.sln"
 
 
-for /L %%i in (1,1,17) do (
+for /L %%i in (1,1,18) do (
 	if exist !proj_%%i! (
 		@echo [%%i] !proj_%%i!
 		%msbuild% !proj_%%i! /t:rebuild /clp:ErrorsOnly,PerformanceSummary,NoSummary /v:minimal
