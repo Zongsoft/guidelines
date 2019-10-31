@@ -1,0 +1,19 @@
+{
+	"id": "885EED66-514D-44E6-9263-6349F31341DD",
+	"name": "Zongsoft(local)",
+	"values": [
+		{
+			"key": "hostname",
+			"value": "localhost",
+			"enabled": true
+		},
+		{
+			"key": "port",
+			"value": "8015",
+			"enabled": true
+		}
+	],
+	"_postman_variable_scope": "environment",
+	"_postman_exported_at": "2019-10-31T12:00:00.111Z",
+	"_postman_exported_using": "Postman/6.6.1"
+}

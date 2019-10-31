@@ -1,0 +1,59 @@
+{
+	"id": "1F3589BD-1715-41FD-AEBE-702ACC9D1715",
+	"values": [
+		{
+			"key": "module",
+			"value": "",
+			"enabled": true
+		},
+		{
+			"key": "credentialId",
+			"value": "",
+			"enabled": true
+		},
+		{
+			"key": "tenantId",
+			"value": "1",
+			"enabled": true
+		},
+		{
+			"key": "siteId",
+			"value": "1",
+			"enabled": true
+		},
+		{
+			"key": "userId",
+			"value": "100",
+			"enabled": true
+		},
+		{
+			"key": "identity",
+			"value": "USERNAME|PHONE|EMAIL",
+			"enabled": true
+		},
+		{
+			"key": "password",
+			"value": "******",
+			"enabled": true
+		},
+		{
+			"key": "namespace",
+			"value": "zongsoft",
+			"enabled": true
+		},
+		{
+			"key": "scene",
+			"value": "web",
+			"enabled": true
+		},
+		{
+			"key": "url",
+			"value": "{{hostname}}:{{port}}",
+			"enabled": true
+		}
+	],
+	"name": "Zongsoft Globals",
+	"_postman_variable_scope": "globals",
+	"_postman_exported_at": "2019-10-31T12:00:00.123Z",
+	"_postman_exported_using": "Postman/6.6.1"
+}
