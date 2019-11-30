@@ -4,7 +4,7 @@ for %%i in ("%cd%") do SET dirname=%%~ni
 
 if %dirname%==Guidelines (cd ..)
 
-SET msbuild="C:\Program Files (x86)\Microsoft Visual Studio\2017\Enterprise\MSBuild\15.0\Bin\MSBuild.exe"
+SET msbuild="C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\MSBuild\Current\Bin\MSBuild.exe"
 SET current=%cd%
 
 setlocal EnableDelayedExpansion
