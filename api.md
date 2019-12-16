@@ -207,3 +207,9 @@ GET /users?
     }
 }
 ```
+
+
+
+## 参考：
+
+1. [《API Design Patterns And Use Cases》](https://github.com/paypal/api-standards/blob/master/patterns.md)
