@@ -43,7 +43,7 @@ RESTful API 是对资源的表述，通过 HTTP 协议相关要素表达对资�
 Http Method | Safe | Idempotent | Description
 :----------:|:----:|:----------:|:-----------
 GET         | ✔ | ✔ | 获取资源
-PUT         | ✘ | ✔ | 完整更新（_如果不存在则新增？_）
+PUT         | ✘ | ✔ | 完整更新（_如果不存在则新增_）
 POST        | ✘ | ✘ | 创建资源（以及未符合其他方法语义的操作）
 PATCH       | ✘ | ✘ | 部分更新
 DELETE      | ✘ | ✔ | 删除资源
@@ -81,7 +81,7 @@ DELETE      | ✘ | ✔ | 删除资源
 2. 采用自定义的 HTTP 头：
 ```
 [GET] api.zongsoft.com/users/100
-api-version: v1
+api-version: 1.0
 ```
 
 3. 采用 HTTP 的 Accept 头：
@@ -111,68 +111,55 @@ RESTful 服务采用 HTTP 状态码指定方法的执行结果。
 406 Not Acceptable | 客户端发送的 **A**ccept 不被支持。<br/>比如客户端发送了 `Accept:application/xml`，但是服务器只支持 `application/json`。
 409 Conflict | 客户端提交的数据过于陈旧，和服务端的存在冲突，需要客户端重新获取最新的资源再发起请求。
 415 Unsupported Media Type | 客户端发送的 **C**ontent-**T**ype 不被支持。<br/>比如客户端发送了`Content-Type:application/xml`，但是服务器只支持 `application/json`。
+422 Unprocessable Entity | 请求实体的格式和语法正确，但由于语义错误导致服务器无法处理。
 429 Too Many Requests | 客户端在指定的时间内发送了太多次数的请求。
 500 Internal Server Error | 服务器遇见了未知的内部错误。
 501 Not Implemented | 服务器还未实现此项功能。
 503 Service Unavailable | 服务器繁忙，无法处理客户端的请求。
 
-
-## 错误响应
-
-当操作执行失败，仅凭 HTTP 状态码并不足以表达失败的原因，因此当 HTTP 状态码值不为 `2xx` 段时必须定义一套表达失败信息的结构。
-
-```json
-[
-    {
-        "error":"ArgumentNull",
-        "field":"name",
-        "message":"指定的某某名称不能为空。"
-    },
-    {
-        "error":"ArgumentOutOfRange",
-        "field":"creation",
-        "message":"指定的创建时间超出范围。"
-    }
-]
-```
-
-> 注：如果错误未限定具体字段，则其中 `field` 属性可以缺失。
+> 参考资料：
+> - [《HTTP 状态码说明》](https://developer.mozilla.org/zh-CN/docs/Web/HTTP/Status)
+> - [《HTTP 协议标准 1.1》](https://tools.ietf.org/html/rfc2616#section-10)
 
 
 ## 公共参数
 
 公共参数指通过 URL 中查询字符串指定的部分。
 
-- 分页参数：`page`，语法：`{pageIndex}[/{pageSize}]`
-    > - `pageIndex` 和 `pageSize` 的值均为正整数，其中 `pageSize` 可忽略 _（即为系统默认值）_。
-    > - 禁用分页：`page=0`
+- 分页参数：`page`，语法：`{pageIndex}[|{pageSize}]` 或 `{pageIndex}[/{pageSize}]`
+    > - `pageIndex` 和 `pageSize` 的值均为正整数，其中 `pageSize` 可忽略 _（缺省表示系统默认值）_。
+    > - 禁用分页：`page=0`或`page=disabled`，由于禁用分页可能会因为查询数据量过大导致系统出错，默认应关闭该项功能。
 
-- 排序参数：`sort`，语法：`{field}|(asc|desc)[,...]`
+- 排序参数：`sort`，语法：`(+|-){field}[,...]`
+    > - 字段前通过一个 `+`加号 或 `-`减号来表示升序或降序；
+    > - 如果省略升降序符号(即`+`或`-`号)，缺省由后台服务自行裁决。
 
 - 集合参数（即 `IN` 操作符），使用小括号标注，元素间采用逗号(`,`)分隔。
 
-- 区间参数（即 `Between` 操作符），使用小括号标注，起止值采用波浪线(`~`)分隔，起止值可以缺少其中一个，缺失项采用星号(`*`)占位，支持数字或日期格式。
+- 区间参数（即 `Between` 操作符），使用小括号标注，起止元素间采用波浪线(`~`)分隔，起止值可以缺少任意一个，缺失项使用星号(`*`)占位，支持数字或日期格式。
 
 
-示例：
-```
+### 示例：
+
+```curl
 GET /users?
-    page=2/10&
-    sort=creation|desc,age&
+    page=2|10&
+    sort=-creation,+age,name&
     status=(1,3)&
     grade=(1~5)&
-    creation=(2019-1-1~*)
+    creation=(2020-1-1~*)
 ```
 
 
 ## 公共头
 
-- `x-json-casing`
-    > 指定返回 JSON 键的命名规范，支持的值有：`camel` 和 `pascal`
 - `x-json-behaviors`
-    > 指定返回的 JSON 的选项，支持的值有：`ignores:null` 和 `ignores:default`
-- `x-json-datetime`
-    > 指定返回的 JSON 的日期时间格式，譬如：`yyyy-MM-dd HH:mm:ss`
+    > 指定返回的 JSON 的选项，支持项有：`ignores` 和 `casing`
+    > - `ignores:null` 忽略返回的JSON中值为空(`null`)的元素；
+    > - `ignores:default` 忽略返回的JSON中值为空(`null`)或数字为零、布尔值为假`false`的元素；
+    > - `casing:camel` 指示返回的JSON元素的命名方式为小驼峰 `camel` 模式；
+    > - `casing:pascal` 指示返回的JSON元素的命名方式为大驼峰(帕斯卡) `pascal` 模式。
+
 - `x-data-schema`
     > 指定当前操作的数据模式，有关数据模式的详细定义请参考 [Zongsoft.Data](https://github.com/Zongsoft/Zongsoft.Data) 项目文档。
 
@@ -207,6 +194,35 @@ GET /users?
     }
 }
 ```
+
+
+## 错误响应
+
+当操作执行失败，仅凭 HTTP 状态码并不足以表达失败的原因，因此当 HTTP 状态码值不为 `2xx` 段时必须定义一套表达失败信息的结构。
+
+```json
+{
+    "type":"InvalidOperation",
+    "title":"当前状态下不能执行XXX操作。",
+    "detail":"更多详细的错误信息。",
+
+    "errors":
+    [
+        "name":{
+            "type":"ArgumentNull",
+            "message":"指定的某某名称不能为空。"
+        },
+        "creation":{
+            "type":"ArgumentOutOfRange",
+            "message":"指定的创建时间超出范围。"
+        }
+    ]
+}
+```
+
+> 注：如果错误未限定具体字段，则其中 `errors` 属性可以缺失。
+
+> 另外，也可以采用 [RFC7807](https://tools.ietf.org/html/rfc7807) Problem Details 规范作为错误响应结构。
 
 
 
