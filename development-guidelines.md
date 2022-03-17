@@ -175,6 +175,9 @@ public class Foo
 
 	#region 成员字段
 	#endregion
+	
+	#region 构造函数
+	#endregion
 
 	#region 公共属性
 	#endregion
