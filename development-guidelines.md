@@ -175,7 +175,7 @@ public class Foo
 
 	#region 成员字段
 	#endregion
-	
+
 	#region 构造函数
 	#endregion
 
@@ -210,6 +210,9 @@ public class Foo
 	#endregion
 
 	#region 显式实现
+	#endregion
+
+	#region 嵌套结构
 	#endregion
 }
 ```
