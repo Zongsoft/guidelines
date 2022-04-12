@@ -228,4 +228,5 @@ GET /users?
 
 ## 参考：
 
-1. [《API Design Patterns And Use Cases》](https://github.com/paypal/api-standards/blob/master/patterns.md)
+1. [《Microsoft REST API Guidelines》](https://github.com/microsoft/api-guidelines)
+2. [《API Design Patterns And Use Cases》](https://github.com/paypal/api-standards/blob/master/patterns.md)
