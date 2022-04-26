@@ -5,6 +5,7 @@
 ## 参考资料：
 - [C#编码约定](https://docs.microsoft.com/zh-cn/dotnet/csharp/programming-guide/inside-a-program/coding-conventions)
 - [Framework Design Guidelines](https://docs.microsoft.com/zh-cn/dotnet/standard/design-guidelines/)
+- [C# Coding Style](https://github.com/dotnet/runtime/blob/main/docs/coding-guidelines/coding-style.md)
 
 
 ## 原则
@@ -119,6 +120,8 @@ internal static class MembershipHelper
 - 每行只写一条语句。
 - 每行只写一个声明。
 - 采用 `#region` 和 `#endregion` 对代码块进行分段，段间采用一个空行进行分隔，`#region` 与内部首行代码之间不要加空行，`#endregion` 与内部最末代码行之间不要加空行。
+- 避免多于一个空行。譬如：类型中成员之间不要有两个空行。
+- 避免多余的空格符。譬如：语句后面的多余空白字符或者符号左右两边的多余空白字符。
 
 ### 命名空间
 - 按顶级命名空间导入进行分段。
@@ -267,6 +270,7 @@ public abstract class Machine
 
 ## 语言准则
 
+- 使用语言关键字而不是 BCL 类型，譬如使用 `int number` 而非 `Int32 number`；包括对这些类型的方法调用，譬如使用 `int.TryParse(...)` 而非 `Int32.TryParse(...)`。
 - 使用字符串内插来连接短字符串，如下面的代码所示。
 ```csharp
 var employees = this.DataAccess.Select<Employee>(
