@@ -21,7 +21,7 @@
 	驼峰命名法：除第一个单词外，其他单词的首字母均大写。
 
 1. 使用 PascalCasing 命名法为所有公共成员命名，以及所有类型名、命名空间、接口、枚举(含枚举项)、属性、方法、事件。
-注意：接口必须使用大写字母 `I` 打头。
+	> 注意：接口必须使用大写字母 `I` 打头。
 
 2. 使用 camelCasing 命名法为私有字段、变量、参数命名，对于私有字段以下划线(`_`)打头。
 
@@ -88,7 +88,7 @@ internal static class MembershipHelper
 避免使用单词或词组的缩写，除非该缩写是众所周知的行业标准，譬如：`IO`、`Xml`、`Html`之类，多于两个字符的缩写采用 Pascal 命名，避免使用全大写，譬如不要使用 `XML`、`HTML`、`XAML` 等。
 
 ### 抽象类
-- 所有抽象类的命名一律以`Base`作为名称的后缀，譬如：`DataAccessBase`、`NamedCollectionBase`。
+- 所有抽象类的命名一律以 `Base` 作为名称的后缀，譬如：`DataAccessBase`、`NamedCollectionBase`。
 - 抽象类必须显式申明其构造函数作用域为 `protected` 或 `internal protected`。
 
 ### 静态类
@@ -108,11 +108,12 @@ internal static class MembershipHelper
 
 
 ### 其他规则
-- 命名空间应尽量使用单词复数，譬如：`System.Collections`、`Zongsoft.Services`、`Zongsoft.Options`，对于某些例外应遵循.NET框架现有命名约定，譬如：`System.IO`、`System.Data`、`System.Net.Http`、`System.Configuration`。
+- 命名空间应尽量使用单词复数，譬如：`System.Collections`、`Zongsoft.Services`、`Zongsoft.Options`，对于某些例外应遵循 .NET 框架现有命名约定，譬如：`System.IO`、`System.Data`、`System.Net.Http`、`System.Configuration`。
 
 - 命名空间的组织结构：`<Organization>.(<ProductFamily>|<Technology>).(<Product>|<Feature>|<Subnamespace>)`，譬如：`Zongsoft.Data.MySql`、`Automao.Common.Models`
 
-- 特定类型的命名规范参考微软.NET框架设计规范中的约定，譬如异常类命名必须以`Exception`结尾；注解/特性(Attribute)类必须以`Attribute`结尾；委托类必须以`Delegate`结尾等。
+- 特定类型的命名规范参考微软 .NET 框架设计规范中的约定，譬如异常类命名必须以 `Exception` 结尾；注解/特性(Attribute)类必须以 `Attribute` 结尾；委托类必须以 `Delegate` 结尾等。
+	> 注意：枚举名称不要再添加 `Enum` 作为尾缀，譬如应该是 `System.Data.DbType`，而不是 `System.Data.DbTypeEnum`。 
 
 ## 布局约定
 - 代码编辑器必须采用等宽字体，推荐：`Courier New`、`Consolas` 字体。
@@ -126,7 +127,7 @@ internal static class MembershipHelper
 ### 命名空间
 - 按顶级命名空间导入进行分段。
 - 段内的命名空间按长度进行排列。
-- 确保系统命名空间 `System` 段位于首段，而末段为代码所属命名的引用区。
+- 确保系统命名空间 `System` 段位于首段，而最末段为本代码文件所属命名空间的引用区。
 
 #### 示例：
 ```csharp
@@ -270,7 +271,7 @@ public abstract class Machine
 
 ## 语言准则
 
-- 使用语言关键字而不是 BCL 类型，譬如使用 `int number` 而非 `Int32 number`；包括对这些类型的方法调用，譬如使用 `int.TryParse(...)` 而非 `Int32.TryParse(...)`。
+- 使用语言关键字而不是 BCL 类型，譬如应使用 `int`、`long`、`double`、`float`、`decimal`、`string` 而非 `Int32`、`Int64`、`Double`、`Single`、`Decimal`、`String`；包括对这些类型的方法调用，譬如应使用 `int.TryParse(...)` 而非 `Int32.TryParse(...)` 等。
 - 使用字符串内插来连接短字符串，如下面的代码所示。
 ```csharp
 var employees = this.DataAccess.Select<Employee>(
@@ -282,7 +283,7 @@ var employees = this.DataAccess.Select<Employee>(
 ```
 
 - 当变量类型明显来自赋值的右侧时，请对本地变量进行隐式类型化。
-- 对于非`int`和`double`类型的数值类型的变量初始化，可通过数值常量说明符进行显式申明。
+- 对于非 `int` 和 `double` 类型的数值类型的变量初始化，可通过数值常量说明符进行显式申明。
 ```csharp
 var timestamp = DateTime.Now;
 var name = "Popeye Zhong";
@@ -309,7 +310,7 @@ var employee = new Employee
 	Location = "Redmond",
 };
 
-var dictionary = new Dictionary<string, string>()
+var parameters = new Dictionary<string, object>()
 {
 	{ "Key1", "Value#1" },
 	{ "Key2", "Value#2" },
