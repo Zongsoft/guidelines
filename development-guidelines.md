@@ -10,7 +10,7 @@
 
 ## 原则
 - 在尊重 .NET/C# 普遍的开发习惯和传统的基础上，尽量采用更简洁的编码风格。
-
+- 尽量更新的 .NET/C# 版本，充分利用新式语法提升生产力、代码简洁性和可读性。
 
 ## 命名规范
 
@@ -89,7 +89,7 @@ internal static class MembershipHelper
 
 ### 抽象类
 - 所有抽象类的命名一律以 `Base` 作为名称的后缀，譬如：`DataAccessBase`、`NamedCollectionBase`。
-- 抽象类必须显式申明其构造函数作用域为 `protected` 或 `internal protected`。
+- 抽象类必须显式定义其构造函数作用域为 `protected` 或 `internal protected`。
 
 ### 静态类
 - 不要滥用静态类，以免破坏OOP面向对象设计范式。
@@ -113,7 +113,7 @@ internal static class MembershipHelper
 - 命名空间的组织结构：`<Organization>.(<ProductFamily>|<Technology>).(<Product>|<Feature>|<Subnamespace>)`，譬如：`Zongsoft.Data.MySql`、`Automao.Common.Models`
 
 - 特定类型的命名规范参考微软 .NET 框架设计规范中的约定，譬如异常类命名必须以 `Exception` 结尾；注解/特性(Attribute)类必须以 `Attribute` 结尾；委托类必须以 `Delegate` 结尾等。
-	> 注意：枚举名称不要再添加 `Enum` 作为尾缀，譬如应该是 `System.Data.DbType`，而不是 `System.Data.DbTypeEnum`。 
+	> 注意：枚举命名不要添加 `Enum` 尾缀，譬如应该是 `System.Data.DbType`，而不是 `System.Data.DbTypeEnum`。 
 
 ## 布局约定
 - 代码编辑器必须采用等宽字体，推荐：`Courier New`、`Consolas` 字体。
@@ -283,7 +283,7 @@ var employees = this.DataAccess.Select<Employee>(
 ```
 
 - 当变量类型明显来自赋值的右侧时，请对本地变量进行隐式类型化。
-- 对于非 `int` 和 `double` 类型的数值类型的变量初始化，可通过数值常量说明符进行显式申明。
+- 对于非 `int` 和 `double` 类型的数值类型的变量初始化，可通过数值常量说明符进行显式声明。
 ```csharp
 var timestamp = DateTime.Now;
 var name = "Popeye Zhong";
