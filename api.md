@@ -142,12 +142,9 @@ RESTful 服务采用 HTTP 状态码指定方法的执行结果。
 ### 示例：
 
 ```curl
-GET /users?
+GET /users/status:1,3+grade:1~5+creation:thisyear?
     page=2|10&
-    sort=-creation,+age,name&
-    status=(1,3)&
-    grade=(1~5)&
-    creation=(2020-1-1~*)
+    sort=-creation,+age,name
 ```
 
 
