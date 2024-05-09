@@ -141,6 +141,7 @@ RESTful 服务采用 HTTP 状态码指定方法的执行结果。
 
 - 集合类型（即 `IN` 操作符）：使用小括号标注，元素间采用逗号(`,`)分隔。
 - 区间类型（即 `Between` 操作符）：使用小括号标注，起止元素间采用波浪线(`~`)分隔，起止值可以缺少任意一个，缺失项使用星号(`*`)占位，支持数字或日期格式。
+    > 对于日期时间类型，支持日期时间范围函数，详细可参考 [Zongsoft.Data.Range+Timing](https://github.com/Zongsoft/Framework/blob/master/Zongsoft.Core/src/Data/Range.cs#L213) 类的定义。
 
 
 ### 示例
@@ -161,7 +162,7 @@ GET /users/status:1,3+grade:1~5+creation:thisyear?
 ## 公共头
 
 - `X-Json-Behaviors`
-    > 指定返回的 JSON 的选项，支持项有：`ignores` 和 `casing`，选项之间采用 `:` 号分隔，譬如：`ignores:null,empty;casing:camel`
+    > 指定返回的 JSON 的选项，支持项有：`ignores` 和 `casing`，选项之间采用 `;` 分号分隔，譬如：`ignores:null,empty; casing:camel`
     > - `ignores:null` 忽略返回的JSON中值为空(`null`)的元素；
     > - `ignores:empty` 忽略返回的JSON中值为空集合的元素；
     > - `ignores:default` 忽略返回的JSON中值为空(`null`)或数字为零、布尔值为假`false`的元素；
