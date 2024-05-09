@@ -36,15 +36,15 @@ RESTful API 是对资源的表述，通过 HTTP 协议相关要素表达对资�
 
 ### 3. 方法映射
 
-- 使用 HTTP 方法来映射资源的操作(CRUD)
+- 使用 HTTP 方法来映射资源的操作 (CRUD)
 - 使用 HTTP 头来承载必要的请求/响应的元数据
 - 使用 HTTP 状态码来表示服务的响应状态
 
-Http Method | Safe | Idempotent | Description
-:----------:|:----:|:----------:|:-----------
+方法 | 安全性 | 幂等性 | 说明
+:---:|:-----:|:-----:|:----
 GET         | ✔ | ✔ | 获取资源
 PUT         | ✘ | ✔ | 完整更新（_如果不存在则新增_）
-POST        | ✘ | ✘ | 创建资源（以及未符合其他方法语义的操作）
+POST        | ✘ | ✘ | 创建资源（_以及未符合其他方法语义的操作_）
 PATCH       | ✘ | ✘ | 部分更新
 DELETE      | ✘ | ✔ | 删除资源
 
@@ -81,7 +81,7 @@ DELETE      | ✘ | ✔ | 删除资源
 2. 采用自定义的 HTTP 头：
 ```
 [GET] api.zongsoft.com/users/100
-api-version: 1.0
+API-Version: 1.0
 ```
 
 3. 采用 HTTP 的 Accept 头：
@@ -99,47 +99,57 @@ RESTful 服务采用 HTTP 状态码指定方法的执行结果。
 
 状态码 | 描述说明
 ------|----------
-200 OK | 执行成功。
-201 Created | 资源创建成功，应该返回 **L**ocation 响应头来提供新创建资源的URL地址。
-202 Accepted | 服务端已经接受了请求，但是并未处理完成，适用于一些异步操作，譬如批量导出文件等。
-204 No Content | 执行成功，但是不会在响应内容无数据。
-400 Bad Request | 客户端请求错误，客户端应该根据响应内容中的错误描述来修改请求，然后才能再次发送。
-401 Unauthorized | 客户端未提供授权信息。
-403 Forbidden | 客户端无权访问 _（客户端已经提供了授权信息，但是权限不够）_。
-404 Not Found | 客户端请求的资源不存在。
-405 Method Not Allowed | 客户端使用了不被允许的方法。比如某个操作只允许 POST 但是客户端采用了 PUT。
-406 Not Acceptable | 客户端发送的 **A**ccept 不被支持。<br/>比如客户端发送了 `Accept:application/xml`，但是服务器只支持 `application/json`。
-409 Conflict | 客户端提交的数据过于陈旧，和服务端的存在冲突，需要客户端重新获取最新的资源再发起请求。
-415 Unsupported Media Type | 客户端发送的 **C**ontent-**T**ype 不被支持。<br/>比如客户端发送了`Content-Type:application/xml`，但是服务器只支持 `application/json`。
-422 Unprocessable Entity | 请求实体的格式和语法正确，但由于语义错误导致服务器无法处理。
-429 Too Many Requests | 客户端在指定的时间内发送了太多次数的请求。
-500 Internal Server Error | 服务器遇见了未知的内部错误。
-501 Not Implemented | 服务器还未实现此项功能。
-503 Service Unavailable | 服务器繁忙，无法处理客户端的请求。
+`200` OK                 | 执行成功。
+`201` Created            | 资源创建成功，应该返回 **L**ocation 响应头来提供新创建资源的URL地址。
+`202` Accepted           | 服务端已经接受了请求，但是并未处理完成，适用于一些异步操作，譬如批量导出文件等。
+`204` No Content         | 执行成功，但是不会在响应内容无数据。
+`400` Bad Request        | 客户端请求错误，客户端应该根据响应内容中的错误描述来修改请求，然后才能再次发送。
+`401` Unauthorized       | 客户端未提供授权信息。
+`403` Forbidden          | 客户端无权访问 _（客户端已经提供了授权信息，但是权限不够）_。
+`404` Not Found          | 客户端请求的资源不存在。
+`405` Method Not Allowed | 客户端使用了不被允许的方法。比如某个操作只允许 POST 但是客户端采用了 PUT。
+`406` Not Acceptable     | 客户端发送的 **A**ccept 不被支持。<br/>比如客户端发送了 `application/xml`，但是服务器只支持 `application/json`。
+`409` Conflict           | 客户端提交的数据过于陈旧，和服务端的存在冲突，需要客户端重新获取最新的资源再发起请求。
+`415` Unsupported Media Type | 客户端发送的 **C**ontent-**T**ype 不被支持。<br/>比如客户端发送了`application/xml`，但是服务器只支持 `application/json`。
+`422` Unprocessable Entity   | 请求实体的格式和语法正确，但由于语义错误导致服务器无法处理。
+`429` Too Many Requests      | 客户端在指定的时间内发送了太多次数的请求。
+`500` Internal Server Error  | 服务器遇见了未知的内部错误。
+`501` Not Implemented        | 服务器还未实现此项功能。
+`503` Service Unavailable    | 服务器繁忙，无法处理客户端的请求。
 
 > 参考资料：
 > - [《HTTP 状态码说明》](https://developer.mozilla.org/zh-CN/docs/Web/HTTP/Status)
 > - [《HTTP 协议标准 1.1》](https://tools.ietf.org/html/rfc2616#section-10)
 
+## 参数
 
-## 公共参数
+### 公共参数
 
 公共参数指通过 URL 中查询字符串指定的部分。
 
-- 分页参数：`page`，语法：`{pageIndex}[|{pageSize}]` 或 `{pageIndex}[/{pageSize}]`
-    > - `pageIndex` 和 `pageSize` 的值均为正整数，其中 `pageSize` 可忽略 _（缺省表示系统默认值）_。
+- 分页参数：`page`，语法：`PageIndex[|PageSize]` 或 `PageIndex[/PageSize]`
+    > - `PageIndex` 和 `PageSize` 的值均为正整数，其中 `PageSize` 可忽略 _（缺省表示系统默认值）_。
     > - 禁用分页：`page=0`或`page=disabled`，由于禁用分页可能会因为查询数据量过大导致系统出错，默认应关闭该项功能。
 
-- 排序参数：`sort`，语法：`(+|-){field}[,...]`
+- 排序参数：`sort`，语法：`(+|-)field[,...]`
     > - 字段前通过一个 `+`加号 或 `-`减号来表示升序或降序；
     > - 如果省略升降序符号(即`+`或`-`号)，缺省由后台服务自行裁决。
 
-- 集合参数（即 `IN` 操作符），使用小括号标注，元素间采用逗号(`,`)分隔。
+### 查询条件
 
-- 区间参数（即 `Between` 操作符），使用小括号标注，起止元素间采用波浪线(`~`)分隔，起止值可以缺少任意一个，缺失项使用星号(`*`)占位，支持数字或日期格式。
+GET 方法支持过滤条件，其条件字段名与字段值中间用 `:` 分隔，多个条件项用 `+` 号连接。其字段值除支持常规的数字、字符、布尔、日期时间类型外，还支持“集合”与“区间”两种类型。
+
+- 集合类型（即 `IN` 操作符）：使用小括号标注，元素间采用逗号(`,`)分隔。
+- 区间类型（即 `Between` 操作符）：使用小括号标注，起止元素间采用波浪线(`~`)分隔，起止值可以缺少任意一个，缺失项使用星号(`*`)占位，支持数字或日期格式。
 
 
-### 示例：
+### 示例
+
+#### 获取用户集
+
+> - 过滤：_**S**tatus 等于1_ 且 _**G**rade 介于1至5之间_ 且 _**C**reation 位于今年内_；
+> - 分页：按每页 `10` 条记录进行分页操作，并返回第 `2` 页的数据；
+> - 排序：_**C**reation倒序_，_**A**ge正序_，_**N**ame正序_。
 
 ```curl
 GET /users/status:1,3+grade:1~5+creation:thisyear?
@@ -150,48 +160,29 @@ GET /users/status:1,3+grade:1~5+creation:thisyear?
 
 ## 公共头
 
-- `x-json-behaviors`
+- `X-Json-Behaviors`
     > 指定返回的 JSON 的选项，支持项有：`ignores` 和 `casing`
     > - `ignores:null` 忽略返回的JSON中值为空(`null`)的元素；
+    > - `ignores:empty` 忽略返回的JSON中值为空集合的元素；
     > - `ignores:default` 忽略返回的JSON中值为空(`null`)或数字为零、布尔值为假`false`的元素；
     > - `casing:camel` 指示返回的JSON元素的命名方式为小驼峰 `camel` 模式；
     > - `casing:pascal` 指示返回的JSON元素的命名方式为大驼峰(帕斯卡) `pascal` 模式。
 
-- `x-data-schema`
+- `X-Data-Schema`
     > 指定当前操作的数据模式，有关数据模式的详细定义请参考 [Zongsoft.Data](https://github.com/Zongsoft/Zongsoft.Data) 项目文档。
 
 
 ## 响应内容
 
-响应内容应尽量简洁直白，避免无谓的嵌套结构。对于支持 `x-data-schema` 公共头的查询操作的内容结构如下：
+响应内容应该简洁直白，避免无谓的嵌套结构。
 
-```json
-/* 单项内容 */
-{
-    "$":
-    {
-        ...
-    },
-    "$$":
-    {
-        "$children":"1/1"
-    }
-}
+### 分页信息
 
-/* 集合内容 */
-{
-    "$":[
-        {...},
-        {...}
-    ],
-    "$$":
-    {
-        "$":"1/100(1989)",
-        "$children":"1/1"
-    }
-}
-```
-
+对于查询请求，如果没有指定 `page` 参数则默认进行分页处理，名为 `X-Pagination` 的响应头包含结果的分页信息。
+> 譬如响应分页头的内容为 `1/10(190)`，则：
+> - 其中 `1` 表示页号 _(从1开始)_，即返回的结果为第 `1` 页；
+> - 其中 `10` 表示分页总数，即满足条件的数据总共有 `10` 页；
+> - 其中 `190` 表示记录总数，即满足条件的数据共有 `190` 条记录。
 
 ## 错误响应
 
