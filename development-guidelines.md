@@ -75,11 +75,11 @@ internal static class MembershipHelper
 	#region 常量定义
 	internal const string DATA_CONTAINER_NAME           = "Security";
 
-	internal const string DATA_ENTITY_USER              = DATA_CONTAINER_NAME + ".User";
-	internal const string DATA_ENTITY_ROLE              = DATA_CONTAINER_NAME + ".Role";
-	internal const string DATA_ENTITY_MEMBER            = DATA_CONTAINER_NAME + ".Member";
-	internal const string DATA_ENTITY_PERMISSION        = DATA_CONTAINER_NAME + ".Permission";
-	internal const string DATA_ENTITY_PERMISSION_FILTER = DATA_CONTAINER_NAME + ".PermissionFilter";
+	internal const string DATA_ENTITY_USER              = $"{DATA_CONTAINER_NAME}.User";
+	internal const string DATA_ENTITY_ROLE              = $"{DATA_CONTAINER_NAME}.Role";
+	internal const string DATA_ENTITY_MEMBER            = $"{DATA_CONTAINER_NAME}.Member";
+	internal const string DATA_ENTITY_PERMISSION        = $"{DATA_CONTAINER_NAME}.Permission";
+	internal const string DATA_ENTITY_PERMISSION_FILTER = $"{DATA_CONTAINER_NAME}.PermissionFilter";
 	#endregion
 }
 ```
