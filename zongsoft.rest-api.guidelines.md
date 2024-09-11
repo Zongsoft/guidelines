@@ -141,7 +141,7 @@ RESTful 服务采用 HTTP 状态码指定方法的执行结果。
 
 - 集合类型（即 `IN` 操作符）：使用小括号标注，元素间采用逗号(`,`)分隔。
 - 区间类型（即 `Between` 操作符）：使用小括号标注，起止元素间采用波浪线(`~`)分隔，起止值可以缺少任意一个，缺失项使用星号(`*`)占位，支持数字或日期格式。
-    > 对于日期时间类型，支持日期时间范围函数，详细可参考 [Zongsoft.Data.Range+Timing](https://github.com/Zongsoft/Framework/blob/master/Zongsoft.Core/src/Data/Range.cs#L213) 类的定义。
+    > 对于日期时间类型，支持日期时间范围函数，详细可参考 [Zongsoft.Data.Range+Timing](https://github.com/Zongsoft/framework/blob/master/Zongsoft.Core/src/Data/Range.cs#L213) 类的定义。
 
 
 ### 示例
@@ -170,7 +170,7 @@ GET /users/status:1,3+grade:1~5+creation:thisyear?
     > - `casing:pascal` 指示返回的JSON元素的命名方式为大驼峰(帕斯卡) `pascal` 模式。
 
 - `X-Data-Schema`
-    > 指定当前操作的数据模式，有关数据模式的详细定义请参考 [Zongsoft.Data](https://github.com/Zongsoft/Zongsoft.Data) 项目文档。
+    > 指定当前操作的数据模式，有关数据模式的详细定义请参考 [Zongsoft.Data](https://github.com/Zongsoft/framework/blob/master/Zongsoft.Data) 项目文档。
 
 
 ## 响应内容
@@ -211,7 +211,7 @@ GET /users/status:1,3+grade:1~5+creation:thisyear?
 
 > 注：如果错误未限定具体字段，则其中 `errors` 属性可以缺失。
 
-> 另外，也可以采用 [RFC7807](https://tools.ietf.org/html/rfc7807) Problem Details 规范作为错误响应结构。
+> 可以根据实际情况对上述 [RFC7807 Problem Details](https://tools.ietf.org/html/rfc7807) 规范的错误响应结构进行适当调整。
 
 
 
