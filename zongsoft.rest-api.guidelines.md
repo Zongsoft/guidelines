@@ -42,11 +42,11 @@
 
 方法 | 安全性 | 幂等性 | 说明
 :---:|:-----:|:-----:|:----
-GET         | ✔ | ✔ | 获取资源
-PUT         | ✘ | ✔ | 完整更新（_如果不存在则新增_）
-POST        | ✘ | ✘ | 创建资源（_以及未符合其他方法语义的操作_）
-PATCH       | ✘ | ✘ | 部分更新
-DELETE      | ✘ | ✔ | 删除资源
+GET    | ✔ | ✔ | 获取资源
+PUT    | ✘ | ✔ | 完整更新（_如果不存在则新增_）
+POST   | ✘ | ✘ | 创建资源（_以及未符合其他方法语义的操作_）
+PATCH  | ✘ | ✘ | 部分更新
+DELETE | ✘ | ✔ | 删除资源
 
 > - 安全性(**S**afety)：操作不会对资源产生副作用，不会修改资源。
 > - 幂等性(**I**dempotent)：执行一次和重复执行多次，结果是一样的。
@@ -71,7 +71,7 @@ DELETE      | ✘ | ✔ | 删除资源
 
 ## 版本标识
 
-因为业务调整导致 _API_ 的参数和结果变化，造成兼容性被破坏，这时需要进行 _API_ 版本标识，版本标识大致有如下三种方法。
+因为业务调整导致 _API_ 的参数和结果变化，造成兼容性被破坏，这时需要进行 _API_ 版本标识，其大致有如下三种方式。
 
 1. 采用自定义的 _HTTP_ 头：
 ```http
@@ -90,7 +90,7 @@ Accept: application/vnd.v1+json
 GET api.zongsoft.com/v1/users/100
 ```
 
-> 💡 建议采用 `方法一`，所有请求默认加上版本标识以便后续向下兼容。
+> 💡 建议采用 `方案一`，所有请求默认加上版本标识以便后续向下兼容。
 
 
 ## 状态码
@@ -102,20 +102,20 @@ GET api.zongsoft.com/v1/users/100
 `200` **O**K                 | 执行成功。
 `201` **C**reated            | 资源创建成功，应该返回 **L**ocation 响应头来提供新创建资源的URL地址。
 `202` **A**ccepted           | 服务端已经接受了请求，但是并未处理完成，适用于一些异步操作，譬如批量导出文件等。
-`204` **N**o **C**ontent         | 执行成功，但是不会在响应内容无数据。
-`400` **B**ad **R**equest        | 客户端请求错误，客户端应该根据响应内容中的错误描述来修改请求，然后才能再次发送。
+`204` **N**o**C**ontent      | 执行成功，但是不会在响应内容无数据。
+`400` **B**ad**R**equest     | 客户端请求错误，客户端应该根据响应内容中的错误描述来修改请求，然后才能再次发送。
 `401` **U**nauthorized       | 客户端未提供授权信息。
 `403` **F**orbidden          | 客户端无权访问 _（客户端已经提供了授权信息，但是权限不够）_。
-`404` **N**ot **F**ound          | 客户端请求的资源不存在。
-`405` **M**ethod **N**ot **A**llowed | 客户端使用了不被允许的方法。比如某个操作只允许 **P**OST 但是客户端采用了 **P**UT。
-`406` **N**ot **A**cceptable     | 客户端发送的 **A**ccept 不被支持。<br/>比如客户端发送了 `application/xml`，但是服务器只支持 `application/json`。
-`409` **C**onflict           | 客户端提交的数据过于陈旧，和服务端的存在冲突，需要客户端重新获取最新的资源再发起请求。
-`415` **U**nsupported **M**edia **T**ype | 客户端发送的 **C**ontent-**T**ype 不被支持。<br/>比如客户端发送了`application/xml`，但是服务器只支持 `application/json`。
-`422` **U**nprocessable **E**ntity   | 请求实体的格式和语法正确，但由于语义错误导致服务器无法处理。
-`429` **T**oo **M**any **R**equests      | 客户端在指定的时间内发送了太多次数的请求。
-`500` **I**nternal **S**erver **E**rror  | 服务器遇见了未知的内部错误。
-`501` **N**ot **I**mplemented        | 服务器还未实现此项功能。
-`503` **S**ervice **U**navailable    | 服务器繁忙，无法处理客户端的请求。
+`404` **N**ot**F**ound       | 客户端请求的资源不存在。
+`405` **M**ethod**N**ot**A**llowed | 客户端使用了不被允许的方法。比如某个操作只允许 **P**OST 但是客户端采用了 **P**UT。
+`406` **N**ot**A**cceptable        | 客户端发送的 **A**ccept 不被支持。<br/>比如客户端发送了 `application/xml`，但是服务器只支持 `application/json`。
+`409` **C**onflict                 | 客户端提交的数据过于陈旧，和服务端的存在冲突，需要客户端重新获取最新的资源再发起请求。
+`415` **U**nsupported**M**edia**T**ype | 客户端发送的 **C**ontent-**T**ype 不被支持。<br/>比如客户端发送了`application/xml`，但是服务器只支持 `application/json`。
+`422` **U**nprocessable**E**ntity  | 请求实体的格式和语法正确，但由于语义错误导致服务器无法处理。
+`429` **T**oo**M**any**R**equests     | 客户端在指定的时间内发送了太多次数的请求。
+`500` **I**nternal**S**erver**E**rror | 服务器遇见了未知的内部错误。
+`501` **N**ot**I**mplemented       | 服务器还未实现此项功能。
+`503` **S**ervice**U**navailable   | 服务器繁忙，无法处理客户端的请求。
 
 > 参考资料：
 > - [《HTTP 状态码说明》](https://developer.mozilla.org/zh-CN/docs/Web/HTTP/Status)
@@ -271,11 +271,11 @@ POST /users/query?page=2|10&sort=-creation,age,name
 
 - `X-Json-Behaviors`
     > 指定返回的 _JSON_ 的选项，支持项有：`ignores` 和 `casing`，选项之间采用 `;` 分号分隔，譬如：`ignores:null,empty; casing:camel`
-    > - `ignores:null` 忽略返回的 _JSON_ 中值为空(`null`)的元素；
-    > - `ignores:empty` 忽略返回的 _JSON_ 中值为空集合的元素；
-    > - `ignores:default` 忽略返回的 _JSON_ 中值为空(`null`)或数字为零、布尔值为假`false`的元素；
-    > - `casing:camel` 指示返回的 _JSON_ 元素的命名方式为小驼峰 `camel` 模式；
-    > - `casing:pascal` 指示返回的 _JSON_ 元素的命名方式为大驼峰(帕斯卡) `Pascal` 模式。
+    > - `ignores:null` 忽略响应 _JSON_ 中值为*空* _(`null`)_ 的元素；
+    > - `ignores:empty` 忽略响应 _JSON_ 中值为*空集* _(`[]`)_ 的元素；
+    > - `ignores:default` 忽略响应 _JSON_ 中值为*空* _(`null`)_ 或数字为*零*、布尔值为*假* _(`false`)_ 的元素；
+    > - `casing:camel` 指示响应 _JSON_ 元素的命名方式为小驼峰 `camel` 模式；
+    > - `casing:pascal` 指示响应 _JSON_ 元素的命名方式为大驼峰(_帕斯卡_) `Pascal` 模式。
 
 - `X-Data-Schema`
     > 指定当前操作的数据模式，有关数据模式的详细定义请参考 [_**Z**ongsoft.**D**ata_](https://github.com/Zongsoft/framework/blob/master/Zongsoft.Data) 项目文档。
@@ -285,10 +285,46 @@ POST /users/query?page=2|10&sort=-creation,age,name
 
 响应内容应该简洁直白，避免无谓的嵌套结构。
 
+### 示例
+
+- 当没有获取到符合条件的数据，其 _HTTP_ 响应：
+```htttp
+HTTP/1.1 204 No Content
+```
+> 💡 注：响应状态码为 `204`，无内容。
+
+- 获取`编号`为 `100` 的单条`用户`数据的 _HTTP_ 响应：
+```http
+HTTP/1.1 200 OK
+Content-Type: application/json; charset=utf-8
+
+{
+	"UserId": 100,
+	"Name": "Popeye",
+	"Gender": "Male",
+	"Birthday": "1979-5-15"
+}
+```
+
+- 获取`性别`为 `Male` 的多条`用户`数据的 _HTTP_ 响应：
+```http
+HTTP/1.1 200 OK
+Content-Type: application/json; charset=utf-8
+
+[
+	{
+		"UserId": 100,
+		"Name": "Popeye",
+		"Gender": "Male",
+		"Birthday": "1979-5-15"
+	}
+]
+```
+
 ### 分页信息
 
 对于查询请求，如果没有指定 `page` 参数则默认进行分页处理，名为 `X-Pagination` 的响应头包含结果的分页信息。
-> 譬如响应分页头的内容为 `1/10(190)`，则：
+> 譬如响应分页头的内容为 `1/10(190)`，则表示：
 > - 其中 `1` 表示页号 _(从1开始)_，即返回的结果为第 `1` 页；
 > - 其中 `10` 表示分页总数，即满足条件的数据总共有 `10` 页；
 > - 其中 `190` 表示记录总数，即满足条件的数据共有 `190` 条记录。
@@ -323,7 +359,11 @@ POST /users/query?page=2|10&sort=-creation,age,name
 
 
 
-## 参考：
+## 参考
 
 1. [《Microsoft REST API Guidelines》](https://github.com/microsoft/api-guidelines)
-2. [《API Design Patterns And Use Cases》](https://github.com/paypal/api-standards/blob/master/patterns.md)
+2. [《PayPal REST API Specifications》](https://github.com/paypal/paypal-rest-api-specifications)
+
+- [《Architectural Styles and
+the Design of Network-based Software Architectures》](https://ics.uci.edu/~fielding/pubs/dissertation/top.htm)
+- [《架构风格与基于网络的软件架构设计》](https://static-acl-001.geekbang.org/resource/ebook/d8/d4/d81ffea1966b4926e64372829ec0e7d4.pdf?auth_key=1726277733-e9e4540c7e2b40b2a3b756dc94d9173a-0-b2f8b89bc29f9a8cb681f54edcabc540)
