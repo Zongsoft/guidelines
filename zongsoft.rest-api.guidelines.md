@@ -353,10 +353,9 @@ Content-Type: application/json; charset=utf-8
 }
 ```
 
-> 注：如果错误未限定具体字段，则其中 `errors` 属性可以缺失。
+> 注：如果错误未限定具体字段，则其中 `errors` 属性将缺失。
 
-> 可以根据实际情况对上述 [RFC7807 Problem Details](https://tools.ietf.org/html/rfc7807) 规范的响应结构进行适当调整。
-
+> 💡 提示：可根据实际情况对上述 [RFC7807 Problem Details](https://tools.ietf.org/html/rfc7807) 规范进行适当调整。
 
 
 ## 参考
