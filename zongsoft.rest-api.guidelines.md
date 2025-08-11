@@ -55,7 +55,7 @@ DELETE | ✘ | ✔ | 删除资源
 在某些情况下不是所有操作都能恰如其分的映射到 _HTTP_ 方法，我们应将操作目标抽象成一种子资源，譬如禁用某种资源的操作，就可以将被禁用的资源作为其子资源看待。
 
 - 禁用调度器：
-    - `[PUT] /schedulers/disabled/{id}`
+    - `[POST] /schedulers/disabled/{id}`
 - 启用调度器
     - `[DELETE] /schedulers/disabled/{id}`
 - 获取被禁用的调度器集
