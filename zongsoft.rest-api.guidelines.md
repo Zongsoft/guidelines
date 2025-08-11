@@ -37,19 +37,21 @@
 ### 3. 方法映射
 
 - 使用 **H**TTP 方法来映射资源的操作 _(CRUD)_
-- 使用 **H**TTP 头来承载必要的请求/响应的元数据
+- 使用 **H**TTP 头来承载必要的请求和响应的元数据
 - 使用 **H**TTP 状态码来表示服务的响应状态
 
 方法 | 安全性 | 幂等性 | 说明
 :---:|:-----:|:-----:|:----
 GET    | ✔ | ✔ | 获取资源
-PUT    | ✘ | ✔ | 完整更新（_如果不存在则新增_）
+PUT    | ✘ | ✔ | 完整更新
 POST   | ✘ | ✘ | 创建资源（_以及未符合其他方法语义的操作_）
 PATCH  | ✘ | ✘ | 部分更新
 DELETE | ✘ | ✔ | 删除资源
 
 > - 安全性(**S**afety)：操作不会对资源产生副作用，不会修改资源。
 > - 幂等性(**I**dempotent)：执行一次和重复执行多次，结果是一样的。
+
+> 💡 在一些实现中 _PUT_ 方法被映射为 _**U**psert_ 增改操作，即不存在则新增，存在则进行全部或部分更新，使其不再具备幂等性。
 
 
 在某些情况下不是所有操作都能恰如其分的映射到 _HTTP_ 方法，我们应将操作目标抽象成一种子资源，譬如禁用某种资源的操作，就可以将被禁用的资源作为其子资源看待。
@@ -272,11 +274,11 @@ POST /users/query?page=2|10&sort=-creation,age,name
 
 - `X-Json-Behaviors`
     > 指示响应 _**J**SON_ 内容的行为，其包含 `ignores` 和 `casing` 两个选项，选项之间采用 `;` 分隔，譬如：`ignores:null,empty; casing:camel`。
-    > - `ignores:null` 忽略响应 _JSON_ 中值为*空* _(`null`)_ 的元素；
-    > - `ignores:empty` 忽略响应 _JSON_ 中值为*空集* _(`[]`)_ 的元素；
-    > - `ignores:default` 忽略响应 _JSON_ 中值为*空* _(`null`)_ 或数字为*零*、布尔值为*假* _(`false`)_ 的元素；
-    > - `casing:camel` 指示响应内容的 _JSON_ 元素的命名方式为小驼峰 `camel` 模式；
-    > - `casing:pascal` 指示响应内容的 _JSON_ 元素的命名方式为大驼峰(_帕斯卡_) `Pascal` 模式。
+    > - `ignores:null` 忽略响应 _JSON_ 中值为空 _(`null`)_ 的元素；
+    > - `ignores:zero` 忽略响应 _JSON_ 中值为数值零 _(`0`)_ 的元素；
+    > - `ignores:empty` 忽略响应 _JSON_ 中值为空集 _(`[]`)_ 的元素；
+    > - `casing:camel`  指示响应内容的 _JSON_ 元素的命名方式为小驼峰 `Camel` 模式；
+    > - `casing:pascal` 指示响应内容的 _JSON_ 元素的命名方式为帕斯卡 `Pascal` 模式。
 
 - `X-Data-Schema`
     > 指定当前操作的数据模式，有关数据模式的详细定义请参考 [_**Z**ongsoft.**D**ata_](https://github.com/Zongsoft/framework/blob/master/Zongsoft.Data) 项目文档。
@@ -285,6 +287,14 @@ POST /users/query?page=2|10&sort=-creation,age,name
 ## 响应内容
 
 响应内容应该简洁直白，避免无谓的嵌套结构。
+
+### 分页信息
+
+对于查询请求，如果没有指定 `page` 参数，系统默认会进行分页处理 _（每页大小由系统默认）_，并通过名为 `X-Pagination` 的响应头来指示结果的分页信息。
+> 假设 `X-Pagination` 响应头的内容为 `1/10(190)`，表示：
+> - 其中 `1` 为页号 _(从`1`开始)_，即返回的结果为第 `1` 页；
+> - 其中 `10` 为分页总数，即满足条件的数据总共有 `10` 页；
+> - 其中 `190` 为记录总数，即满足条件的数据共有 `190` 条记录。
 
 ### 示例
 
@@ -303,7 +313,7 @@ Content-Type: application/json; charset=utf-8
 	"UserId": 100,
 	"Name": "Popeye",
 	"Gender": "Male",
-	"Birthday": "1979-5-15"
+	"Birthday": "1979-05-15"
 }
 ```
 
@@ -311,34 +321,33 @@ Content-Type: application/json; charset=utf-8
 ```http
 HTTP/1.1 200 OK
 Content-Type: application/json; charset=utf-8
+X-Pagination: 1/1(2)
 
 [
 	{
 		"UserId": 100,
 		"Name": "Popeye",
 		"Gender": "Male",
-		"Birthday": "1979-5-15"
+		"Birthday": "1979-05-15"
+	},
+	{
+		"UserId": 200,
+		"Name": "Tony",
+		"Gender": "Male",
+		"Birthday": "1980-07-07"
 	}
 ]
 ```
 
-### 分页信息
-
-对于查询请求，如果没有指定 `page` 参数，系统默认会进行分页处理 _（每页大小由系统默认）_，名为 `X-Pagination` 的响应头包含结果的分页信息。
-> 假设 `X-Pagination` 响应头的内容为 `1/10(190)`，则表示：
-> - 其中 `1` 为页号 _(从1开始)_，即返回的结果为第 `1` 页；
-> - 其中 `10` 为分页总数，即满足条件的数据总共有 `10` 页；
-> - 其中 `190` 为记录总数，即满足条件的数据共有 `190` 条记录。
-
 ## 错误响应
 
-当操作执行失败，仅凭 *HTTP* 状态码并不足以表达失败的原因，因此当 *HTTP* 状态码值不为 `2xx` 段时必须定义一套表达失败信息的结构。
+当操作执行失败，仅凭 _HTTP_ 状态码并不足以表达失败的原因，因此当 _HTTP_ 状态码值不为 `2xx` 段时必须定义一套表达失败信息的结构。
 
 ```json
 {
     "type": "InvalidOperation",
     "title": "当前状态下不能执行XXX操作。",
-    "detail": "更多详细的错误信息。",
+    "detail": "更多详细的错误信息……",
 
     "errors":
     [
