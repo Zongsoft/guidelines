@@ -2,105 +2,76 @@
 
 [TOC]
 
-## 参考资料：
-- [C#编码约定](https://docs.microsoft.com/zh-cn/dotnet/csharp/programming-guide/inside-a-program/coding-conventions)
+## 参考资料
+
+- [Microsoft C# 代码约定](https://docs.microsoft.com/zh-cn/dotnet/csharp/programming-guide/inside-a-program/coding-conventions)
 - [Framework Design Guidelines](https://docs.microsoft.com/zh-cn/dotnet/standard/design-guidelines/)
 - [C# Coding Style](https://github.com/dotnet/runtime/blob/main/docs/coding-guidelines/coding-style.md)
 
 
 ## 原则
+
 - 在尊重 .NET/C# 普遍的开发习惯和传统的基础上，尽量采用更简洁的编码风格。
-- 尽量更新的 .NET/C# 版本，充分利用新式语法提升生产力、代码简洁性和可读性。
+- 尽量采用新的 .NET/C# 版本，充分利用新式语法提升生产力、代码简洁性和可读性。
 
 ## 命名规范
 
 ### 大小写命名
-- PascalCasing
-	帕斯卡命名法：该命名法又被称为“*大驼峰命名法*”，每个单词的首字母均大写。
-- camelCasing
-	驼峰命名法：除第一个单词外，其他单词的首字母均大写。
 
-1. 使用 PascalCasing 命名法为所有公共成员命名，以及所有类型名、命名空间、接口、枚举(含枚举项)、属性、方法、事件。
-	> 注意：接口必须使用大写字母 `I` 打头。
+- **P**ascal **C**asing
+	帕斯卡命名法：每个单词的首字母均大写 _(也被称为 “大驼峰命名法”)_。
+- **C**amel **C**asing
+	小驼峰命名法：除第一个单词外，其他单词的首字母均大写。
 
-2. 使用 camelCasing 命名法为私有字段、变量、参数命名，对于私有字段以下划线(`_`)打头。
+1. 使用 _**P**ascal**C**asing_ 命名法为所有公共成员命名，以及所有类型名、命名空间、接口、枚举(含枚举项)、属性、方法、事件。
+	> 💡 注意：接口必须使用大写字母 `I` 打头。
 
-#### 示例：
-```csharp
-namespace Zongsoft.Data
-{
-	/// <summary>
-	/// 提供数据服务的基类。
-	/// </summary>
-	public abstract class DataServiceBase<TEntity> : IDataService
-	{
-		#region 成员字段
-		private Zongsoft.Services.IServiceProvider _serviceProvider;
-		#endregion
-
-		#region 构造函数
-		protected DataServiceBase(string name, Zongsoft.Services.IServiceProvider serviceProvider)
-		{
-			if(string.IsNullOrWhiteSpace(name))
-				throw new ArgumentNullException(nameof(name));
-
-			this.Name = name;
-			_serviceProvider = serviceProvider ?? throw new ArgumentNullException(nameof(serviceProvider));
-		}
-		#endregion
-
-		#region 公共属性
-		public string Name { get; }
-		#endregion
-
-		#region 公共方法
-		public TEntity Get<TKey>(TKey key)
-		{
-			throw new NotImplementedException();
-		}
-		#endregion
-	}
-}
-```
+2. 使用 _**C**amel**C**asing_ 命名法为私有字段、变量、参数命名。
+	> 💡 注意：私有字段以下划线(`_`)打头。
 
 ### 常量命名
+
 私有常量所有字符均为大写，单词或词组中间使用下划线连接，如果同一个类型中有不同种类的私有常量，则不同种类的私有常量应使用特定种类名作为前缀或后缀，前缀或后缀与常量之间亦使用下划线连接。
 
-*注：共有常量遵循公共成员命名规则。*
+> 注：共有常量遵循公共成员命名规则。
 
-#### 示例：
+#### 示例
+
 ```csharp
-internal static class MembershipHelper
+public static class PrivilegeUtility
 {
 	#region 常量定义
-	internal const string DATA_CONTAINER_NAME           = "Security";
+	internal const string DATA_CONTAINER      = "Security";
 
-	internal const string DATA_ENTITY_USER              = $"{DATA_CONTAINER_NAME}.User";
-	internal const string DATA_ENTITY_ROLE              = $"{DATA_CONTAINER_NAME}.Role";
-	internal const string DATA_ENTITY_MEMBER            = $"{DATA_CONTAINER_NAME}.Member";
-	internal const string DATA_ENTITY_PERMISSION        = $"{DATA_CONTAINER_NAME}.Permission";
-	internal const string DATA_ENTITY_PERMISSION_FILTER = $"{DATA_CONTAINER_NAME}.PermissionFilter";
+	internal const string DATA_ENTITY_USER    = $"{DATA_CONTAINER}.User";
+	internal const string DATA_ENTITY_ROLE    = $"{DATA_CONTAINER}.Role";
+	internal const string DATA_ENTITY_MEMBER  = $"{DATA_CONTAINER}.Member";
 	#endregion
 }
 ```
 
 ### 缩写
-避免使用单词或词组的缩写，除非该缩写是众所周知的行业标准，譬如：`IO`、`Xml`、`Html`之类，多于两个字符的缩写采用 Pascal 命名，避免使用全大写，譬如不要使用 `XML`、`HTML`、`XAML` 等。
+
+避免使用单词或词组的缩写，除非该缩写是众所周知的行业标准，譬如：`IO`、`Xml`、`Html`之类，多于两个字符的缩写采用 _**P**ascal_ 命名，避免使用全大写，譬如**不要**使用 `XML`、`HTML`、`XAML` 等。
 
 ### 抽象类
+
 - 所有抽象类的命名一律以 `Base` 作为名称的后缀，譬如：`DataAccessBase`、`NamedCollectionBase`。
 - 抽象类必须显式定义其构造函数作用域为 `protected` 或 `internal protected`。
 
 ### 静态类
-- 不要滥用静态类，以免破坏OOP面向对象设计范式。
+
+- 不要滥用静态类，以免破坏 OOP 面向对象设计范式。
 - 工具类为静态类，工具类命名一般以 `Utility` 或 `Helper` 结尾。
 - 扩展静态类命名一般以 `Extension` 结尾。
 
 ### 结构
+
 - 尽量定义成只读结构。
-- 务必实现 `IEquatable<T>` 接口并重写 `==` 和 `!=` 两个符号。
+- 务必实现 `IEquatable<T>` 接口并重写 `==` 和 `!=` 两个操作符。
 
 ### 元素命名
+
 - 接口、类、结构、属性、字段、变量命名为名词或形容词。
 - 方法命名采用动词或动词+名称形式。
 - 事件命名采用进行时和过去式形式，前置事件采用进行时，后置事件采用过去式。
@@ -108,16 +79,22 @@ internal static class MembershipHelper
 
 
 ### 其他规则
-- 命名空间应尽量使用单词复数，譬如：`System.Collections`、`Zongsoft.Services`、`Zongsoft.Options`，对于某些例外应遵循 .NET 框架现有命名约定，譬如：`System.IO`、`System.Data`、`System.Net.Http`、`System.Configuration`。
+
+- 命名空间应尽量使用单词复数，譬如：`System.Collections`、`Zongsoft.Services`、`Zongsoft.Components`，对于某些例外应遵循 .NET 框架现有命名约定，譬如：`System.IO`、`System.Data`、`System.Net.Http`、`System.Configuration`。
 
 - 命名空间的组织结构：`<Organization>.(<ProductFamily>|<Technology>).(<Product>|<Feature>|<Subnamespace>)`，譬如：`Zongsoft.Data.MySql`、`Automao.Common.Models`
 
-- 特定类型的命名规范参考微软 .NET 框架设计规范中的约定，譬如异常类命名必须以 `Exception` 结尾；注解/特性(Attribute)类必须以 `Attribute` 结尾；委托类必须以 `Delegate` 结尾等。
+- 特定类型的命名规范参考微软 .NET 框架设计规范中的约定，譬如：
+	- 异常类命名必须以 `Exception` 结尾；
+	- 注解/特性(_**A**ttribute_)类必须以 `Attribute` 结尾；
+	- 委托类必须以 `Delegate` 结尾等。
+
 	> 注意：枚举命名不要添加 `Enum` 尾缀，譬如应该是 `System.Data.DbType`，而不是 `System.Data.DbTypeEnum`。 
 
 ## 布局约定
-- 代码编辑器必须采用等宽字体，推荐：`Courier New`、`Consolas` 字体。
-- 采用Tab制表符缩进，每个制表符占4个字符宽度。
+
+- 代码编辑器必须采用**等宽字体**，推荐：`Courier New`、`Consolas` 字体。
+- 采用 _Tab_ 制表符缩进，每个制表符占 `4` 个字符宽度。
 - 每行只写一条语句。
 - 每行只写一个声明。
 - 采用 `#region` 和 `#endregion` 对代码块进行分段，段间采用一个空行进行分隔，`#region` 与内部首行代码之间不要加空行，`#endregion` 与内部最末代码行之间不要加空行。
@@ -125,11 +102,13 @@ internal static class MembershipHelper
 - 避免多余的空格符。譬如：语句后面的多余空白字符或者符号左右两边的多余空白字符。
 
 ### 命名空间
+
 - 按顶级命名空间导入进行分段。
 - 段内的命名空间按长度进行排列。
 - 确保系统命名空间 `System` 段位于首段，而最末段为本代码文件所属命名空间的引用区。
 
-#### 示例：
+#### 示例
+
 ```csharp
 using System;
 using System.Linq;
@@ -143,27 +122,27 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.Extensions.DependencyInjection;
 
 using Zongsoft.Web;
-using Zongsoft.Web.Http.Headers;
+using Zongsoft.Web.Http;
 using Zongsoft.Data;
 using Zongsoft.Services;
-using Zongsoft.Security.Membership;
+using Zongsoft.Security.Privileges;
 
 using Automao.Common.Models;
 using Automao.Common.Services;
 
-namespace Automao.Common.Web.Controllers
+namespace Automao.Common.Web.Controllers;
+
+[Authorize]
+[ApiController]
+[Route("Employees")]
+public class EmployeeController : ApiControllerBase<Employee, EmployeeService>
 {
-	[Authorize]
-	[ApiController]
-	[Route("Employees")]
-	public class EmployeeController : ApiControllerBase<Employee, EmployeeService>
-	{
-	}
 }
 ```
 
 ### 代码分段
-- 对于接口、类、结构内的代码按类型和作用域进行分段顺序处理。
+
+- 对于接口、类、结构内的代码按类型和作用域进行分段处理，大致采用下列顺序。
 
 ```csharp
 public class Foo
@@ -224,15 +203,17 @@ public class Foo
 
 ## 注释约定
 
-- 将注释放在单独的行上，而非代码行的末尾。
+- 通常将注释放在单独的行上，而非代码行的末尾。
 - 以句号结束注释文本（中文注释为中文句号，英文注释则为英文句点符）。
 - 在注释分隔符 `//` 与注释文本之间插入一个空格。
 - 超过两行的注释应采用 `/*` 和 `*/` 多行注释，中间行以 `*` 作为对齐符，并且与注释文本之间插入一个空格。
 - 对所有公共成员或非公共的类、接口、结构、枚举、委托、事件、方法、属性采用 `///` 注释。
-- 对于属性的注释必须以 `获取或设置` 开头，如果是只读属性则以 `获取一个值，` 开头。
-> 注意：不要定义只写属性，应将其定义成 `Set...(...)` 方法。
+- 对于属性的注释必须以 _`获取或设置`_ 开头，如果是只读属性则以 _`获取一个值，`_ 开头。
+
+> 💡 注意：不要定义只写属性，应将其定义成 `Set...(...)` 方法。
 
 #### 示例
+
 ```csharp
 /// <summary>
 /// 表示机器设备的业务实体类。
@@ -260,11 +241,14 @@ public abstract class Machine
 	#endregion
 
 	#region 计算属性
-	/// <summary>获取一个值，指示当前机器是否处于报警状态。</summary>
-	public bool IsFaulted { get => this.Fault > 0 ? true : false; }
+	/// <summary>获取一个值，指示当前机器是否处于故障状态。</summary>
+	public bool IsFaulted => this.FaultCode != 0;
 
 	/// <summary>获取一个值，指示当前机器是否处于有效期限。</summary>
-	public bool IsValidity { get => this.Enabled && this.Visible && this.StartTime <= DateTime.Now && this.FinalTime >= DateTime.Now; }
+	public bool IsValidity => this.Enabled &&
+	                          this.Visible &&
+	                          this.StartTime <= DateTime.Now &&
+	                          this.FinalTime >= DateTime.Now;
 	#endregion
 }
 ```
@@ -300,8 +284,8 @@ Employee employee = new();
 
 - 使用对象初始值设定项简化对象创建。
 ```csharp
-var array1 = new[] { 1, 2, 3 };
-var array2 = new[] { "Hello", "World" };
+var array = [1, 2, 3];
+IList<string> list = ["Hello", "World"];
 
 var employee = new Employee
 {
@@ -316,3 +300,5 @@ var parameters = new Dictionary<string, object>()
 	{ "Key2", "Value#2" },
 }
 ```
+
+> 💡 **提示：** 适时升级 .NET 开发环境，优先采用新版的 C# 语法，提升生产力美学。
