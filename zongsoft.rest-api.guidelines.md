@@ -144,7 +144,7 @@ GET api.zongsoft.com/v1/users/100
 
 - 集合类型（即 `IN` 操作符）：元素间采用逗号(`,`)分隔。
 - 区间类型（即 `Between` 操作符）：起止元素间采用波浪线(`~`)分隔，起止值可以缺少任意一个，缺失项使用星号(`*`)占位，支持 *数字* 和 *日期时间* 这两种类型的区间。
-    > 对于日期时间类型的范围，还可使用下述日期时间范围函数，代码实现请参考 [_**Z**ongsoft.**D**ata.**R**ange+**T**iming_](https://github.com/Zongsoft/framework/blob/master/Zongsoft.Core/src/Data/Range.cs#L213) 类的定义。
+    > 对于日期时间类型的范围，还可使用下述日期时间范围函数，代码实现请参考 [_**Z**ongsoft.**D**ata.**R**ange+**T**iming_](https://github.com/Zongsoft/framework/blob/main/Zongsoft.Core/src/Data/Range.cs#L213) 类的定义。
 
 #### 日期时间范围函数
 
@@ -281,7 +281,7 @@ POST /users/query?page=2|10&sort=-creation,age,name
     > - `casing:pascal` 指示响应内容的 _JSON_ 元素的命名方式为帕斯卡 `Pascal` 模式。
 
 - `X-Data-Schema`
-    > 指定当前操作的数据模式，有关数据模式的详细定义请参考 [_**Z**ongsoft.**D**ata_](https://github.com/Zongsoft/framework/blob/master/Zongsoft.Data) 项目文档。
+    > 指定当前操作的数据模式，有关数据模式的详细定义请参考 [_**Z**ongsoft.**D**ata_](https://github.com/Zongsoft/framework/blob/main/Zongsoft.Data) 项目文档。
 
 
 ## 响应内容
