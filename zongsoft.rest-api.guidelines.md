@@ -165,7 +165,7 @@ GET api.zongsoft.com/v1/users/100
 
 - 集合类型（即 `IN` 操作符）：元素间采用逗号(`,`)分隔。
 - 区间类型（即 `Between` 操作符）：起止元素间采用波浪线(`~`)分隔，起止值可以缺少任意一个，缺失项使用星号(`*`)占位，支持 *数字* 和 *日期时间* 这两种类型的区间。
-    > 对于日期时间类型的范围，还可使用下述日期时间范围函数，代码实现请参考 [_**Z**ongsoft.**D**ata.**R**ange+**T**iming_](https://github.com/Zongsoft/framework/blob/main/Zongsoft.Core/src/Data/Range.cs#L213) 类的定义。
+    > 对于日期时间类型的范围，还可使用下述日期时间范围函数，代码实现请参考 [_**Z**ongsoft.**D**ata.**R**ange+**T**iming_](https://github.com/Zongsoft/framework/blob/main/Zongsoft.Core/src/Data/Range.cs#L205) 类的定义。
 
 #### 日期时间范围函数
 
@@ -310,7 +310,7 @@ POST /users/query?page=2|10&sort=-creation,age,name
 
 ### 分页信息
 
-对于按 **页号模式** 进行分页查询的请求，如果其内容不为空 _(即响应状态码为`200`)_，则响应中包含一个名为 `X-Pagination` 的响应头来指示结果的分页信息。
+对于按 **页号模式** 进行分页查询的请求，如果其结果不为空 _(即响应状态码为`200`)_，则响应中包含一个名为 `X-Pagination` 的响应头来指示结果的分页信息。
 
 > 假设 `X-Pagination` 响应头的内容为 `1/10(190)`，表示：
 > - 其中 `1` 为页号 _(从`1`开始)_，即返回的结果为第 `1` 页；
@@ -319,14 +319,23 @@ POST /users/query?page=2|10&sort=-creation,age,name
 
 ### 示例
 
-- 当没有获取到符合条件的数据，其 _HTTP_ 响应：
-	> 💡 注：响应状态码为 `204`，表示无内容。
+- 主键查询：没有符合条件的数据，其 _HTTP_ 响应：
+	> 请求：`GET /users/123`；响应状态码为 `404`，表示指定编号的用户不存在。
 
-```htttp
+```http
+HTTP/1.1 404 Not Found
+```
+
+- 列表查询：没有符合条件的数据，其 _HTTP_ 响应：
+	> 请求：`GET /users`；响应状态码为 `204`，表示无内容。
+
+```http
 HTTP/1.1 204 No Content
 ```
 
-- 获取`编号`为 `100` 的单条`用户`数据的 _HTTP_ 响应：
+- 获取`编号`为 `100` 的单条`用户`数据的 _HTTP_ 响应 _（有数据）_：
+	> 请求：`GET /users/100`
+
 ```http
 HTTP/1.1 200 OK
 Content-Type: application/json; charset=utf-8
@@ -339,7 +348,9 @@ Content-Type: application/json; charset=utf-8
 }
 ```
 
-- 获取`性别`为 `Male` 的多条`用户`数据的 _HTTP_ 响应：
+- 获取`性别`为 `Male` 的多条`用户`数据的 _HTTP_ 响应 _（有数据）_：
+	> 请求：`GET /users/gender:male`
+
 ```http
 HTTP/1.1 200 OK
 Content-Type: application/json; charset=utf-8
@@ -356,7 +367,7 @@ X-Pagination: 1/1(2)
 		"UserId": 200,
 		"Name": "Tony",
 		"Gender": "Male",
-		"Birthday": "1980-07-07"
+		"Birthday": "1980-07-09"
 	}
 ]
 ```
