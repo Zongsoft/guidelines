@@ -1,0 +1,233 @@
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="510" height="510" version="1.1" viewBox="0 0 510 510">
+	<style id="style535">.st8{fill:#fff}</style>
+	<g id="g1066" transform="matrix(14.170649,0,0,14.170649,-6.4484673,-13.533805)">
+		<g id="ciculo_grande">
+			<radialGradient id="SVGID_1_" cx="11.618" cy="28.731" r="22.405"
+				gradientTransform="matrix(1,0,0,-1,0,40.161)" gradientUnits="userSpaceOnUse">
+				<stop id="stop537" offset="0" stop-color="#386eac" />
+				<stop id="stop539" offset=".213" stop-color="#366caa" />
+				<stop id="stop541" offset=".349" stop-color="#3166a3" />
+				<stop id="stop543" offset=".464" stop-color="#295b98" />
+				<stop id="stop545" offset=".567" stop-color="#1d4d88" />
+				<stop id="stop547" offset=".661" stop-color="#0f3c75" />
+				<stop id="stop549" offset=".749" stop-color="#002a60" />
+				<stop id="stop551" offset=".788" stop-color="#002256" />
+			</radialGradient>
+			<path id="path554"
+				d="M 18.4,1.8 C 8.9,1.8 1.3,9.5 1.3,18.9 c 0,9.4 7.6,17.2 17.1,17.2 9.5,0 17.2,-7.7 17.2,-17.2 C 35.6,9.4 27.9,1.8 18.4,1.8 Z m 0,30.2 C 11.2,32 5.3,26.1 5.3,18.9 5.3,11.7 11.2,5.8 18.4,5.8 c 7.2,0 13.1,5.9 13.1,13.1 0,7.3 -5.9,13.1 -13.1,13.1 z"
+				style="fill:url(#SVGID_1_);stroke:#000;stroke-width:.9842;stroke-miterlimit:10" />
+		</g>
+		<g id="circulo_pequeño">
+			<radialGradient id="SVGID_2_" cx="13.058" cy="27.066" r="16.429"
+				gradientTransform="matrix(1,0,0,-1,0,40.161)" gradientUnits="userSpaceOnUse">
+				<stop id="stop557" offset="0" stop-color="#6895c7" />
+				<stop id="stop559" offset=".136" stop-color="#6490c3" />
+				<stop id="stop561" offset=".285" stop-color="#5882b6" />
+				<stop id="stop563" offset=".439" stop-color="#446ca2" />
+				<stop id="stop565" offset=".598" stop-color="#2c5087" />
+				<stop id="stop567" offset=".758" stop-color="#0f3469" />
+				<stop id="stop569" offset=".861" stop-color="#002256" />
+			</radialGradient>
+			<circle id="circle572" cx="18.5" cy="18.9" r="13" style="fill:url(#SVGID_2_)" />
+		</g>
+		<g id="w">
+			<path id="path575" d="m 17.5,18.6 h -0.9 l -4.2,-9.4 0.4,-1 4.7,10.4"
+				style="fill:#bfbbb9" />
+			<linearGradient id="SVGID_3_" x1="18.561" x2="18.538" y1="35.109" y2="7.231"
+				gradientTransform="matrix(1,0,0,-1,0,40.161)" gradientUnits="userSpaceOnUse">
+				<stop id="stop577" offset="0" stop-color="#f8f8f7" />
+				<stop id="stop579" offset=".192" stop-color="#f5f5f4" />
+				<stop id="stop581" offset=".315" stop-color="#ececeb" />
+				<stop id="stop583" offset=".418" stop-color="#dddbdb" />
+				<stop id="stop585" offset=".511" stop-color="#c8c6c5" />
+				<stop id="stop587" offset=".596" stop-color="#aeabab" />
+				<stop id="stop589" offset=".633" stop-color="#a09d9e" />
+				<stop id="stop591" offset=".704" stop-color="#b4b1b1" />
+				<stop id="stop593" offset=".807" stop-color="#cac7c8" />
+				<stop id="stop595" offset=".907" stop-color="#d8d5d6" />
+				<stop id="stop597" offset="1" stop-color="#dddadb" />
+			</linearGradient>
+			<path id="path600"
+				d="M 18.5,5 C 10.8,5 4.6,11.2 4.6,18.9 c 0,7.7 6.2,13.9 13.9,13.9 7.7,0 13.9,-6.2 13.9,-13.9 C 32.4,11.3 26.2,5 18.5,5 Z m 3.3,2.2 -3.3,7.6 -3.4,-7.6 c 1.1,-0.3 2.3,-0.5 3.4,-0.5 1.1,0.1 2.2,0.2 3.3,0.5 z m -9,1 4.7,10.4 h 1.8 L 24.1,8.1 c 1.8,0.9 3.3,2.3 4.5,4 L 22.4,25.9 19.3,19.2 H 17.4 L 14.5,25.8 8.4,12.1 C 9.5,10.5 11,9.1 12.8,8.2 Z M 6.3,19 c 0,-1.5 0.3,-2.9 0.7,-4.1 l 6.9,15.4 C 9.4,28.5 6.3,24.1 6.3,19 Z m 8.6,11.6 3.5,-7.7 3.5,7.7 c -1.1,0.3 -2.3,0.5 -3.5,0.5 C 17.2,31.2 16,31 14.9,30.6 Z M 23,30.3 29.9,14.7 c 0.5,1.3 0.8,2.8 0.8,4.3 0,5.1 -3.2,9.5 -7.7,11.3 z"
+				style="fill:url(#SVGID_3_)" />
+			<path id="XMLID_1_"
+				d="m 12.4,9.2 0.3,-1 C 11,9.1 9.5,10.5 8.4,12.1 h 0.9 c 0.8,-1.2 1.9,-2.1 3.1,-2.9 z"
+				style="fill:#544e4e" />
+			<defs id="defs604">
+				<path id="SVGID_4_"
+					d="m 12.4,9.2 0.3,-1 C 11,9.1 9.5,10.5 8.4,12.1 h 0.9 c 0.8,-1.2 1.9,-2.1 3.1,-2.9 z" />
+			</defs>
+			<clipPath id="SVGID_5_">
+				<use xlink:href="#SVGID_4_" id="use606" overflow="visible" />
+			</clipPath>
+			<path id="path609"
+				d="m 12.9,8.4 c -2.2,1.3 -3,1.9 -4.4,3.9 L 7.8,12.2 V 11.9 L 9.2,10.3 10.7,8.8 12,8.1 12.8,7.9 13.1,8.1 Z"
+				clip-path="url(#SVGID_5_)" style="clip-path:url(#SVGID_5_);fill:#352d2b" />
+			<linearGradient id="SVGID_6_" x1="15.332" x2="15.9" y1="17.903" y2="17.671"
+				gradientTransform="matrix(1,0,0,-1,0,40.161)" gradientUnits="userSpaceOnUse">
+				<stop id="stop611" offset=".76" stop-color="#fff" />
+				<stop id="stop613" offset=".84" stop-color="#fdfdfd" />
+				<stop id="stop615" offset=".878" stop-color="#f8f8f8" />
+				<stop id="stop617" offset=".906" stop-color="#efeff0" />
+				<stop id="stop619" offset=".93" stop-color="#e1e2e3" />
+				<stop id="stop621" offset=".952" stop-color="#cfd0d1" />
+				<stop id="stop623" offset=".971" stop-color="#b8b9bb" />
+				<stop id="stop625" offset=".988" stop-color="#9c9d9f" />
+				<stop id="stop627" offset="1" stop-color="#848687" />
+			</linearGradient>
+			<path id="path630" d="m 17.4,19.2 h -0.9 l -2,4.6 v 2.1 z" style="fill:url(#SVGID_6_)" />
+			<path id="XMLID_2_" d="M 14.5,23.8 9.2,12.1 H 8.3 l 6.1,13.8 z" class="st8" />
+			<defs id="defs634">
+				<path id="SVGID_7_" d="M 14.5,23.8 9.2,12.1 H 8.3 l 6.1,13.8 z" />
+			</defs>
+			<clipPath id="SVGID_8_">
+				<use xlink:href="#SVGID_7_" id="use636" overflow="visible" />
+			</clipPath>
+			<path id="path639"
+				d="m 14.6,25.9 -6,-14 -0.5,0.1 -0.3,3.1 1.2,6.2 1.2,1.7 1.6,1.4 2.5,1.4 z"
+				clip-path="url(#SVGID_8_)" style="clip-path:url(#SVGID_8_);fill:#979190" />
+			<g id="g708">
+				<linearGradient id="XMLID_8_" x1="6.249" x2="30.649" y1="17.231" y2="17.231"
+					gradientTransform="matrix(1,0,0,-1,0,40.161)" gradientUnits="userSpaceOnUse">
+					<stop id="stop641" offset="0" stop-color="#7c7571" />
+					<stop id="stop643" offset=".021" stop-color="#8f8885" />
+					<stop id="stop645" offset=".061" stop-color="#afaaa7" />
+					<stop id="stop647" offset=".107" stop-color="#cbc7c5" />
+					<stop id="stop649" offset=".16" stop-color="#e2e0de" />
+					<stop id="stop651" offset=".223" stop-color="#f3f1f1" />
+					<stop id="stop653" offset=".308" stop-color="#fcfcfc" />
+					<stop id="stop655" offset=".511" stop-color="#fff" />
+					<stop id="stop657" offset=".727" stop-color="#fcfcfc" />
+					<stop id="stop659" offset=".805" stop-color="#f3f2f1" />
+					<stop id="stop661" offset=".861" stop-color="#e4e1e0" />
+					<stop id="stop663" offset=".906" stop-color="#cecac8" />
+					<stop id="stop665" offset=".945" stop-color="#b3adaa" />
+					<stop id="stop667" offset=".978" stop-color="#948d8a" />
+					<stop id="stop669" offset="1" stop-color="#7c7571" />
+				</linearGradient>
+				<path id="XMLID_4_"
+					d="m 18.5,30.4 c 1.1,0 2.1,-0.2 3.1,-0.4 l 0.3,0.7 C 20.8,31 19.6,31.2 18.4,31.2 17.2,31.2 16,31 14.8,30.7 L 15.1,30 c 1.1,0.2 2.2,0.4 3.4,0.4 z M 13.8,30.3 13.3,29.1 C 9.6,27.2 7,23.4 7,18.9 c 0,-1 0.1,-2.1 0.4,-3 L 6.9,14.8 c -0.5,1.3 -0.7,2.7 -0.7,4.1 0.1,5.2 3.2,9.6 7.6,11.4 z M 30.7,19 c 0,-1.5 -0.3,-3 -0.8,-4.3 l -0.5,1.1 c 0.3,1 0.4,2.1 0.4,3.2 0,4.5 -2.6,8.3 -6.3,10.2 L 23,30.3 c 4.5,-1.8 7.7,-6.2 7.7,-11.3 z"
+					style="fill:url(#XMLID_8_)" />
+				<g id="g706">
+					<defs id="defs674">
+						<path id="SVGID_9_"
+							d="m 18.5,30.4 c 1.1,0 2.1,-0.2 3.1,-0.4 l 0.3,0.7 C 20.8,31 19.6,31.2 18.4,31.2 17.2,31.2 16,31 14.8,30.7 L 15.1,30 c 1.1,0.2 2.2,0.4 3.4,0.4 z M 13.8,30.3 13.3,29.1 C 9.6,27.2 7,23.4 7,18.9 c 0,-1 0.1,-2.1 0.4,-3 L 6.9,14.8 c -0.5,1.3 -0.7,2.7 -0.7,4.1 0.1,5.2 3.2,9.6 7.6,11.4 z M 30.7,19 c 0,-1.5 -0.3,-3 -0.8,-4.3 l -0.5,1.1 c 0.3,1 0.4,2.1 0.4,3.2 0,4.5 -2.6,8.3 -6.3,10.2 L 23,30.3 c 4.5,-1.8 7.7,-6.2 7.7,-11.3 z" />
+					</defs>
+					<clipPath id="SVGID_10_">
+						<use xlink:href="#SVGID_9_" id="use676" overflow="visible" />
+					</clipPath>
+					<linearGradient id="SVGID_11_" x1="6.307" x2="30.707" y1="17.231" y2="17.231"
+						gradientTransform="matrix(1,0,0,-1,0,40.161)" gradientUnits="userSpaceOnUse">
+						<stop id="stop679" offset="0" stop-color="#191515" />
+						<stop id="stop681" offset=".068" stop-color="#342d2d" />
+						<stop id="stop683" offset=".167" stop-color="#5b5352" />
+						<stop id="stop685" offset=".261" stop-color="#7f7676" />
+						<stop id="stop687" offset=".349" stop-color="#9b9393" />
+						<stop id="stop689" offset=".427" stop-color="#aea6a6" />
+						<stop id="stop691" offset=".489" stop-color="#b4adac" />
+						<stop id="stop693" offset=".56" stop-color="#aaa2a2" />
+						<stop id="stop695" offset=".669" stop-color="#8f8686" />
+						<stop id="stop697" offset=".803" stop-color="#675e5f" />
+						<stop id="stop699" offset=".955" stop-color="#393233" />
+						<stop id="stop701" offset="1" stop-color="#2c2628" />
+					</linearGradient>
+					<path id="path704"
+						d="m 30.7,19 c 0,5.1 -3.2,9.5 -7.6,11.3 L 23.2,30 c 4.3,-1.8 7.3,-6.1 7.3,-11 0,-1.4 -0.2,-2.8 -0.7,-4 l 0.1,-0.3 c 0.5,1.3 0.8,2.8 0.8,4.3 z M 6.5,19 c 0,-1.4 0.2,-2.7 0.6,-3.9 L 7,14.8 c -0.5,1.3 -0.7,2.7 -0.7,4.1 0,5.1 3.1,9.5 7.6,11.3 L 13.7,30 C 9.4,28.2 6.5,23.9 6.5,19 Z m 12,12.2 c -1.2,0 -2.4,-0.2 -3.6,-0.5 L 15,30.5 c 1.1,0.3 2.3,0.5 3.5,0.5 1.2,0 2.3,-0.2 3.4,-0.5 l 0.1,0.2 c -1.2,0.3 -2.3,0.5 -3.5,0.5 z"
+						clip-path="url(#SVGID_10_)"
+						style="fill:url(#SVGID_11_);clip-path:url(#SVGID_10_)" />
+				</g>
+			</g>
+			<circle id="circle710" cx="18.5" cy="19" r="13.9"
+				style="fill:none;stroke:#000;stroke-width:.8973;stroke-miterlimit:10" />
+			<g id="g721">
+				<path id="XMLID_5_"
+					d="m 27.6,12 0.9,0.1 c -1.1,-1.6 -2.7,-3 -4.4,-3.9 l 0.1,0.2 0.3,0.8 c 1.2,0.7 2.2,1.7 3.1,2.8 z"
+					style="fill:#5f585a" />
+				<defs id="defs714">
+					<path id="SVGID_12_"
+						d="m 27.6,12 0.9,0.1 c -1.1,-1.6 -2.7,-3 -4.4,-3.9 l 0.1,0.2 0.3,0.8 c 1.2,0.7 2.2,1.7 3.1,2.8 z" />
+				</defs>
+				<clipPath id="SVGID_13_">
+					<use xlink:href="#SVGID_12_" id="use716" overflow="visible" />
+				</clipPath>
+				<path id="path719"
+					d="m 28.4,12.2 c -1,-1.5 -3.3,-3.5 -4.7,-3.9 l 0.3,-0.8 1.8,0.4 2.2,2.4 1.2,1.4 v 0.7 z"
+					clip-path="url(#SVGID_13_)" style="clip-path:url(#SVGID_13_);fill:#282423" />
+			</g>
+			<g id="g732">
+				<path id="XMLID_3_"
+					d="m 15,7.3 0.3,0.6 c 1,-0.3 2.1,-0.4 3.2,-0.4 1,0 2.1,0.1 3,0.4 L 21.8,7.3 C 20.7,7 19.6,6.8 18.5,6.8 17.3,6.8 16.1,7 15,7.3 Z"
+					style="fill:#544d4f" />
+				<defs id="defs725">
+					<path id="SVGID_14_"
+						d="m 15,7.3 0.3,0.6 c 1,-0.3 2.1,-0.4 3.2,-0.4 1,0 2.1,0.1 3,0.4 L 21.8,7.3 C 20.7,7 19.6,6.8 18.5,6.8 17.3,6.8 16.1,7 15,7.3 Z" />
+				</defs>
+				<clipPath id="SVGID_15_">
+					<use xlink:href="#SVGID_14_" id="use727" overflow="visible" />
+				</clipPath>
+				<path id="path730"
+					d="M 21.8,7.4 C 19.7,6.7 16.4,6.9 14.9,7.5 L 14.7,7.1 15.3,6.6 c 0,0 1.1,-0.1 1.2,-0.1 h 3 l 1.4,0.1 1.1,0.3 0.2,0.3 z"
+					clip-path="url(#SVGID_15_)" style="clip-path:url(#SVGID_15_);fill:#352d2b" />
+			</g>
+			<g id="g775">
+				<path id="XMLID_6_" d="m 19.3,19.2 h 1 l 2,4.5 5.3,-11.7 1,0.1 -6.2,13.8 z"
+					class="st8" />
+				<defs id="defs736">
+					<path id="SVGID_16_" d="m 19.3,19.2 h 1 l 2,4.5 5.3,-11.7 1,0.1 -6.2,13.8 z" />
+				</defs>
+				<clipPath id="SVGID_17_">
+					<use xlink:href="#SVGID_16_" id="use738" overflow="visible" />
+				</clipPath>
+				<linearGradient id="SVGID_18_" x1="20.872" x2="21.932" y1="17.741" y2="18.215"
+					gradientTransform="matrix(1,0,0,-1,0,40.161)" gradientUnits="userSpaceOnUse">
+					<stop id="stop741" offset="0" stop-color="#8a817f" />
+					<stop id="stop743" offset=".349" stop-color="#b5afae" />
+					<stop id="stop745" offset=".776" stop-color="#eae7e7" />
+					<stop id="stop747" offset="1" stop-color="#fff" />
+				</linearGradient>
+				<path id="path750"
+					d="m 22.3,23.3 0.1,2.8 -3,-3.9 -0.3,-2.7 0.1,-0.7 1.1,0.1 0.8,0.5 z"
+					clip-path="url(#SVGID_17_)"
+					style="fill:url(#SVGID_18_);clip-path:url(#SVGID_17_)" />
+				<g id="g773">
+					<defs id="defs753">
+						<path id="SVGID_19_" d="m 19.3,19.2 h 1 l 2,4.5 5.3,-11.7 1,0.1 -6.2,13.8 z" />
+					</defs>
+					<clipPath id="SVGID_20_">
+						<use xlink:href="#SVGID_19_" id="use755" overflow="visible" />
+					</clipPath>
+					<linearGradient id="SVGID_21_" x1="18.915" x2="28.478" y1="21.031" y2="21.031"
+						gradientTransform="matrix(1,0,0,-1,0,40.161)" gradientUnits="userSpaceOnUse">
+						<stop id="stop758" offset="0" stop-color="#332726" />
+						<stop id="stop760" offset=".084" stop-color="#3c302e" />
+						<stop id="stop762" offset=".343" stop-color="#564a47" />
+						<stop id="stop764" offset=".588" stop-color="#6a605d" />
+						<stop id="stop766" offset=".814" stop-color="#786f6c" />
+						<stop id="stop768" offset="1" stop-color="#7c7571" />
+					</linearGradient>
+					<path id="path771"
+						d="m 19.4,19.2 2.9,6.4 6.2,-13.7 0.1,0.4 -2.3,5.8 -3.6,8.3 -0.9,-0.3 -2.6,-6.7 -0.1,-0.4 z"
+						clip-path="url(#SVGID_20_)"
+						style="fill:url(#SVGID_21_);clip-path:url(#SVGID_20_)" />
+				</g>
+			</g>
+			<path id="path777" d="m 19.3,18.6 4.8,-10.5 0.4,1 -4.2,9.5 z" style="fill:#ada6a5" />
+		</g>
+		<path id="Capa_8_copia"
+			d="m 18.4,1.9 c -9.4,0 -17,7.6 -17,17 0,9.4 7.6,17 17,17 9.4,0 17,-7.6 17,-17 0,-9.4 -7.6,-17 -17,-17 z m 0,33.5 C 9.3,35.4 1.9,28 1.9,18.9 1.9,9.8 9.3,2.4 18.4,2.4 c 9.1,0 16.5,7.4 16.5,16.5 0,9.1 -7.4,16.5 -16.5,16.5 z" />
+		<g id="Capa_8">
+			<linearGradient id="SVGID_22_" x1="5.82" x2="32.115" y1="31.866" y2="9.836"
+				gradientTransform="matrix(1,0,0,-1,0,40.161)" gradientUnits="userSpaceOnUse">
+				<stop id="stop781" offset="0" stop-color="#eeefee" />
+				<stop id="stop783" offset=".089" stop-color="#d7d7d6" />
+				<stop id="stop785" offset=".223" stop-color="#bfbfbf" />
+				<stop id="stop787" offset=".381" stop-color="#afaeae" />
+				<stop id="stop789" offset=".586" stop-color="#a6a5a5" />
+				<stop id="stop791" offset="1" stop-color="#a3a2a3" />
+			</linearGradient>
+			<path id="path794"
+				d="M 18.4,1.8 C 8.9,1.8 1.3,9.5 1.3,18.9 c 0,9.4 7.6,17.2 17.1,17.2 9.5,0 17.2,-7.7 17.2,-17.2 C 35.6,9.4 27.9,1.8 18.4,1.8 Z m 0,33.8 C 9.2,35.6 1.8,28.1 1.8,18.9 1.8,9.7 9.2,2.3 18.4,2.3 27.6,2.3 35,9.7 35,18.9 35,28.1 27.6,35.6 18.4,35.6 Z"
+				style="fill:url(#SVGID_22_)" />
+		</g>
+	</g>
+</svg>
