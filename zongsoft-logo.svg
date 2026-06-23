@@ -1,0 +1,15 @@
+<?xml version="1.0"?>
+<svg width="512" height="512" xmlns="http://www.w3.org/2000/svg"
+	xmlns:svg="http://www.w3.org/2000/svg">
+	<title id="title">Zongsoft Logo</title>
+	<desc id="desc">Zongsoft Logo</desc>
+	<g class="layer">
+		<g id="w-mark" fill="none" stroke="#000080" stroke-linecap="square" stroke-width="16" transform="matrix(1 0 0 1 0 0)">
+			<path id="left-arcs" d="M174.4,484 A227.2,227.2 0 0 1 168,60 L131.2,84 A192,192 0 0 0 204.8,415.2" stroke-linejoin="miter" />
+			<path id="right-arcs" d="M337.6,484 A227.2,227.2 0 0 0 344,60 L380.8,84 A192,192 0 0 1 307.2,415.2" stroke-linejoin="miter" />
+			<path id="outer-chevron" d="M177.8,476.8 L256,309.6 L334.2,476.8" stroke-linejoin="miter" />
+			<path id="inner-chevron" d="M180.0,483 L256,420 L332.0,483" stroke-linejoin="miter" />
+		</g>
+		<path id="flash" fill="#ff0000" d="M288,20 L252,84 L292,84 L224,156 L260,92 L220,92 Z" transform="matrix(1 0 0 1 0 0)" />
+	</g>
+</svg>
