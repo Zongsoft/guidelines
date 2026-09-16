@@ -1,0 +1,56 @@
+<Project Sdk="Microsoft.NET.Sdk">
+	<PropertyGroup>
+		<TargetFramework>netstandard2.0</TargetFramework>
+		<LangVersion>latest</LangVersion>
+		<Version>0.1.0</Version>
+		<IsPackable>true</IsPackable>
+		<IncludeBuildOutput>false</IncludeBuildOutput>
+		<NoDefaultExcludes>true</NoDefaultExcludes>
+		<EnforceExtendedAnalyzerRules>true</EnforceExtendedAnalyzerRules>
+		<SuppressDependenciesWhenPacking>true</SuppressDependenciesWhenPacking>
+		<DevelopmentDependency>true</DevelopmentDependency>
+		<PackageId>Zongsoft.CodeAnalysis</PackageId>
+		<PackageOutputPath>../..</PackageOutputPath>
+		<Authors>Zongsoft Studio</Authors>
+		<Description>C# coding rules and precise diagnostic exceptions for Zongsoft projects.</Description>
+		<PackageLicenseExpression>MIT</PackageLicenseExpression>
+		<PackageReadmeFile>README.md</PackageReadmeFile>
+		<RepositoryType>git</RepositoryType>
+		<RepositoryUrl>https://github.com/Zongsoft/guidelines</RepositoryUrl>
+		<PackageProjectUrl>https://github.com/Zongsoft/guidelines</PackageProjectUrl>
+		<PackageTags>Zongsoft;Roslyn;Analyzer;CSharp;CodeStyle</PackageTags>
+	</PropertyGroup>
+
+	<ItemGroup>
+		<ProjectReference Include="../../fixes/src/Zongsoft.CodeAnalysis.Fixes.csproj" ReferenceOutputAssembly="false" PrivateAssets="all" />
+		<PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="3.8.0" PrivateAssets="all" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<None Include="../../fixes/src/bin/$(Configuration)/netstandard2.0/Zongsoft.CodeAnalysis.Fixes.dll" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false" />
+		<None Include="../../fixes/src/bin/$(Configuration)/netstandard2.0/zh-Hans/Zongsoft.CodeAnalysis.Fixes.resources.dll" Pack="true" PackagePath="analyzers/dotnet/cs/zh-Hans" Visible="false" />
+		<None Include="$(OutputPath)zh-Hans/$(AssemblyName).resources.dll" Pack="true" PackagePath="analyzers/dotnet/cs/zh-Hans" Visible="false" />
+		<None Include="$(OutputPath)$(AssemblyName).dll" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false" />
+		<None Include="../../Zongsoft.CodeAnalysis.props" Pack="true" PackagePath="buildTransitive" />
+		<None Include="../../Zongsoft.CodeAnalysis.targets" Pack="true" PackagePath="buildTransitive" />
+		<None Update="Zongsoft.CodeAnalysis.Analyzers.globalconfig" Pack="true" PackagePath="/" />
+		<None Include="../../../.editorconfig" Pack="true" PackagePath="/" />
+		<None Include="../../README.md" Pack="true" PackagePath="README.md" />
+		<None Include="../../README.zh-Hans.md" Pack="true" PackagePath="README.zh-Hans.md" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<EmbeddedResource Update="Properties/Resources.resx">
+			<Generator>ResXFileCodeGenerator</Generator>
+			<LastGenOutput>Resources.Designer.cs</LastGenOutput>
+		</EmbeddedResource>
+		<Compile Update="Properties/Resources.Designer.cs">
+			<DesignTime>true</DesignTime>
+			<AutoGen>true</AutoGen>
+			<DependentUpon>Resources.resx</DependentUpon>
+		</Compile>
+	</ItemGroup>
+
+	<!-- 供包消费测试读取实际生效的版本，包括命令行覆盖。 -->
+	<Target Name="GetAnalyzerPackageVersion" Returns="$(PackageVersion)" />
+</Project>

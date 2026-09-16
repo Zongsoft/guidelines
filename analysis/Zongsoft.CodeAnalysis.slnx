@@ -1,0 +1,6 @@
+<Solution>
+	<Project Path="analyzers/src/Zongsoft.CodeAnalysis.Analyzers.csproj" />
+	<Project Path="analyzers/test/Zongsoft.CodeAnalysis.Analyzers.Tests.csproj" />
+	<Project Path="fixes/src/Zongsoft.CodeAnalysis.Fixes.csproj" />
+	<Project Path="fixes/test/Zongsoft.CodeAnalysis.Fixes.Tests.csproj" />
+</Solution>

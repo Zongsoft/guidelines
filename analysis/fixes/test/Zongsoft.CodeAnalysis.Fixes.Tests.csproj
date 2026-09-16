@@ -1,0 +1,38 @@
+<Project Sdk="Microsoft.NET.Sdk">
+	<PropertyGroup>
+		<TargetFramework>net10.0</TargetFramework>
+		<LangVersion>latest</LangVersion>
+		<IsPackable>false</IsPackable>
+		<OutputType>Exe</OutputType>
+		<IsTestProject>true</IsTestProject>
+		<AnalyzerPackageDirectory Condition="'$(AnalyzerPackageDirectory)' == ''">$([System.IO.Path]::GetFullPath('$(MSBuildProjectDirectory)/../../obj/packages/$(Configuration)'))</AnalyzerPackageDirectory>
+	</PropertyGroup>
+
+	<ItemGroup>
+		<ProjectReference Include="../../analyzers/src/Zongsoft.CodeAnalysis.Analyzers.csproj" ReferenceOutputAssembly="false" />
+		<PackageReference Include="Microsoft.CodeAnalysis.CSharp.Workspaces" Version="3.8.0" PrivateAssets="all" />
+		<PackageReference Include="Microsoft.NET.Test.Sdk" Version="18.0.1" />
+		<PackageReference Include="xunit.v3" Version="3.2.2" />
+		<PackageReference Include="xunit.runner.visualstudio" Version="3.1.5" PrivateAssets="all" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<AssemblyMetadata Include="AnalyzerPackageDirectory" Value="$(AnalyzerPackageDirectory)" />
+	</ItemGroup>
+
+	<!-- 准备本项目消费的测试包；Cake 已准备正式包时只读取版本。 -->
+	<Target Name="PrepareCodeAnalysisPackage" BeforeTargets="GetAssemblyAttributes" Condition="'$(DesignTimeBuild)' != 'true'">
+		<MSBuild Projects="../../analyzers/src/Zongsoft.CodeAnalysis.Analyzers.csproj"
+			Targets="Pack" Condition="'$(CodeAnalysisPackagePrepared)' != 'true'"
+			Properties="Configuration=$(Configuration);PackageOutputPath=$(AnalyzerPackageDirectory)" />
+		<MSBuild Projects="../../analyzers/src/Zongsoft.CodeAnalysis.Analyzers.csproj"
+			Targets="GetAnalyzerPackageVersion" Properties="Configuration=$(Configuration);PackageOutputPath=$(AnalyzerPackageDirectory)">
+			<Output TaskParameter="TargetOutputs" PropertyName="AnalyzerPackageVersion" />
+		</MSBuild>
+		<Error Condition="!Exists('$(AnalyzerPackageDirectory)/Zongsoft.CodeAnalysis.$(AnalyzerPackageVersion).nupkg')"
+			Text="The Zongsoft.CodeAnalysis package must be built before running consumer tests." />
+		<ItemGroup>
+			<AssemblyMetadata Include="AnalyzerPackageVersion" Value="$(AnalyzerPackageVersion)" />
+		</ItemGroup>
+	</Target>
+</Project>

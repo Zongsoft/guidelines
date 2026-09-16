@@ -1,0 +1,10 @@
+<Project>
+	<!-- NuGet 自动导入；允许消费项目显式覆盖 SDK 开关。 -->
+	<PropertyGroup Condition="'$(MSBuildProjectExtension)' == '.csproj'">
+		<EnableNETAnalyzers Condition="'$(EnableNETAnalyzers)' == ''">true</EnableNETAnalyzers>
+		<EnforceCodeStyleInBuild Condition="'$(EnforceCodeStyleInBuild)' == ''">true</EnforceCodeStyleInBuild>
+	</PropertyGroup>
+	<ItemGroup Condition="'$(MSBuildProjectExtension)' == '.csproj'">
+		<GlobalAnalyzerConfigFiles Include="$(MSBuildThisFileDirectory)../Zongsoft.CodeAnalysis.Analyzers.globalconfig" />
+	</ItemGroup>
+</Project>

@@ -1,0 +1,54 @@
+name: Publish Analyzer to NuGet
+
+run-name: Publish Zongsoft.CodeAnalysis to nuget.org
+
+on:
+  workflow_dispatch:
+
+concurrency:
+  group: nuget-publishing
+  cancel-in-progress: false
+
+jobs:
+  publish:
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    environment: release
+    timeout-minutes: 60
+    permissions:
+      contents: read
+      id-token: write
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+
+      - name: Install .NET
+        uses: actions/setup-dotnet@v6
+        with:
+          dotnet-version: |
+            8.0.x
+            9.0.x
+            10.0.x
+
+      - name: Restore .NET tools
+        run: dotnet tool restore
+
+      - name: Build, pack and test
+        working-directory: analysis
+        run: dotnet cake build.cake --edition=Release --target=default
+
+      - name: NuGet login
+        id: login
+        uses: NuGet/login@v1
+        with:
+          user: ${{ secrets.NUGET_USER }}
+
+      - name: Publish analyzer package
+        working-directory: analysis
+        env:
+          NUGET_API_KEY: ${{ steps.login.outputs.NUGET_API_KEY }}
+        # 前一步已构建并测试，取得临时凭据后仅执行发布任务。
+        run: dotnet cake build.cake --edition=Release --target=pack --exclusive

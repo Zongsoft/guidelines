@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+	<resheader name="resmimetype">
+		<value>text/microsoft-resx</value>
+	</resheader>
+	<resheader name="version">
+		<value>2.0</value>
+	</resheader>
+	<resheader name="reader">
+		<value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+	</resheader>
+	<resheader name="writer">
+		<value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+	</resheader>
+	<data name="UnusedUsingTitle" xml:space="preserve">
+		<value>移除未使用的引用</value>
+	</data>
+	<data name="UnusedUsingMessage" xml:space="preserve">
+		<value>引用“{0}”未使用</value>
+	</data>
+	<data name="StatementSpacingTitle" xml:space="preserve">
+		<value>分隔语句组</value>
+	</data>
+	<data name="StatementSpacingMessage" xml:space="preserve">
+		<value>语句组之间应留一个空行</value>
+	</data>
+	<data name="ResourceAccessTitle" xml:space="preserve">
+		<value>使用生成的资源属性</value>
+	</data>
+	<data name="ResourceAccessMessage" xml:space="preserve">
+		<value>通过 Designer 生成的属性访问资源“{0}”</value>
+	</data>
+	<data name="DirectiveSuppression" xml:space="preserve">
+		<value>条件编译指令允许保留与代码相同的缩进。</value>
+	</data>
+	<data name="BlockSuppression" xml:space="preserve">
+		<value>简单的 try/catch/finally 子句允许单行块。</value>
+	</data>
+</root>

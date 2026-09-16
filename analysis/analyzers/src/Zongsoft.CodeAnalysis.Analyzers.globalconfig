@@ -1,0 +1,225 @@
+# Zongsoft C# 诊断与风格规则；随 NuGet 包分发，只在 guidelines 维护。
+is_global = true
+global_level = 0
+
+dotnet_style_qualification_for_field = false:silent
+dotnet_style_qualification_for_property = true:warning
+dotnet_style_qualification_for_method = true:warning
+dotnet_style_qualification_for_event = true:warning
+dotnet_style_require_accessibility_modifiers = for_non_interface_members:silent
+dotnet_code_quality_unused_parameters = all
+dotnet_style_readonly_field = true:suggestion
+dotnet_style_operator_placement_when_wrapping = beginning_of_line
+dotnet_style_parentheses_in_arithmetic_binary_operators = always_for_clarity:silent
+dotnet_style_parentheses_in_other_binary_operators = always_for_clarity:silent
+dotnet_style_parentheses_in_relational_binary_operators = always_for_clarity:silent
+dotnet_style_parentheses_in_other_operators = never_if_unnecessary:silent
+dotnet_style_allow_multiple_blank_lines_experimental = false:silent
+dotnet_style_allow_statement_immediately_after_block_experimental = false:silent
+dotnet_style_null_propagation = true:suggestion
+dotnet_style_coalesce_expression = true:suggestion
+dotnet_style_prefer_auto_properties = true:suggestion
+dotnet_style_prefer_is_null_check_over_reference_equality_method = true:suggestion
+dotnet_style_object_initializer = true:suggestion
+dotnet_style_collection_initializer = true:suggestion
+dotnet_style_prefer_simplified_boolean_expressions = true:suggestion
+dotnet_style_prefer_conditional_expression_over_assignment = true:silent
+dotnet_style_prefer_conditional_expression_over_return = true:silent
+dotnet_style_explicit_tuple_names = true:suggestion
+dotnet_style_prefer_inferred_tuple_names = true:suggestion
+dotnet_style_prefer_inferred_anonymous_type_member_names = true:suggestion
+dotnet_style_prefer_compound_assignment = true:suggestion
+dotnet_style_prefer_simplified_interpolation = true:suggestion
+# RootNamespace 与领域决定命名空间，src 等目录不参与拼接。
+dotnet_style_namespace_match_folder = false:none
+dotnet_style_predefined_type_for_locals_parameters_members = true:warning
+dotnet_style_predefined_type_for_member_access = true:warning
+
+
+# 3.2 using 与命名空间
+csharp_using_directive_placement = outside_namespace:warning
+csharp_style_namespace_declarations = file_scoped:warning
+# 标准整理器只支持字母排序，不能表达本规范的组内长度排序。
+# 因此不配置 sort_system_directives_first / separate_import_directive_groups 来暗示完整支持。
+
+# 3.4 空格、换行与表达式体
+csharp_new_line_before_open_brace = all
+csharp_new_line_before_else = true
+csharp_new_line_before_catch = true
+csharp_new_line_before_finally = true
+csharp_space_after_keywords_in_control_flow_statements = false
+csharp_space_between_method_declaration_parameter_list_parentheses = false
+csharp_space_between_method_call_parameter_list_parentheses = false
+csharp_space_between_method_declaration_name_and_open_parenthesis = false
+csharp_space_between_method_call_name_and_opening_parenthesis = false
+csharp_space_between_parentheses = none
+csharp_space_before_comma = false
+csharp_space_after_comma = true
+csharp_space_around_binary_operators = before_and_after
+csharp_indent_labels = one_less_than_current
+csharp_preserve_single_line_blocks = true
+csharp_preserve_single_line_statements = false
+csharp_prefer_braces = when_multiline:suggestion
+csharp_style_allow_embedded_statements_on_same_line_experimental = false:warning
+csharp_style_expression_bodied_methods = when_on_single_line:suggestion
+csharp_style_expression_bodied_constructors = when_on_single_line:suggestion
+csharp_style_expression_bodied_operators = when_on_single_line:suggestion
+csharp_style_expression_bodied_properties = when_on_single_line:suggestion
+csharp_style_expression_bodied_indexers = when_on_single_line:suggestion
+csharp_style_expression_bodied_accessors = when_on_single_line:suggestion
+csharp_style_expression_bodied_lambdas = when_on_single_line:suggestion
+csharp_style_expression_bodied_local_functions = when_on_single_line:suggestion
+
+# 5.1 / 5.2 现代语法：允许有语义依据的例外，不升级为构建错误。
+csharp_style_var_for_built_in_types = true:suggestion
+csharp_style_var_when_type_is_apparent = true:suggestion
+csharp_style_var_elsewhere = true:suggestion
+csharp_style_implicit_object_creation_when_type_is_apparent = true:suggestion
+# 只建议保持目标类型的转换；枚举时机、比较器和容量仍需审查。
+dotnet_style_prefer_collection_expression = when_types_exactly_match:suggestion
+csharp_prefer_static_local_function = true:suggestion
+csharp_style_prefer_readonly_struct = true:suggestion
+csharp_style_prefer_readonly_struct_member = true:suggestion
+csharp_style_prefer_switch_expression = true:suggestion
+csharp_style_prefer_pattern_matching = true:suggestion
+csharp_style_pattern_matching_over_is_with_cast_check = true:suggestion
+csharp_style_pattern_matching_over_as_with_null_check = true:suggestion
+csharp_style_prefer_not_pattern = true:suggestion
+csharp_style_prefer_extended_property_pattern = true:suggestion
+csharp_style_throw_expression = true:suggestion
+csharp_style_prefer_null_check_over_type_check = true:suggestion
+csharp_prefer_simple_default_expression = true:suggestion
+csharp_style_prefer_local_over_anonymous_function = true:suggestion
+csharp_style_prefer_index_operator = true:suggestion
+csharp_style_prefer_range_operator = true:suggestion
+csharp_style_prefer_tuple_swap = true:suggestion
+csharp_style_prefer_utf8_string_literals = true:suggestion
+csharp_style_inlined_variable_declaration = true:suggestion
+csharp_style_deconstructed_variable_declaration = true:suggestion
+csharp_style_conditional_delegate_call = true:suggestion
+csharp_style_prefer_method_group_conversion = true:suggestion
+csharp_style_unused_value_assignment_preference = discard_variable:suggestion
+csharp_style_unused_value_expression_statement_preference = discard_variable:silent
+
+# 7.3 资源作用域由生命周期决定，默认沿用 using(...) 块。
+csharp_prefer_simple_using_statement = false:silent
+
+# 显式严重级别供构建使用；命名规则各自的 severity 主要供编辑器使用。
+# ZS0005 逐条检查并豁免普通 using System;，避免 IDE0005 合并连续引用产生误报。
+dotnet_diagnostic.IDE0005.severity = none
+dotnet_diagnostic.ZS0005.severity = warning
+dotnet_diagnostic.ZS2003.severity = warning
+dotnet_diagnostic.ZS1304.severity = warning
+# 用户可见文本：包含 Console、Localizable(true) 以及 Text/Message/Caption 命名启发式。
+dotnet_diagnostic.CA1303.severity = warning
+dotnet_code_quality.CA1303.use_naming_heuristic = true
+dotnet_diagnostic.IDE0009.severity = warning
+# IDE0049 不在构建时运行，需用编辑器或 dotnet format style 补充检查。
+dotnet_diagnostic.IDE0049.severity = warning
+# 配套 StyleSuppressor 仅豁免条件编译指令缩进和简单单行 try/catch/finally 的块边界。
+dotnet_diagnostic.IDE0055.severity = warning
+dotnet_diagnostic.IDE0065.severity = warning
+dotnet_diagnostic.IDE0161.severity = warning
+dotnet_diagnostic.IDE1006.severity = warning
+dotnet_diagnostic.IDE2001.severity = warning
+# 保留冲突消解所需的 global::；字段 this. 无法按可见性分别配置。
+dotnet_diagnostic.IDE0001.severity = none
+dotnet_diagnostic.IDE0002.severity = none
+dotnet_diagnostic.IDE0003.severity = none
+# 避免无关的批量主构造函数、顶级语句和命名空间目录转换。
+dotnet_diagnostic.IDE0290.severity = none
+dotnet_diagnostic.IDE0210.severity = none
+dotnet_diagnostic.IDE0211.severity = none
+dotnet_diagnostic.IDE0130.severity = none
+# 编译器与 SDK 分析器只能捕获部分异步误用，不能代替生命周期审查。
+dotnet_diagnostic.CS4014.severity = error
+dotnet_diagnostic.CA2012.severity = error
+
+# 2.1 命名：常量规则比普通字段更具体，私有常量不会被要求添加 _。
+dotnet_naming_rule.interfaces.symbols = interfaces
+dotnet_naming_rule.interfaces.style = interface
+dotnet_naming_rule.interfaces.severity = warning
+dotnet_naming_symbols.interfaces.applicable_kinds = interface
+dotnet_naming_symbols.interfaces.applicable_accessibilities = *
+
+dotnet_naming_rule.types.symbols = types
+dotnet_naming_rule.types.style = pascal
+dotnet_naming_rule.types.severity = warning
+dotnet_naming_symbols.types.applicable_kinds = class, struct, enum, delegate
+dotnet_naming_symbols.types.applicable_accessibilities = *
+
+dotnet_naming_rule.members.symbols = members
+dotnet_naming_rule.members.style = pascal
+dotnet_naming_rule.members.severity = warning
+dotnet_naming_symbols.members.applicable_kinds = property, event, method, local_function
+dotnet_naming_symbols.members.applicable_accessibilities = *
+
+dotnet_naming_rule.private_fields.symbols = private_fields
+dotnet_naming_rule.private_fields.style = private_field
+dotnet_naming_rule.private_fields.severity = warning
+dotnet_naming_symbols.private_fields.applicable_kinds = field
+dotnet_naming_symbols.private_fields.applicable_accessibilities = private
+
+dotnet_naming_rule.exposed_fields.symbols = exposed_fields
+dotnet_naming_rule.exposed_fields.style = pascal
+dotnet_naming_rule.exposed_fields.severity = warning
+dotnet_naming_symbols.exposed_fields.applicable_kinds = field
+dotnet_naming_symbols.exposed_fields.applicable_accessibilities = public, protected, protected_internal, private_protected
+
+dotnet_naming_rule.private_constants.symbols = private_constants
+dotnet_naming_rule.private_constants.style = constant
+dotnet_naming_rule.private_constants.severity = warning
+dotnet_naming_symbols.private_constants.applicable_kinds = field
+dotnet_naming_symbols.private_constants.applicable_accessibilities = private
+dotnet_naming_symbols.private_constants.required_modifiers = const
+
+dotnet_naming_rule.internal_constants.symbols = internal_constants
+dotnet_naming_rule.internal_constants.style = constant
+dotnet_naming_rule.internal_constants.severity = warning
+dotnet_naming_symbols.internal_constants.applicable_kinds = field
+dotnet_naming_symbols.internal_constants.applicable_accessibilities = internal
+dotnet_naming_symbols.internal_constants.required_modifiers = const
+
+dotnet_naming_rule.exposed_constants.symbols = exposed_constants
+dotnet_naming_rule.exposed_constants.style = pascal
+dotnet_naming_rule.exposed_constants.severity = warning
+dotnet_naming_symbols.exposed_constants.applicable_kinds = field
+dotnet_naming_symbols.exposed_constants.applicable_accessibilities = public, protected, protected_internal, private_protected
+dotnet_naming_symbols.exposed_constants.required_modifiers = const
+
+dotnet_naming_rule.parameters.symbols = parameters
+dotnet_naming_rule.parameters.style = camel
+dotnet_naming_rule.parameters.severity = warning
+dotnet_naming_symbols.parameters.applicable_kinds = parameter
+dotnet_naming_symbols.parameters.applicable_accessibilities = *
+
+# 方法内的常量与普通局部变量分开命名。
+dotnet_naming_rule.local_constants.symbols = local_constants
+dotnet_naming_rule.local_constants.style = constant
+dotnet_naming_rule.local_constants.severity = warning
+dotnet_naming_symbols.local_constants.applicable_kinds = local
+dotnet_naming_symbols.local_constants.applicable_accessibilities = *
+dotnet_naming_symbols.local_constants.required_modifiers = const
+
+dotnet_naming_rule.locals.symbols = locals
+dotnet_naming_rule.locals.style = camel
+dotnet_naming_rule.locals.severity = warning
+dotnet_naming_symbols.locals.applicable_kinds = local
+dotnet_naming_symbols.locals.applicable_accessibilities = *
+
+dotnet_naming_rule.type_parameters.symbols = type_parameters
+dotnet_naming_rule.type_parameters.style = type_parameter
+dotnet_naming_rule.type_parameters.severity = warning
+dotnet_naming_symbols.type_parameters.applicable_kinds = type_parameter
+dotnet_naming_symbols.type_parameters.applicable_accessibilities = *
+
+dotnet_naming_style.pascal.capitalization = pascal_case
+dotnet_naming_style.camel.capitalization = camel_case
+dotnet_naming_style.interface.required_prefix = I
+dotnet_naming_style.interface.capitalization = pascal_case
+dotnet_naming_style.private_field.required_prefix = _
+dotnet_naming_style.private_field.capitalization = camel_case
+dotnet_naming_style.constant.word_separator = _
+dotnet_naming_style.constant.capitalization = all_upper
+dotnet_naming_style.type_parameter.required_prefix = T
+dotnet_naming_style.type_parameter.capitalization = pascal_case

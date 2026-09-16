@@ -1,0 +1,9 @@
+<Project>
+	<!-- 在项目属性之后追加，支持项目文件及命令行设置严格开关。 -->
+	<PropertyGroup Condition="'$(MSBuildProjectExtension)' == '.csproj'">
+		<WarningsAsErrors>$(WarningsAsErrors);CS4014;CA2012</WarningsAsErrors>
+	</PropertyGroup>
+	<PropertyGroup Condition="'$(MSBuildProjectExtension)' == '.csproj' and '$(ZongsoftCodeStyleStrict)' == 'true'">
+		<WarningsAsErrors>$(WarningsAsErrors);ZS0005;ZS2003;ZS1304;CA1303;IDE0009;IDE0055;IDE0065;IDE0161;IDE1006;IDE2001</WarningsAsErrors>
+	</PropertyGroup>
+</Project>
