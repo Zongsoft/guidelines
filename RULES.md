@@ -152,7 +152,7 @@ These sections describe Zongsoft settings and limits. Follow the linked official
 
 ### IDE0009 · Instance member qualification
 
-Use `this.` for instance properties, methods and events: `dotnet_style_qualification_for_property/method/event = true`. Access private fields as `_camelCase`. The field option cannot distinguish visibility; qualification of public fields requires review. [Official rule](https://learn.microsoft.com/en-us/dotnet/fundamentals/code-analysis/style-rules/ide0003-ide0009)
+Use `this.` for instance properties, methods and events: `dotnet_style_qualification_for_property/method/event = true`. Access private fields directly by name. The field option cannot distinguish visibility; qualification of public fields requires review. [Official rule](https://learn.microsoft.com/en-us/dotnet/fundamentals/code-analysis/style-rules/ide0003-ide0009)
 
 <a id="ide0049"></a>
 
@@ -184,9 +184,9 @@ Use Tab indentation and Allman braces for multiline blocks, no space between con
 
 ### IDE1006 · Naming
 
-Interfaces use an `I` prefix, types and members PascalCase, parameters and ordinary locals camelCase, private fields `_camelCase` and type parameters a `T` prefix. Private, internal and local constants use UPPER_SNAKE_CASE; public or protected constants use PascalCase. A method-local `const int SIZE = sizeof(short);` is compliant.
+Interfaces use an `I` prefix, types and members PascalCase, parameters and ordinary locals camelCase, private fields `_camelCase` by default and type parameters a `T` prefix. Private, internal and local constants use UPPER_SNAKE_CASE; public or protected constants use PascalCase. A method-local `const int SIZE = sizeof(short);` is compliant.
 
-Private static readonly fields may also use [__PascalCase__](#zss1006).
+Private fields may also use [uppercase names or names enclosed in underscores](#zss1006).
 
 Naming rules distinguish symbol kind, visibility and `const`; more specific constant rules take precedence. In addition to individual naming-rule severity, `dotnet_diagnostic.IDE1006.severity = warning` enables build diagnostics. Domain meaning, type suffixes and external contracts require review. Check compatibility before automatically renaming public APIs. [Official naming rules](https://learn.microsoft.com/en-us/dotnet/fundamentals/code-analysis/style-rules/naming-rules)
 
@@ -323,9 +323,14 @@ Allows `while(queue.TryDequeue(out _));` without IDE2001, assuming `queue` is a 
 
 <a id="zss1006"></a>
 
-### ZSS1006 · Private static readonly fields
+### ZSS1006 · Private field naming exceptions
 
-Private `static readonly` fields may use either `_camelCase` or `__PascalCase__`, such as `__GetHandlersMethodTemplate__`. Exactly two underscores surround a name starting with an uppercase letter and containing only letters and digits. This IDE1006 exception does not cover instance fields, mutable static fields, public fields or locals.
+In addition to the default `_camelCase`, these private field names are exempt from IDE1006:
+
+- Uppercase names containing at least one uppercase letter and otherwise only uppercase letters, digits or underscores, such as `SIZE`, `DEFAULT_CAPACITY` and `HTTP2_BUFFER`.
+- Valid C# identifiers starting and ending with `_`, without further restrictions on internal casing or the number and arrangement of underscores, such as `_GaugeMethod_`, `_gauge_method_` and `__getHandlers__`.
+
+The exception requires private field accessibility only: instance/static, mutable/readonly and private constant fields qualify. It does not relax naming for fields with other accessibility, properties, parameters or locals. For example, `_GaugeMethod` does not have both delimiters and remains subject to the original rule.
 
 <a id="configuration"></a>
 

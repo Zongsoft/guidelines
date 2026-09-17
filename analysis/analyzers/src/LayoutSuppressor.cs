@@ -10,7 +10,7 @@ using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 namespace Zongsoft.CodeAnalysis.Analyzers;
 
-/// <summary>保留用于对齐、紧凑参数和空循环的局部布局，以及私有静态只读字段的特殊命名。</summary>
+/// <summary>保留用于对齐、紧凑参数和空循环的局部布局，以及私有字段的命名例外。</summary>
 [DiagnosticAnalyzer(LanguageNames.CSharp)]
 public sealed class LayoutSuppressor : DiagnosticSuppressor
 {
@@ -141,18 +141,24 @@ public sealed class LayoutSuppressor : DiagnosticSuppressor
 
 	private static bool IsSpecialField(SyntaxToken token, SemanticModel model)
 	{
-		var name = token.ValueText;
-		if(name.Length < 5 || !name.StartsWith("__", StringComparison.Ordinal) || !name.EndsWith("__", StringComparison.Ordinal) || !char.IsUpper(name[2]))
+		if(!(token.Parent is VariableDeclaratorSyntax variable) || !(model.GetDeclaredSymbol(variable) is IFieldSymbol field) ||
+			field.DeclaredAccessibility != Accessibility.Private)
 			return false;
 
-		for(var index = 2; index < name.Length - 2; index++)
+		var name = field.Name;
+		if(name.Length > 0 && name[0] == '_' && name[name.Length - 1] == '_')
+			return true;
+
+		var hasLetter = false;
+		foreach(var character in name)
 		{
-			if(!char.IsLetterOrDigit(name[index]))
+			if(char.IsUpper(character))
+				hasLetter = true;
+			else if(character != '_' && !char.IsDigit(character))
 				return false;
 		}
 
-		return token.Parent is VariableDeclaratorSyntax variable && model.GetDeclaredSymbol(variable) is IFieldSymbol field &&
-			field.DeclaredAccessibility == Accessibility.Private && field.IsStatic && field.IsReadOnly;
+		return hasLetter;
 	}
 
 	private static bool IsWhitespace(SourceText text, int start, int end)

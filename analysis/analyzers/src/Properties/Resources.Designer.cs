@@ -97,7 +97,7 @@ namespace Zongsoft.CodeAnalysis.Analyzers.Properties {
         }
 
         /// <summary>
-        ///   查找类似 Private static readonly fields may use __PascalCase__ names. 的本地化字符串。
+        ///   查找类似 Private fields may use uppercase names or names enclosed in underscores. 的本地化字符串。
         /// </summary>
         internal static string FieldNameSuppression {
             get {

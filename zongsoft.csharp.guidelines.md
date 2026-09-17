@@ -35,7 +35,7 @@
 | --- | --- |
 | 缩进换行 | Tab 缩进，显示宽度 4；新建文本文件使用 CRLF，平台脚本例外见第 3 节 |
 | 命名空间 | `using` 在前，文件范围命名空间在后 |
-| 成员访问 | 实例属性、方法和事件使用 `this.`；私有字段直接使用 `_camelCase` |
+| 成员访问 | 实例属性、方法和事件使用 `this.`；私有字段直接按名称访问，命名例外见第 2 节 |
 | 大花括号 | 多行块采用 Allman 风格；简单单语句分支可省略花括号 |
 | 控制语句 | 关键字与左括号之间不加空格；同层级的相邻独立控制结构之间留一个空行，连续简单无花括号 `if` 例外 |
 | 本地化文本 | 使用 `.resx` 和 `ResXFileCodeGenerator` 生成的 Designer 属性访问可翻译文本 |
@@ -59,7 +59,7 @@
 | --- | --- | --- |
 | 命名空间、类型、方法、属性、事件 | PascalCasing，非公共成员也遵循此规则 | `Zongsoft.Services`、`GetAccessor`、`IsDisposed` |
 | 接口 | 大写 `I` 前缀加 PascalCasing | `IDataAccess`、`IMatchable` |
-| 私有实例字段、私有静态字段 | `_camelCase` | `_name`、`_services`、`_disposing` |
+| 私有实例字段、私有静态字段 | 默认 `_camelCase`；允许全大写命名及以下划线包围的名称 | `_name`、`DEFAULT_CAPACITY`、`_GaugeMethod_` |
 | 参数、普通局部变量、主构造函数参数 | camelCasing | `name`、`result`、`cancellation` |
 | 公共或受保护字段，包括只读字段 | PascalCasing；新增时先评估是否应为属性 | `Instance`、`Empty` |
 | 私有、内部及局部常量 | 大写单词以下划线连接，无起始下划线 | `DISPOSED`、`DEFAULT_CAPACITY`、`KEY_TIMEOUT_OPTION` |
@@ -70,7 +70,9 @@
 - 布尔成员使用能直接读出判断含义的名称，如 `Enabled`、`Visible`、`IsEmpty`、`HasValue`、`CanDelete`。避免双重否定及含义不清的 `flag`、`b1`。
 - 避免生造缩写；标准缩写遵循现有 .NET/项目拼写，如 `IO`、`Xml`、`Html`、`Http`、`Json`。
 	> 既有协议名、供应商名和公共 API 不因大小写偏好而改名。
-- 私有静态只读字段可采用 `__PascalCase__` 标记特殊缓存或模板，如 `__GetHandlersMethodTemplate__`；普通字段仍使用 `_camelCase`。
+- 私有字段允许采用常量风格的全大写名称，如 `SIZE`、`DEFAULT_CAPACITY`、`HTTP2_BUFFER`，可包含数字和下划线；这不改变字段是否可变的语义。
+- 私有字段的名称若以 `_` 开头并以 `_` 结尾，则不再限制内部的大小写、下划线数量或组合方式，例如 `_GaugeMethod_`、`_gauge_method_`、`__GetHandlersMethodTemplate__`。名称仍须是合法的 C# 标识符。
+- 以上例外适用于私有实例字段和私有静态字段，不要求 `readonly`，也包括私有常量字段；不扩展到其他可见性的字段、属性、参数或局部变量。自动检测边界见 [ZSS1006](RULES.zh-Hans.md#zss1006)。
 - 局部循环索引可使用 `i`、`j`。
 - 命名空间按领域与功能组织，通常使用复数，如 `Services`、`Collections`、`Components`；`Data`、`IO`、`Configuration` 等沿用惯例。
 - 命名空间通常采用 `<Organization>.<ProductOrTechnology>.<Feature>`。以项目 `RootNamespace` 和领域归属为准，不把 `src`、部署目录或程序集名称机械拼入命名空间。

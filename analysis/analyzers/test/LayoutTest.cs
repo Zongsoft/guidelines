@@ -60,20 +60,47 @@ public sealed class LayoutTest
 	public async Task AllowsSpacedTupleNames() => await AssertCleanAsync(Wrap("public object Read(object entity, object property) => (Entity : entity, Property : property);"));
 
 	[Theory]
-	[InlineData("_template", "private static readonly", true)]
-	[InlineData("__GetHandlersMethodTemplate__", "private static readonly", true)]
-	[InlineData("__GetHandlersMethodTemplate__", "private readonly", false)]
-	[InlineData("__GetHandlersMethodTemplate__", "private static", false)]
-	[InlineData("__GetHandlersMethodTemplate__", "public static readonly", false)]
-	[InlineData("__getHandlers__", "private static readonly", false)]
-	[InlineData("__Get_Handlers__", "private static readonly", false)]
-	public async Task ChecksSpecialReadonlyFieldNames(string name, string modifiers, bool allowed)
+	[InlineData("SIZE", "private")]
+	[InlineData("DEFAULT_CAPACITY", "private readonly")]
+	[InlineData("HTTP2_BUFFER", "private static")]
+	[InlineData("MAX_VALUE", "private static readonly")]
+	[InlineData("MAX_VALUE", "private const")]
+	[InlineData("_VALUE", "private")]
+	public async Task AllowsUppercasePrivateFields(string name, string modifiers) =>
+		await AssertCleanAsync(Wrap(modifiers + " int " + name + " = 1;\n\tpublic int Value => " + name + ";"));
+
+	[Theory]
+	[InlineData("_GaugeMethod_", "private")]
+	[InlineData("_gauge_method_", "private readonly")]
+	[InlineData("_Gauge1_Method_", "private static")]
+	[InlineData("__GetHandlersMethodTemplate__", "private static readonly")]
+	[InlineData("__getHandlers__", "private")]
+	[InlineData("__Get_Handlers__", "private readonly")]
+	[InlineData("_GaugeMethod_", "private const")]
+	[InlineData("_", "private")]
+	[InlineData("__", "private")]
+	[InlineData("_混合名称_", "private")]
+	public async Task AllowsDelimitedPrivateFields(string name, string modifiers) =>
+		await AssertCleanAsync(Wrap(modifiers + " int " + name + " = 1;\n\tpublic int Value => " + name + ";"));
+
+	[Theory]
+	[InlineData("private int GaugeMethod = 1;\n\tpublic int Value => GaugeMethod;")]
+	[InlineData("private int _GaugeMethod = 1;\n\tpublic int Value => _GaugeMethod;")]
+	[InlineData("private int GaugeMethod_ = 1;\n\tpublic int Value => GaugeMethod_;")]
+	[InlineData("private int DEFAULT_Value = 1;\n\tpublic int Value => DEFAULT_Value;")]
+	[InlineData("public int _GaugeMethod_ = 1;")]
+	[InlineData("protected int _GaugeMethod_ = 1;")]
+	[InlineData("internal const int _GaugeMethod_ = 1;")]
+	[InlineData("protected static readonly int __GetHandlersMethodTemplate__ = 1;")]
+	[InlineData("public int _GaugeMethod_ => 1;")]
+	[InlineData("public int Read(int _GaugeMethod_) => _GaugeMethod_;")]
+	[InlineData("public int Read()\n\t{\n\t\tvar MAX_VALUE = 1;\n\t\treturn MAX_VALUE;\n\t}")]
+	[InlineData("public int Read()\n\t{\n\t\tvar _GaugeMethod_ = 1;\n\t\treturn _GaugeMethod_;\n\t}")]
+	public async Task RetainsOtherNamingRestrictions(string members)
 	{
-		var result = await AnalyzeAsync(Wrap(modifiers + " object " + name + " = new();\n\tpublic object Value => " + name + ";"));
-		if(allowed)
-			Assert.True(result.Success, result.Output);
-		else
-			Assert.Contains("error IDE1006", result.Output);
+		var result = await AnalyzeAsync(Wrap(members));
+		Assert.Contains("error IDE1006", result.Output);
+		Assert.DoesNotContain("error CS", result.Output);
 	}
 
 	[Theory]

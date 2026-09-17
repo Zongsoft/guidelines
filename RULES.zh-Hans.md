@@ -152,7 +152,7 @@ foreach(var item in items)
 
 ### IDE0009 · 实例成员限定
 
-实例属性、方法和事件使用 `this.`，对应 `dotnet_style_qualification_for_property/method/event = true`。私有字段直接使用 `_camelCase`。字段选项无法区分可见性，公共字段的 `this.` 要求仍需审查。[官方规则](https://learn.microsoft.com/zh-cn/dotnet/fundamentals/code-analysis/style-rules/ide0003-ide0009)
+实例属性、方法和事件使用 `this.`，对应 `dotnet_style_qualification_for_property/method/event = true`。私有字段直接按名称访问。字段选项无法区分可见性，公共字段的 `this.` 要求仍需审查。[官方规则](https://learn.microsoft.com/zh-cn/dotnet/fundamentals/code-analysis/style-rules/ide0003-ide0009)
 
 <a id="ide0049"></a>
 
@@ -184,9 +184,9 @@ Tab 缩进，多行块使用 Allman 花括号；控制关键字与括号间不�
 
 ### IDE1006 · 命名
 
-接口使用 `I` 前缀，类型和成员 PascalCase，参数与普通局部变量 camelCase，私有字段 `_camelCase`，泛型参数使用 `T` 前缀。私有、内部及局部常量使用 UPPER_SNAKE_CASE，公共或受保护常量使用 PascalCase；方法内 `const int SIZE = sizeof(short);` 合规。
+接口使用 `I` 前缀，类型和成员 PascalCase，参数与普通局部变量 camelCase，私有字段默认 `_camelCase`，泛型参数使用 `T` 前缀。私有、内部及局部常量使用 UPPER_SNAKE_CASE，公共或受保护常量使用 PascalCase；方法内 `const int SIZE = sizeof(short);` 合规。
 
-私有静态只读字段还允许 [__PascalCase__](#zss1006)。
+私有字段还允许[全大写名称或以下划线包围的名称](#zss1006)。
 
 命名配置按符号种类、可见性和 `const` 区分，更具体的常量规则优先。除命名规则自身 severity 外，显式设置 `dotnet_diagnostic.IDE1006.severity = warning` 供构建使用。名称的领域含义、类型后缀和外部契约仍需审查；自动重命名公共 API 前检查兼容性。[官方命名规则](https://learn.microsoft.com/zh-cn/dotnet/fundamentals/code-analysis/style-rules/naming-rules)
 
@@ -323,9 +323,14 @@ public int Next(int value) { value++; return value; }
 
 <a id="zss1006"></a>
 
-### ZSS1006 · 私有静态只读字段
+### ZSS1006 · 私有字段命名例外
 
-私有 `static readonly` 字段除 `_camelCase` 外，也可采用 `__PascalCase__`，例如 `__GetHandlersMethodTemplate__`。两端各两个下划线，中间首字母大写、只含字母和数字。此 IDE1006 例外不适用于实例字段、可变静态字段、公共字段或局部变量。
+在默认 `_camelCase` 之外，以下私有字段名称不报告 IDE1006：
+
+- 全大写名称：至少包含一个大写字母，其余字符只能是大写字母、数字或下划线，如 `SIZE`、`DEFAULT_CAPACITY`、`HTTP2_BUFFER`。
+- 以 `_` 开头并以 `_` 结尾的合法 C# 标识符：内部大小写及下划线的数量与组合不限，如 `_GaugeMethod_`、`_gauge_method_`、`__getHandlers__`。
+
+例外仅依据字段的私有可见性，实例／静态、可变／只读字段及私有常量均适用。不会放宽其他可见性字段、属性、参数或局部变量的命名；例如 `_GaugeMethod` 不满足两端下划线条件，仍按原规则检查。
 
 <a id="configuration"></a>
 

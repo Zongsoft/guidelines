@@ -43,7 +43,7 @@
 		<value>空 while 循环体可以紧接条件写在同一行。</value>
 	</data>
 	<data name="FieldNameSuppression" xml:space="preserve">
-		<value>私有静态只读字段可以使用 __PascalCase__ 命名。</value>
+		<value>私有字段可以使用全大写名称，或以下划线开头并结尾的名称。</value>
 	</data>
 	<data name="TechnicalTextSuppression" xml:space="preserve">
 		<value>字符串视图转换、终端控制序列和纯字符图案不要求本地化。</value>

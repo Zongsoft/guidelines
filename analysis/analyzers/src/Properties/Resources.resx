@@ -43,7 +43,7 @@
 		<value>An empty while body may follow its condition on the same line.</value>
 	</data>
 	<data name="FieldNameSuppression" xml:space="preserve">
-		<value>Private static readonly fields may use __PascalCase__ names.</value>
+		<value>Private fields may use uppercase names or names enclosed in underscores.</value>
 	</data>
 	<data name="TechnicalTextSuppression" xml:space="preserve">
 		<value>String view conversions, terminal control sequences, and character drawings do not require localization.</value>
