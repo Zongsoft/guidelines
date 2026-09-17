@@ -31,9 +31,24 @@
 		<value>Access resource '{0}' through its generated Designer property</value>
 	</data>
 	<data name="DirectiveSuppression" xml:space="preserve">
-		<value>Conditional directives may use the surrounding code indentation.</value>
+		<value>Directives may use the surrounding code indentation.</value>
 	</data>
 	<data name="BlockSuppression" xml:space="preserve">
 		<value>Simple try/catch/finally clauses may use single-line blocks.</value>
+	</data>
+	<data name="LayoutSuppression" xml:space="preserve">
+		<value>Documented alignment and compact token boundaries are allowed.</value>
+	</data>
+	<data name="EmptyLoopSuppression" xml:space="preserve">
+		<value>An empty while body may follow its condition on the same line.</value>
+	</data>
+	<data name="FieldNameSuppression" xml:space="preserve">
+		<value>Private static readonly fields may use __PascalCase__ names.</value>
+	</data>
+	<data name="TechnicalTextSuppression" xml:space="preserve">
+		<value>String view conversions, terminal control sequences, and character drawings do not require localization.</value>
+	</data>
+	<data name="CompactBodySuppression" xml:space="preserve">
+		<value>Single-line method and anonymous function bodies may contain at most two simple statements.</value>
 	</data>
 </root>

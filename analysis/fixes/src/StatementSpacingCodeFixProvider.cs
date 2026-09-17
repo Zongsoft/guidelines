@@ -37,7 +37,7 @@ public sealed class StatementSpacingCodeFixProvider : CodeFixProvider
 				.Select(node => node is GlobalStatementSyntax statement ? statement.Statement : node as StatementSyntax)
 				.LastOrDefault(statement => statement != null && statement.Span.End <= current.SpanStart);
 
-			if(previous == null)
+			if(previous == null || IsSimpleIf(previous) && IsSimpleIf(current))
 				continue;
 
 			var first = text.Lines.GetLineFromPosition(previous.Span.End);
@@ -83,6 +83,10 @@ public sealed class StatementSpacingCodeFixProvider : CodeFixProvider
 				cancellation => Task.FromResult(context.Document.WithText(text.WithChanges(change))), "ZS2003.InsertBlankLine"), diagnostic);
 		}
 	}
+
+	private static bool IsSimpleIf(StatementSyntax statement) => statement is IfStatementSyntax condition &&
+		condition.Else == null && (condition.Statement is ExpressionStatementSyntax || condition.Statement is ReturnStatementSyntax ||
+		condition.Statement is ThrowStatementSyntax || condition.Statement is EmptyStatementSyntax || condition.Statement is BreakStatementSyntax || condition.Statement is ContinueStatementSyntax);
 
 	private static string GetNewLine(SourceText text, int start)
 	{

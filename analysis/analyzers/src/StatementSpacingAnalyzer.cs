@@ -49,7 +49,7 @@ public sealed class StatementSpacingAnalyzer : DiagnosticAnalyzer
 				assignments = 0;
 
 			if(previous != null && !separated &&
-				(IsControl(previous) && IsControl(current) || assignments > 2 && IsConditionalOrLoop(current)))
+				(IsControl(previous) && IsControl(current) && !(IsSimpleIf(previous) && IsSimpleIf(current)) || assignments > 2 && IsConditionalOrLoop(current)))
 				context.ReportDiagnostic(Diagnostic.Create(_rule, current.GetFirstToken().GetLocation()));
 
 			assignments = IsAssignment(current) ? assignments + 1 : 0;
@@ -74,6 +74,10 @@ public sealed class StatementSpacingAnalyzer : DiagnosticAnalyzer
 
 		return false;
 	}
+
+	private static bool IsSimpleIf(StatementSyntax statement) => statement is IfStatementSyntax condition &&
+		condition.Else == null && (condition.Statement is ExpressionStatementSyntax || condition.Statement is ReturnStatementSyntax ||
+		condition.Statement is ThrowStatementSyntax || condition.Statement is EmptyStatementSyntax || condition.Statement is BreakStatementSyntax || condition.Statement is ContinueStatementSyntax);
 
 	private static bool IsConditionalOrLoop(StatementSyntax statement) => statement is IfStatementSyntax ||
 		statement is ForStatementSyntax || statement is CommonForEachStatementSyntax ||

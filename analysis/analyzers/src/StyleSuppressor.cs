@@ -10,7 +10,7 @@ using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 namespace Zongsoft.CodeAnalysis.Analyzers;
 
-/// <summary>仅豁免开发规范明确允许的条件编译缩进与紧凑异常处理布局。</summary>
+/// <summary>仅豁免开发规范明确允许的指令缩进与紧凑异常处理布局。</summary>
 [DiagnosticAnalyzer(LanguageNames.CSharp)]
 public sealed class StyleSuppressor : DiagnosticSuppressor
 {
@@ -42,11 +42,14 @@ public sealed class StyleSuppressor : DiagnosticSuppressor
 			var node = root.FindToken(span.Start).Parent;
 			var statement = node?.AncestorsAndSelf().OfType<TryStatementSyntax>().FirstOrDefault();
 
-			if(statement == null || !IsCompact(statement, text))
+			if(statement == null)
 				continue;
 
 			foreach(var block in GetBlocks(statement))
 			{
+				if(!IsCompact(block, text))
+					continue;
+
 				if(diagnostic.Id == "IDE2001" && block.Span.Contains(span))
 					context.ReportSuppression(Suppression.Create(_statement, diagnostic));
 				else if(diagnostic.Id == "IDE0055" && IsBlockBoundary(block, text, span))
@@ -66,30 +69,18 @@ public sealed class StyleSuppressor : DiagnosticSuppressor
 		if(position == line.End || text[position] != '#' || span.End > position)
 			return false;
 
-		var directive = root.FindTrivia(position, findInsideTrivia: false).GetStructure();
-		return directive is IfDirectiveTriviaSyntax || directive is ElifDirectiveTriviaSyntax ||
-			directive is ElseDirectiveTriviaSyntax || directive is EndIfDirectiveTriviaSyntax;
+		return root.FindTrivia(position, findInsideTrivia: false).GetStructure() is DirectiveTriviaSyntax;
 	}
 
-	private static bool IsCompact(TryStatementSyntax statement, SourceText text)
+	private static bool IsCompact(BlockSyntax block, SourceText text)
 	{
-		if(!IsCompact(statement.Block, statement.TryKeyword, text))
-			return false;
-
-		foreach(var clause in statement.Catches)
-		{
-			if(!IsCompact(clause.Block, clause.CatchKeyword, text))
-				return false;
-		}
-
-		return statement.Finally == null || IsCompact(statement.Finally.Block, statement.Finally.FinallyKeyword, text);
-	}
-
-	private static bool IsCompact(BlockSyntax block, SyntaxToken keyword, SourceText text)
-	{
-		if(block.Statements.Count != 1 || block.ContainsDiagnostics || block.ContainsDirectives ||
+		var keyword = block.Parent.GetFirstToken();
+		if(block.Statements.Count > 1 || block.ContainsDiagnostics || block.ContainsDirectives ||
 			text.Lines.GetLineFromPosition(keyword.SpanStart).LineNumber != text.Lines.GetLineFromPosition(block.CloseBraceToken.Span.End).LineNumber)
 			return false;
+
+		if(block.Statements.Count == 0)
+			return true;
 
 		if(block.Statements[0].DescendantNodes().OfType<StatementSyntax>().Any())
 			return false;
@@ -123,9 +114,13 @@ public sealed class StyleSuppressor : DiagnosticSuppressor
 		}
 
 		var previous = block.OpenBraceToken.GetPreviousToken();
+		var keyword = block.Parent.GetFirstToken();
+		var preceding = keyword.GetPreviousToken();
 		return Contains(previous.Span.End, block.OpenBraceToken.SpanStart, span) ||
-			Contains(block.OpenBraceToken.Span.End, block.Statements[0].SpanStart, span) ||
-			Contains(block.Statements[0].Span.End, block.CloseBraceToken.SpanStart, span);
+			Contains(block.OpenBraceToken.Span.End, block.Statements.FirstOrDefault()?.SpanStart ?? block.CloseBraceToken.SpanStart, span) ||
+			Contains(block.Statements.LastOrDefault()?.Span.End ?? block.OpenBraceToken.Span.End, block.CloseBraceToken.SpanStart, span) ||
+			(preceding.IsKind(SyntaxKind.CloseBraceToken) && (keyword.IsKind(SyntaxKind.CatchKeyword) || keyword.IsKind(SyntaxKind.FinallyKeyword)) &&
+				Contains(preceding.Span.End, keyword.SpanStart, span));
 	}
 
 	private static bool Contains(int start, int end, TextSpan span) => span.Start >= start && span.End <= end;

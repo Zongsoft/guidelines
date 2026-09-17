@@ -124,7 +124,7 @@ dotnet format style ./Zongsoft.Core/src/Zongsoft.Core.csproj --no-restore --veri
 dotnet format whitespace ./Zongsoft.Core/src/Zongsoft.Core.csproj --no-restore --verify-no-changes --include ./Zongsoft.Core/src/Components/Handler.cs
 ```
 
-**注意：** `dotnet format whitespace` 直接比较格式化结果，不执行诊断抑制器，仍可能对合法的条件编译缩进和紧凑块返回差异；本规范的最终诊断以加载配套分析器的构建为准，不将该格式器退出码直接作为这些例外的 CI 门禁。
+**注意：** `dotnet format whitespace` 直接比较格式化结果，不执行诊断抑制器，仍可能对合法的指令缩进、局部对齐和紧凑块返回差异；本规范的最终诊断以加载配套分析器的构建为准，不将该格式器退出码直接作为这些例外的 CI 门禁。
 
 `--include` 路径相对于当前工作目录，上例文件替换为实际修改文件，可以给出多个路径。`--verify-no-changes` 不改写源码，发现格式差异会返回非零退出码；CI 必须检查构建和 IDE0049 验证命令的退出码；标准格式器的已知例外差异单独审查。多目标项目的构建覆盖配置的目标框架；格式检查不替代各目标框架的编译与分析。
 

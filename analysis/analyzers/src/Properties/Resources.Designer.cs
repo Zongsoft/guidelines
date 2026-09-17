@@ -10,8 +10,8 @@
 
 namespace Zongsoft.CodeAnalysis.Analyzers.Properties {
     using System;
-    
-    
+
+
     /// <summary>
     ///   一个强类型的资源类，用于查找本地化的字符串等。
     /// </summary>
@@ -19,19 +19,19 @@ namespace Zongsoft.CodeAnalysis.Analyzers.Properties {
     // 类通过类似于 ResGen 或 Visual Studio 的工具自动生成的。
     // 若要添加或移除成员，请编辑 .ResX 文件，然后重新运行 ResGen
     // (以 /str 作为命令选项)，或重新生成 VS 项目。
-    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "18.0.0.0")]
+    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "4.0.0.0")]
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
     [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
     internal class Resources {
-        
+
         private static global::System.Resources.ResourceManager resourceMan;
-        
+
         private static global::System.Globalization.CultureInfo resourceCulture;
-        
+
         [global::System.Diagnostics.CodeAnalysis.SuppressMessageAttribute("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
         internal Resources() {
         }
-        
+
         /// <summary>
         ///   返回此类使用的缓存的 ResourceManager 实例。
         /// </summary>
@@ -45,10 +45,10 @@ namespace Zongsoft.CodeAnalysis.Analyzers.Properties {
                 return resourceMan;
             }
         }
-        
+
         /// <summary>
-        ///   重写当前线程的 CurrentUICulture 属性，对
-        ///   使用此强类型资源类的所有资源查找执行重写。
+        ///   使用此强类型资源类，为所有资源查找
+        ///   重写当前线程的 CurrentUICulture 属性。
         /// </summary>
         [global::System.ComponentModel.EditorBrowsableAttribute(global::System.ComponentModel.EditorBrowsableState.Advanced)]
         internal static global::System.Globalization.CultureInfo Culture {
@@ -59,7 +59,7 @@ namespace Zongsoft.CodeAnalysis.Analyzers.Properties {
                 resourceCulture = value;
             }
         }
-        
+
         /// <summary>
         ///   查找类似 Simple try/catch/finally clauses may use single-line blocks. 的本地化字符串。
         /// </summary>
@@ -68,16 +68,52 @@ namespace Zongsoft.CodeAnalysis.Analyzers.Properties {
                 return ResourceManager.GetString("BlockSuppression", resourceCulture);
             }
         }
-        
+
         /// <summary>
-        ///   查找类似 Conditional directives may use the surrounding code indentation. 的本地化字符串。
+        ///   查找类似 Single-line method and anonymous function bodies may contain at most two simple statements. 的本地化字符串。
+        /// </summary>
+        internal static string CompactBodySuppression {
+            get {
+                return ResourceManager.GetString("CompactBodySuppression", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   查找类似 Directives may use the surrounding code indentation. 的本地化字符串。
         /// </summary>
         internal static string DirectiveSuppression {
             get {
                 return ResourceManager.GetString("DirectiveSuppression", resourceCulture);
             }
         }
-        
+
+        /// <summary>
+        ///   查找类似 An empty while body may follow its condition on the same line. 的本地化字符串。
+        /// </summary>
+        internal static string EmptyLoopSuppression {
+            get {
+                return ResourceManager.GetString("EmptyLoopSuppression", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   查找类似 Private static readonly fields may use __PascalCase__ names. 的本地化字符串。
+        /// </summary>
+        internal static string FieldNameSuppression {
+            get {
+                return ResourceManager.GetString("FieldNameSuppression", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   查找类似 Documented alignment and compact token boundaries are allowed. 的本地化字符串。
+        /// </summary>
+        internal static string LayoutSuppression {
+            get {
+                return ResourceManager.GetString("LayoutSuppression", resourceCulture);
+            }
+        }
+
         /// <summary>
         ///   查找类似 Access resource &apos;{0}&apos; through its generated Designer property 的本地化字符串。
         /// </summary>
@@ -86,7 +122,7 @@ namespace Zongsoft.CodeAnalysis.Analyzers.Properties {
                 return ResourceManager.GetString("ResourceAccessMessage", resourceCulture);
             }
         }
-        
+
         /// <summary>
         ///   查找类似 Use a generated resource property 的本地化字符串。
         /// </summary>
@@ -95,25 +131,34 @@ namespace Zongsoft.CodeAnalysis.Analyzers.Properties {
                 return ResourceManager.GetString("ResourceAccessTitle", resourceCulture);
             }
         }
-        
+
         /// <summary>
-        ///   查找类似 Insert a blank line between adjacent independent control statements 的本地化字符串。
+        ///   查找类似 Insert a blank line between statement groups 的本地化字符串。
         /// </summary>
         internal static string StatementSpacingMessage {
             get {
                 return ResourceManager.GetString("StatementSpacingMessage", resourceCulture);
             }
         }
-        
+
         /// <summary>
-        ///   查找类似 Separate independent control statements 的本地化字符串。
+        ///   查找类似 Separate statement groups 的本地化字符串。
         /// </summary>
         internal static string StatementSpacingTitle {
             get {
                 return ResourceManager.GetString("StatementSpacingTitle", resourceCulture);
             }
         }
-        
+
+        /// <summary>
+        ///   查找类似 String view conversions, terminal control sequences, and character drawings do not require localization. 的本地化字符串。
+        /// </summary>
+        internal static string TechnicalTextSuppression {
+            get {
+                return ResourceManager.GetString("TechnicalTextSuppression", resourceCulture);
+            }
+        }
+
         /// <summary>
         ///   查找类似 Import &apos;{0}&apos; is unused 的本地化字符串。
         /// </summary>
@@ -122,7 +167,7 @@ namespace Zongsoft.CodeAnalysis.Analyzers.Properties {
                 return ResourceManager.GetString("UnusedUsingMessage", resourceCulture);
             }
         }
-        
+
         /// <summary>
         ///   查找类似 Remove unused import 的本地化字符串。
         /// </summary>

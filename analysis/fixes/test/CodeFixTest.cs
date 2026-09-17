@@ -29,7 +29,7 @@ public class CodeFixTest
 			.Select(path => MetadataReference.CreateFromFile(path)).ToImmutableArray<MetadataReference>());
 
 	[Theory]
-	[InlineData("ZS0005", "using System.Text;\nclass Sample { }")]
+	[InlineData("ZS0005", "using Binder = Microsoft.CSharp.RuntimeBinder;\nclass Sample { }")]
 	[InlineData("ZS1304", "class Sample { string Read() => new System.Resources.ResourceManager(typeof(Sample)).GetString(\"Name\"); }")]
 	[InlineData("ZS2003", "class Sample { void Run() { if(true) { } if(false) { } } }")]
 	public async Task DiagnosticsLinkToRuleAnchors(string id, string source)
@@ -79,15 +79,15 @@ public class CodeFixTest
 	}
 
 	[Theory]
-	[InlineData("using System.Text;\n", "")]
+	[InlineData("using Binder = Microsoft.CSharp.RuntimeBinder;\n", "")]
 	[InlineData("using Text = System.Text.StringBuilder;\n", "")]
 	[InlineData("using static System.Math;\n", "")]
-	[InlineData("// heading\nusing System.Text; // reason\n", "// heading\n// reason\n")]
-	[InlineData("#if true\nusing System.Text;\n#endif\n", "#if true\n#endif\n")]
-	[InlineData("#region Imports\nusing System.Text;\n#endregion\n", "#region Imports\n#endregion\n")]
-	[InlineData("using /* keep */ System.Text;\n", " /* keep */ \n")]
-	[InlineData("/* keep */ using System.Text;\n", "/* keep */ \n")]
-	[InlineData("using\n\tSystem.Text;\n", "")]
+	[InlineData("// heading\nusing Binder = Microsoft.CSharp.RuntimeBinder; // reason\n", "// heading\n// reason\n")]
+	[InlineData("#if true\nusing Binder = Microsoft.CSharp.RuntimeBinder;\n#endif\n", "#if true\n#endif\n")]
+	[InlineData("#region Imports\nusing Binder = Microsoft.CSharp.RuntimeBinder;\n#endregion\n", "#region Imports\n#endregion\n")]
+	[InlineData("using /* keep */ Binder = Microsoft.CSharp.RuntimeBinder;\n", " /* keep */   \n")]
+	[InlineData("/* keep */ using Binder = Microsoft.CSharp.RuntimeBinder;\n", "/* keep */ \n")]
+	[InlineData("using\n\tBinder = Microsoft.CSharp.RuntimeBinder;\n", "")]
 	public async Task FixesUnusedUsingPreservingTrivia(string before, string after)
 	{
 		foreach(var newline in new[] { "\r\n", "\n" })
@@ -151,7 +151,7 @@ public class CodeFixTest
 	}
 
 	[Theory]
-	[InlineData("ZS0005", "using System; using System.Text; using System.Linq;", "using System;  ")]
+	[InlineData("ZS0005", "using System; using Binder = Microsoft.CSharp.RuntimeBinder; using CSharp = Microsoft.CSharp;", "using System;  ")]
 	[InlineData("ZS2003", "class Sample { void Run() { if(true) { } if(false) { } if(true) { } } }", "class Sample { void Run() { if(true) { }\r\n\r\nif(false) { }\r\n\r\nif(true) { } } }")]
 	public async Task FixAllMergesEditsOnOneLine(string id, string source, string expected)
 	{
@@ -179,7 +179,7 @@ public class CodeFixTest
 	public async Task FixAllRespectsScope(string id, FixAllScope scope)
 	{
 		using var workspace = new AdhocWorkspace();
-		var before = id == "ZS0005" ? "using System;\r\nusing System.Text;\r\nusing System.Linq;\r\n" :
+		var before = id == "ZS0005" ? "using System;\r\nusing Binder = Microsoft.CSharp.RuntimeBinder;\r\nusing CSharp = Microsoft.CSharp;\r\n" :
 			Wrap("if(true) { }\n\t\tif(false) { }\n\t\tif(true) { }").Replace("\n", "\r\n");
 		var after = id == "ZS0005" ? "using System;\r\n" :
 			Wrap("if(true) { }\n\n\t\tif(false) { }\n\n\t\tif(true) { }").Replace("\n", "\r\n");
@@ -228,7 +228,10 @@ public class CodeFixTest
 
 	[Theory]
 	[InlineData("using System;\nclass Sample { }", "ZS0005", "using System;")]
+	[InlineData("using System.Threading.Tasks;\nclass Sample { }", "ZS0005", "using System.Threading.Tasks;")]
+	[InlineData("using Microsoft.CSharp.RuntimeBinder;\nclass Sample { }", "ZS0005", "using Microsoft.CSharp.RuntimeBinder;")]
 	[InlineData("using System.Text;\nclass Sample { StringBuilder Value; }", "ZS0005", "using System.Text;")]
+	[InlineData("class Sample { void Run() { if(true) return;\nif(false) return; } }", "ZS2003", "if(false)")]
 	[InlineData("class Sample { void Run() { var x = 1;\n\nSystem.GC.KeepAlive(x); } }", "ZS2003", "System")]
 	public async Task DoesNotOfferUnsafeOrRedundantFix(string source, string id, string token)
 	{
@@ -253,7 +256,7 @@ public class CodeFixTest
 		{
 			CultureInfo.CurrentUICulture = CultureInfo.GetCultureInfo(language);
 			using var workspace = new AdhocWorkspace();
-			var document = AddDocument(workspace.CurrentSolution, "using System.Text;\n" + Wrap("var x = 1;\n\t\tx += 1;\n\t\tx += 2;\n\t\tif(x > 0) { System.GC.KeepAlive(x); }"));
+			var document = AddDocument(workspace.CurrentSolution, "using Binder = Microsoft.CSharp.RuntimeBinder;\n" + Wrap("var x = 1;\n\t\tx += 1;\n\t\tx += 2;\n\t\tif(x > 0) { System.GC.KeepAlive(x); }"));
 
 			Assert.Equal(usingTitle, Assert.Single(await GetActionsAsync(document, Assert.Single(await GetDiagnosticsAsync(document, "ZS0005")))).Title);
 			Assert.Equal(spacingTitle, Assert.Single(await GetActionsAsync(document, Assert.Single(await GetDiagnosticsAsync(document, "ZS2003")))).Title);

@@ -31,9 +31,24 @@
 		<value>通过 Designer 生成的属性访问资源“{0}”</value>
 	</data>
 	<data name="DirectiveSuppression" xml:space="preserve">
-		<value>条件编译指令允许保留与代码相同的缩进。</value>
+		<value>指令允许保留与代码相同的缩进。</value>
 	</data>
 	<data name="BlockSuppression" xml:space="preserve">
 		<value>简单的 try/catch/finally 子句允许单行块。</value>
+	</data>
+	<data name="LayoutSuppression" xml:space="preserve">
+		<value>允许规范规定的局部对齐与紧凑语法边界。</value>
+	</data>
+	<data name="EmptyLoopSuppression" xml:space="preserve">
+		<value>空 while 循环体可以紧接条件写在同一行。</value>
+	</data>
+	<data name="FieldNameSuppression" xml:space="preserve">
+		<value>私有静态只读字段可以使用 __PascalCase__ 命名。</value>
+	</data>
+	<data name="TechnicalTextSuppression" xml:space="preserve">
+		<value>字符串视图转换、终端控制序列和纯字符图案不要求本地化。</value>
+	</data>
+	<data name="CompactBodySuppression" xml:space="preserve">
+		<value>单行方法体和匿名函数体允许包含至多两条简单语句。</value>
 	</data>
 </root>

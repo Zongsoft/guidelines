@@ -42,9 +42,8 @@ public sealed class UnusedUsingCodeFixProvider : CodeFixProvider
 
 			if(directive.Alias == null && directive.StaticKeyword.IsKind(SyntaxKind.None) &&
 				directive.GetFirstToken().IsKind(SyntaxKind.UsingKeyword) &&
-				directive.Name is IdentifierNameSyntax name && name.Identifier.ValueText == "System" &&
-				model.GetSymbolInfo(name, context.CancellationToken).Symbol is INamespaceSymbol space &&
-				space.Name == "System" && space.ContainingNamespace.IsGlobalNamespace)
+				directive.Name != null &&
+				model.GetSymbolInfo(directive.Name, context.CancellationToken).Symbol is INamespaceSymbol)
 				continue;
 
 			var changes = GetChanges(directive, text);

@@ -124,7 +124,7 @@ To inspect the standard formatter's suggestions for a changed file, use:
 dotnet format whitespace ./Zongsoft.Core/src/Zongsoft.Core.csproj --no-restore --verify-no-changes --include ./Zongsoft.Core/src/Components/Handler.cs
 ```
 
-**Note:** `dotnet format whitespace` compares formatted text directly and does not execute diagnostic suppressors. It can still report differences for permitted conditional directive indentation or compact blocks. Loaded-analyzer build diagnostics govern these exceptions; do not use the formatter's exit code as an unconditional CI gate for them.
+**Note:** `dotnet format whitespace` compares formatted text directly and does not execute diagnostic suppressors. It can still report differences for permitted directive indentation, alignment or compact blocks. Loaded-analyzer build diagnostics govern these exceptions; do not use the formatter's exit code as an unconditional CI gate for them.
 
 `--include` paths are relative to the working directory. Replace the example file with the actual changed files; multiple paths are supported. `--verify-no-changes` does not rewrite source and returns a nonzero exit code when formatting differs. CI must check build and IDE0049 verification exit codes; review the standard formatter's known exception differences separately. Multi-target builds cover the configured target frameworks, and formatting checks do not replace compilation and analysis for each target.
 

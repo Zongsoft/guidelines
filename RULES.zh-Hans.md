@@ -18,7 +18,7 @@
 
 | ID | 规则 | 默认 / 严格构建 | 修复 |
 | --- | --- | --- | --- |
-| [ZS0005](#zs0005) | 移除未使用的引用，允许普通 `using System;` | 警告 / 错误 | ✅ 移除未使用的引用 |
+| [ZS0005](#zs0005) | 移除未使用的别名、静态及全局引用 | 警告 / 错误 | ✅ 移除未使用的引用 |
 | [ZS1304](#zs1304) | 通过生成属性访问固定资源项 | 警告 / 错误 | 手工迁移资源访问 |
 | [ZS2003](#zs2003) | 在指定语句组边界留空行 | 警告 / 错误 | ✅ 插入空行 |
 | [IDE0009](#ide0009) | 实例成员访问使用 `this.` | 警告 / 错误 | SDK |
@@ -43,17 +43,10 @@
 ### ZS0005 · 移除未使用的引用
 
 - **触发条件：** 编译器 CS8019 判定某条引用未使用，分析器逐条报告。
-- **例外：** 仅允许保留解析为全局 System 命名空间的普通 `using System;`；不包括 `System.*`、别名、`using static` 或 `global using`。
+- **例外：** 允许保留任意命名空间的普通引用；别名、`using static` 和 `global using` 不属于例外。
 - **构建要求：** 启用 `GenerateDocumentationFile=true`；本包不强制覆盖项目关闭 XML 文档的选择。
 - **修复：** `Ctrl+.` → “移除未使用的引用”，支持文档、项目、解决方案范围的全部修复，保留注释与条件编译指令。
-- **配置：** `dotnet_diagnostic.ZS0005.severity`。原 [IDE0005](#ide0005) 已关闭，避免其合并连续引用导致 System 例外失效。
-
-以下为文件头片段，假定正文没有使用 `System.Text` 的类型：
-
-```csharp
-using System;      //可以保留
-using System.Text; //ZS0005：移除此行
-```
+- **配置：** `dotnet_diagnostic.ZS0005.severity`。原 [IDE0005](#ide0005) 已关闭，避免其合并连续引用导致普通命名空间引用的例外失效。
 
 此规则只检查引用是否使用，不负责禁止别名、约束全局引用、依赖分组或长度排序；这些要求见开发规范 3.2 节。
 
@@ -110,6 +103,8 @@ Visual Studio 自定义工具不由普通 `dotnet build` 执行；修改资源�
 
 1. 连续超过两条赋值或初始化语句，后面紧接 `if`、`switch`、`for`、`foreach`、`while` 或 `do`。
 2. 同一层级相邻的独立控制结构或显式语句块。控制结构包括上述条件和循环，以及 `try`、`using`、`lock`、`checked`／`unchecked` 和 `unsafe` 块。
+
+连续简单 `if` 均无花括号、无 `else` 且语句体不含嵌套控制结构时，可以不留空行，例如连续的参数校验和提前返回。任一语句带块、含 `else` 或与循环相邻时，仍按上述规则分隔。
 
 **计数与例外：** 带初始化的局部变量、常量声明，普通、复合和解构赋值均按语句计数；一条多变量声明或解构赋值只计一次。空行或其他种类的语句结束当前计数；注释行不代替空行。只有一条或两条赋值，或后面接调用、返回等语句，不因此要求空行。`if/else`、`try/catch/finally`、`do/while` 的关联子句和嵌套语句体不拆分。覆盖语句块、switch 分支和顶层语句；生成代码不报告。
 
@@ -169,7 +164,7 @@ foreach(var item in items)
 
 ### IDE0055 · 格式
 
-Tab 缩进，多行块使用 Allman 花括号；控制关键字与括号间不加空格，二元运算符两侧加空格。文件换行与文件类型例外由根 `.editorconfig` 提供。条件编译指令与紧凑异常处理的允许写法见 [诊断例外](#suppressions)。
+Tab 缩进，多行块使用 Allman 花括号；控制关键字与括号间不加空格，二元运算符两侧加空格。文件换行与文件类型例外由根 `.editorconfig` 提供。指令缩进、局部对齐与紧凑布局的允许写法见 [诊断例外](#suppressions)。
 
 `dotnet format whitespace` 直接比较格式化文本，不运行诊断抑制器，仍可能对合法例外返回差异；这些例外以加载分析器的构建诊断为准。自动格式化仅限修改文件并审查差异。[官方格式规则](https://learn.microsoft.com/zh-cn/dotnet/fundamentals/code-analysis/style-rules/ide0055)
 
@@ -191,17 +186,23 @@ Tab 缩进，多行块使用 Allman 花括号；控制关键字与括号间不�
 
 接口使用 `I` 前缀，类型和成员 PascalCase，参数与普通局部变量 camelCase，私有字段 `_camelCase`，泛型参数使用 `T` 前缀。私有、内部及局部常量使用 UPPER_SNAKE_CASE，公共或受保护常量使用 PascalCase；方法内 `const int SIZE = sizeof(short);` 合规。
 
+私有静态只读字段还允许 [__PascalCase__](#zss1006)。
+
 命名配置按符号种类、可见性和 `const` 区分，更具体的常量规则优先。除命名规则自身 severity 外，显式设置 `dotnet_diagnostic.IDE1006.severity = warning` 供构建使用。名称的领域含义、类型后缀和外部契约仍需审查；自动重命名公共 API 前检查兼容性。[官方命名规则](https://learn.microsoft.com/zh-cn/dotnet/fundamentals/code-analysis/style-rules/naming-rules)
 
 <a id="ide2001"></a>
 
 ### IDE2001 · 嵌入语句另起一行
 
-简单分支可省略花括号，语句另起一行。`csharp_style_allow_embedded_statements_on_same_line_experimental = false`；该选项为实验性，SDK 升级后需要复核。紧凑 try/catch/finally 由 [ZSS2001](#zss2001) 豁免。[官方规则](https://learn.microsoft.com/zh-cn/dotnet/fundamentals/code-analysis/style-rules/ide2001)
+简单分支可省略花括号，语句另起一行。`csharp_style_allow_embedded_statements_on_same_line_experimental = false`；该选项为实验性，SDK 升级后需要复核。紧凑 try/catch/finally 由 [ZSS2001](#zss2001) 豁免，空 `while(...);` 由 [ZSS2002](#zss2002) 豁免；最多两条简单语句的单行方法体或匿名函数体由 [ZSS2003](#zss2003) 豁免。[官方规则](https://learn.microsoft.com/zh-cn/dotnet/fundamentals/code-analysis/style-rules/ide2001)
 
 <a id="ca1303"></a>
 
 ### CA1303 · 本地化可见文本
+
+字符串视图转换、固定控制序列和纯字符图案按 [ZSS1303](#zss1303) 精确豁免；包含自然语言的消息仍然检查。
+
+**测试项目例外：** `IsTestProject=true` 的 C# 项目不报告 CA1303，严格模式同样适用。包通过追加 `NoWarn` 实现，不按目录名或程序集名称猜测测试项目；其他规则照常执行，生产项目仍要求本地化。
 
 报告 Console 提示、传给 `Localizable(true)` 参数或属性的硬编码字符串；包启用 `dotnet_code_quality.CA1303.use_naming_heuristic = true`，增加 Text/Message/Caption 命名启发式。按 [资源生成配置](#resource-generation) 迁移文本，再通过 Designer 属性访问。
 
@@ -227,7 +228,7 @@ Tab 缩进，多行块使用 Allman 花括号；控制关键字与括号间不�
 
 | ID | 原因 |
 | --- | --- |
-| <a id="ide0005"></a>IDE0005 | 以 [ZS0005](#zs0005) 替代，保留普通 System 导入 |
+| <a id="ide0005"></a>IDE0005 | 以 [ZS0005](#zs0005) 替代，保留所有普通命名空间引用 |
 | <a id="ide0001"></a>IDE0001 | 保留解决名称冲突的 `global::` 完整限定名 |
 | <a id="ide0002"></a>IDE0002 | 不自动简化上述限定访问 |
 | <a id="ide0003"></a>IDE0003 | 不统一简化 `this.`；字段无法按可见性分别配置 |
@@ -252,16 +253,16 @@ Tab 缩进，多行块使用 Allman 花括号；控制关键字与括号间不�
 
 <a id="zss0055"></a>
 
-### ZSS0055 · 条件编译指令缩进
+### ZSS0055 · 指令缩进
 
-仅豁免 `#if`、`#elif`、`#else`、`#endif` 行前空白上的 IDE0055。指令可顶格，也可与所在代码保持同级缩进，不因嵌套条件额外缩进；不会豁免其他表达式格式问题。
+豁免所有 `#` 指令行前空白上的 IDE0055，包括 `#pragma`、`#region`、`#nullable`、`#line` 及条件编译指令。指令可顶格，也可与所在代码保持同级缩进，不因嵌套条件额外缩进；不会豁免其他表达式格式问题。
 
 <a id="zss0056"></a>
 <a id="zss2001"></a>
 
 ### ZSS0056 / ZSS2001 · 紧凑异常处理
 
-当 try/catch/finally 的每个子句各占一行、仅含一条简单语句时，分别豁免块边界 IDE0055 与块内 IDE2001。多条语句、嵌套控制流、跨行表达式及语句内部格式错误不属于例外。
+按子句分别判断：为空或仅含一条简单语句且子句自身占一行时，豁免其块边界 IDE0055 与块内 IDE2001；相邻紧凑子句可以同处一行，也允许部分子句采用多行布局。多条语句、嵌套控制流、跨行表达式及语句内部格式错误不属于例外。
 
 以下为属性片段，假定 `_lock` 是对象持有的 ReaderWriterLockSlim，`_list` 是受保护的集合：
 
@@ -276,6 +277,55 @@ public int Count
 	}
 }
 ```
+
+<a id="zss0057"></a>
+
+### ZSS0057 · 局部对齐与紧凑边界
+
+仅豁免以下位置的 IDE0055，不忽略语句内部的其他格式问题：
+
+- 变量声明中类型与变量名之间、变量名与初始化 `=` 之间的对齐空白。
+- 初始化、赋值或 `return` 中的二元／条件表达式续行对齐表达式开头；条件赋值的续行也可对齐 `=`（按 `tab_width` 计算显示列）。
+- 参数特性列表之间、最后一个特性列表与参数类型或修饰符之间省略的空格。
+- 元组元素名与 `:` 之间的空格；三元表达式的 `:` 在行尾时省略的前导空格。
+- 空 `while` 循环的右括号与同一行分号之间的布局。
+- 构造函数初始化器后的一个空格及同一行的空 `{ }`，包括跨行的初始化器；Tab 分隔不属于此例外。
+- 匿名方法的 `delegate` 与 `(` 之间省略空格。
+
+<a id="zss0058"></a>
+<a id="zss2003"></a>
+
+### ZSS0058 / ZSS2003 · 简短方法与匿名函数
+
+方法、局部函数、lambda 或匿名方法可以使用单行块体，最多包含两条简单语句：调用／赋值、局部声明、return 或 throw。此例外仅豁免块边界的 IDE0055 和块内的 IDE2001，不豁免表达式内部格式。三条以上语句、嵌套控制流、多行块体和 yield 语句不属于此例外。try/catch/finally 仍独立遵循每个子句最多一条简单语句的限制。
+
+```csharp
+public int Next(int value) { value++; return value; }
+```
+
+<a id="zss1303"></a>
+
+### ZSS1303 · 技术文本
+
+仅对以下能够明确识别的情况豁免 CA1303：
+
+- BCL 中真实的 `System.MemoryExtensions.AsSpan`、`AsMemory` 字符串重载；应用自行定义的同名方法不属于例外。
+- 编译期常量完全由一条或多条完整 ANSI CSI 序列组成：`ESC [`、参数／中间字节及终止字节。包含可见前后缀或不完整转义的内容不豁免。
+- 编译期常量包含至少两行非空图案，且仅使用空白与 `_ / \ | + - =` 绘图字符。含字母、数字或其他字符时不豁免，也不根据常量名字判断。
+
+不会关闭命名启发式检查，也不会改变异常消息和交互文本的检查要求。字符串转换不代表最终文本无需本地化，仍应审查其实际用途。
+
+<a id="zss2002"></a>
+
+### ZSS2002 · 空 while 循环
+
+允许 `while(queue.TryDequeue(out _));`，不报告 IDE2001；这里假定 `queue` 是并发队列。非空循环体仍另起一行；本例外不判断空循环是否符合业务意图。
+
+<a id="zss1006"></a>
+
+### ZSS1006 · 私有静态只读字段
+
+私有 `static readonly` 字段除 `_camelCase` 外，也可采用 `__PascalCase__`，例如 `__GetHandlersMethodTemplate__`。两端各两个下划线，中间首字母大写、只含字母和数字。此 IDE1006 例外不适用于实例字段、可变静态字段、公共字段或局部变量。
 
 <a id="configuration"></a>
 

@@ -20,7 +20,7 @@ public sealed class AnalyzerTest
 	public async Task PreservesDisabledDocumentation()
 	{
 		//与原 IDE0005 一样，关闭文档后编译器不提供 CS8019；不擅自覆盖项目配置。
-		var result = await AnalyzeAsync("using System;\nusing System.Text;\n\nnamespace Samples;\n\npublic class Sample { }\n", documentation: false);
+		var result = await AnalyzeAsync("using System;\nusing Binder = Microsoft.CSharp.RuntimeBinder;\n\nnamespace Samples;\n\npublic class Sample { }\n", documentation: false);
 		Assert.True(result.Success, result.Output);
 		Assert.DoesNotContain("ZS0005", result.Output);
 	}
@@ -34,7 +34,7 @@ public sealed class AnalyzerTest
 	}
 
 	[Theory]
-	[InlineData("using System.Text;", "3,1")]
+	[InlineData("using Binder = Microsoft.CSharp.RuntimeBinder;", "3,1")]
 	[InlineData("using Namespace = System;", "3,1")]
 	[InlineData("using Text = System.Text.StringBuilder;", "3,1")]
 	[InlineData("using static System.Math;", "3,1")]
@@ -159,7 +159,7 @@ public sealed class AnalyzerTest
 	[Fact]
 	public async Task ReportsWarningsWithoutStrictMode()
 	{
-		var result = await AnalyzeAsync("using System.Text;\n\nnamespace Samples;\n\npublic class Sample { }\n", strict: false);
+		var result = await AnalyzeAsync("using Binder = Microsoft.CSharp.RuntimeBinder;\n\nnamespace Samples;\n\npublic class Sample { }\n", strict: false);
 		Assert.True(result.Success, result.Output);
 		Assert.Contains("warning ZS0005", result.Output);
 	}
@@ -168,7 +168,7 @@ public sealed class AnalyzerTest
 	public async Task RespectsEditorConfigOverride()
 	{
 		var result = await AnalyzeAsync(
-			"using System.Text;\n\nnamespace Samples;\n\npublic class Sample { }\n",
+			"using Binder = Microsoft.CSharp.RuntimeBinder;\n\nnamespace Samples;\n\npublic class Sample { }\n",
 			editorConfig: "root = true\r\n[*.cs]\r\ndotnet_diagnostic.ZS0005.severity = none\r\n");
 		Assert.True(result.Success, result.Output);
 		Assert.DoesNotContain("ZS0005", result.Output);

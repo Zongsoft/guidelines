@@ -8,7 +8,7 @@ using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 namespace Zongsoft.CodeAnalysis.Analyzers;
 
-/// <summary>逐条检查未使用的导入，允许保留普通的 System 命名空间导入。</summary>
+/// <summary>逐条检查未使用的导入，允许保留普通命名空间导入。</summary>
 [DiagnosticAnalyzer(LanguageNames.CSharp)]
 public sealed class UnusedUsingAnalyzer : DiagnosticAnalyzer
 {
@@ -43,12 +43,11 @@ public sealed class UnusedUsingAnalyzer : DiagnosticAnalyzer
 			if(directive == null)
 				continue;
 
-			//仅放宽 using System;，不包括别名、using static、global using 或其他 System.*。
+			//允许保留普通命名空间导入，不包括别名、using static 和 global using。
 			if(directive.Alias == null && directive.StaticKeyword.IsKind(SyntaxKind.None) &&
 				directive.GetFirstToken().IsKind(SyntaxKind.UsingKeyword) &&
-				directive.Name is IdentifierNameSyntax name && name.Identifier.ValueText == "System" &&
-				context.SemanticModel.GetSymbolInfo(name, context.CancellationToken).Symbol is INamespaceSymbol space &&
-				space.Name == "System" && space.ContainingNamespace.IsGlobalNamespace)
+				directive.Name != null &&
+				context.SemanticModel.GetSymbolInfo(directive.Name, context.CancellationToken).Symbol is INamespaceSymbol)
 				continue;
 
 			context.ReportDiagnostic(Diagnostic.Create(_rule, directive.GetLocation(), directive.Name?.ToString()));

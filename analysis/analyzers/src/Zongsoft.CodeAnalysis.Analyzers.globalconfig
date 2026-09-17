@@ -105,7 +105,7 @@ csharp_style_unused_value_expression_statement_preference = discard_variable:sil
 csharp_prefer_simple_using_statement = false:silent
 
 # 显式严重级别供构建使用；命名规则各自的 severity 主要供编辑器使用。
-# ZS0005 逐条检查并豁免普通 using System;，避免 IDE0005 合并连续引用产生误报。
+# ZS0005 逐条检查并豁免所有普通命名空间引用，避免 IDE0005 合并连续引用产生误报。
 dotnet_diagnostic.IDE0005.severity = none
 dotnet_diagnostic.ZS0005.severity = warning
 dotnet_diagnostic.ZS2003.severity = warning
@@ -116,7 +116,7 @@ dotnet_code_quality.CA1303.use_naming_heuristic = true
 dotnet_diagnostic.IDE0009.severity = warning
 # IDE0049 不在构建时运行，需用编辑器或 dotnet format style 补充检查。
 dotnet_diagnostic.IDE0049.severity = warning
-# 配套 StyleSuppressor 仅豁免条件编译指令缩进和简单单行 try/catch/finally 的块边界。
+# 配套抑制器按语法位置豁免指令缩进、局部对齐、紧凑异常处理、简短方法及匿名函数、空 while 循环；见规则列表。
 dotnet_diagnostic.IDE0055.severity = warning
 dotnet_diagnostic.IDE0065.severity = warning
 dotnet_diagnostic.IDE0161.severity = warning

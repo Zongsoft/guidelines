@@ -18,7 +18,7 @@ Severities below come from the packaged [Global AnalyzerConfig](https://github.c
 
 | ID | Rule | Default / strict build | Fix |
 | --- | --- | --- | --- |
-| [ZS0005](#zs0005) | Remove unused imports, allowing ordinary `using System;` | Warning / error | ✅ Remove unused using |
+| [ZS0005](#zs0005) | Remove unused alias, static and global imports | Warning / error | ✅ Remove unused using |
 | [ZS1304](#zs1304) | Access fixed resource entries through generated properties | Warning / error | Manual resource-access migration |
 | [ZS2003](#zs2003) | Separate specified statement groups | Warning / error | ✅ Insert blank line |
 | [IDE0009](#ide0009) | Qualify instance member access with `this.` | Warning / error | SDK |
@@ -43,17 +43,10 @@ Severities below come from the packaged [Global AnalyzerConfig](https://github.c
 ### ZS0005 · Remove unused imports
 
 - **Trigger:** Compiler diagnostic CS8019 identifies an unused import; the analyzer reports each directive separately.
-- **Exception:** Only ordinary `using System;` resolving to the global System namespace is allowed. `System.*`, aliases, `using static` and `global using` are not exempt.
+- **Exception:** Ordinary imports of any namespace are allowed. Aliases, `using static` and `global using` are not exempt.
 - **Build requirement:** Enable `GenerateDocumentationFile=true`; this package does not override a project's choice to disable XML documentation.
 - **Fix:** `Ctrl+.` → **Remove unused using**, including Fix All in a document, project or solution. Comments and directives are retained.
-- **Configuration:** `dotnet_diagnostic.ZS0005.severity`. The original [IDE0005](#ide0005) is disabled because its grouping of consecutive imports conflicts with the System exception.
-
-File-header fragment, assuming the body does not use any System.Text types:
-
-```csharp
-using System;      //Allowed
-using System.Text; //ZS0005: remove this directive
-```
+- **Configuration:** `dotnet_diagnostic.ZS0005.severity`. The original [IDE0005](#ide0005) is disabled because its grouping of consecutive imports conflicts with the ordinary-namespace exception.
 
 This rule only checks usage. Alias restrictions, global imports, dependency grouping and namespace-length ordering remain review requirements under guideline 3.2.
 
@@ -110,6 +103,8 @@ Ordinary `dotnet build` does not run Visual Studio custom tools. Regenerate and 
 
 1. More than two consecutive assignment or initialization statements immediately followed by `if`, `switch`, `for`, `foreach`, `while` or `do`.
 2. Adjacent independent control structures or explicit blocks at the same level. Control structures include those conditions and loops, plus `try`, `using`, `lock`, `checked`/`unchecked` and `unsafe` blocks.
+
+Consecutive simple `if` statements may omit the blank line when neither has braces, an `else`, or a nested control structure as its body. A block, an `else`, or an adjacent loop still requires separation.
 
 **Counting and exceptions:** Initialized local or constant declarations and ordinary, compound and deconstruction assignments count by statement. A multi-variable declaration or deconstruction counts once. A blank line or another statement kind ends the run; comments do not replace blank lines. One or two assignments, or assignments followed by a call or return, do not require separation on that basis. Related `if/else`, `try/catch/finally` and `do/while` clauses and nested bodies remain together. Applies to blocks, switch sections and top-level statements; generated code is excluded.
 
@@ -169,7 +164,7 @@ Use `int`, `string` and other keywords in declarations and static member access,
 
 ### IDE0055 · Formatting
 
-Use Tab indentation and Allman braces for multiline blocks, no space between control keywords and parentheses, and spaces around binary operators. Root `.editorconfig` supplies file endings and file-type exceptions. See [diagnostic exceptions](#suppressions) for conditional directives and compact exception handling.
+Use Tab indentation and Allman braces for multiline blocks, no space between control keywords and parentheses, and spaces around binary operators. Root `.editorconfig` supplies file endings and file-type exceptions. See [diagnostic exceptions](#suppressions) for directives, local alignment and compact layouts.
 
 `dotnet format whitespace` compares formatted text directly without applying diagnostic suppressors and can report permitted layouts. Use analyzer-enabled build diagnostics for these exceptions. Limit formatting to changed files and review the diff. [Official formatting rule](https://learn.microsoft.com/en-us/dotnet/fundamentals/code-analysis/style-rules/ide0055)
 
@@ -191,17 +186,23 @@ Use Tab indentation and Allman braces for multiline blocks, no space between con
 
 Interfaces use an `I` prefix, types and members PascalCase, parameters and ordinary locals camelCase, private fields `_camelCase` and type parameters a `T` prefix. Private, internal and local constants use UPPER_SNAKE_CASE; public or protected constants use PascalCase. A method-local `const int SIZE = sizeof(short);` is compliant.
 
+Private static readonly fields may also use [__PascalCase__](#zss1006).
+
 Naming rules distinguish symbol kind, visibility and `const`; more specific constant rules take precedence. In addition to individual naming-rule severity, `dotnet_diagnostic.IDE1006.severity = warning` enables build diagnostics. Domain meaning, type suffixes and external contracts require review. Check compatibility before automatically renaming public APIs. [Official naming rules](https://learn.microsoft.com/en-us/dotnet/fundamentals/code-analysis/style-rules/naming-rules)
 
 <a id="ide2001"></a>
 
 ### IDE2001 · Separate embedded statements
 
-Simple branches may omit braces, but their statements start on another line. `csharp_style_allow_embedded_statements_on_same_line_experimental = false` is experimental and must be rechecked after SDK upgrades. [ZSS2001](#zss2001) exempts eligible compact try/catch/finally clauses. [Official rule](https://learn.microsoft.com/en-us/dotnet/fundamentals/code-analysis/style-rules/ide2001)
+Simple branches may omit braces, but their statements start on another line. `csharp_style_allow_embedded_statements_on_same_line_experimental = false` is experimental and must be rechecked after SDK upgrades. [ZSS2001](#zss2001) exempts eligible compact try/catch/finally clauses; [ZSS2002](#zss2002) exempts empty `while(...);` loops; [ZSS2003](#zss2003) exempts single-line method and anonymous function bodies with at most two simple statements. [Official rule](https://learn.microsoft.com/en-us/dotnet/fundamentals/code-analysis/style-rules/ide2001)
 
 <a id="ca1303"></a>
 
 ### CA1303 · Localize visible text
+
+String view conversions, fixed control sequences and character drawings receive narrow [ZSS1303](#zss1303) exceptions. Natural-language messages remain checked.
+
+**Test-project exception:** C# projects with `IsTestProject=true` do not report CA1303, including in strict mode. The package appends this ID to `NoWarn`; it does not infer test status from directory or assembly names. Other rules remain enabled, and production projects still require localization.
 
 Reports hardcoded Console text and strings passed to parameters or properties marked `Localizable(true)`. The package enables `dotnet_code_quality.CA1303.use_naming_heuristic = true` for Text/Message/Caption naming heuristics. Follow [resource generation](#resource-generation), then access Designer properties.
 
@@ -227,7 +228,7 @@ These rules are `none` in the package configuration. Projects may deliberately o
 
 | ID | Reason |
 | --- | --- |
-| <a id="ide0005"></a>IDE0005 | Replaced by [ZS0005](#zs0005) to retain ordinary System imports |
+| <a id="ide0005"></a>IDE0005 | Replaced by [ZS0005](#zs0005) to retain ordinary namespace imports |
 | <a id="ide0001"></a>IDE0001 | Preserve `global::` names used to resolve conflicts |
 | <a id="ide0002"></a>IDE0002 | Avoid automatically simplifying those qualified accesses |
 | <a id="ide0003"></a>IDE0003 | Do not uniformly simplify `this.`; fields cannot be configured by visibility |
@@ -252,16 +253,16 @@ ZSS identifiers identify suppressors, not new source warnings. They have no inde
 
 <a id="zss0055"></a>
 
-### ZSS0055 · Conditional-directive indentation
+### ZSS0055 · Directive indentation
 
-Suppresses IDE0055 only for whitespace before `#if`, `#elif`, `#else` and `#endif`. Directives may be at column zero or aligned with surrounding code, without extra indentation for nested conditions. Other expression-formatting issues are not exempt.
+Suppresses IDE0055 for indentation before all `#` directives, including `#pragma`, `#region`, `#nullable`, `#line` and conditional directives. Directives may be at column zero or aligned with surrounding code, without extra indentation for nested conditions. Other expression-formatting issues are not exempt.
 
 <a id="zss0056"></a>
 <a id="zss2001"></a>
 
 ### ZSS0056 / ZSS2001 · Compact exception handling
 
-When every try/catch/finally clause occupies one line and contains one simple statement, suppress block-boundary IDE0055 and block-local IDE2001 respectively. Multiple statements, nested control flow, multiline expressions and formatting inside statements are not exempt.
+Each clause is evaluated separately: a single-line try/catch/finally clause containing zero or one simple statement is exempt from block-boundary IDE0055 and block-local IDE2001. Adjacent compact clauses may share a line, and compact and multiline clauses may be mixed. Multiple statements, nested control flow, multiline expressions and formatting inside statements are not exempt.
 
 Property fragment, assuming `_lock` is the object's ReaderWriterLockSlim and `_list` is the protected collection:
 
@@ -276,6 +277,55 @@ public int Count
 	}
 }
 ```
+
+<a id="zss0057"></a>
+
+### ZSS0057 · Local alignment and compact boundaries
+
+Suppresses IDE0055 only at these locations; other formatting inside statements remains checked:
+
+- Alignment whitespace between a declaration type and variable name, or before its initializer `=`.
+- Binary or conditional expression continuations in initializers, assignments or `return` statements aligned with the expression start. Conditional assignments may also align with `=` (display columns honor `tab_width`).
+- Omitted spaces between parameter attribute lists, or between the last attribute list and the parameter type or modifier.
+- Spaces before tuple-element colons; an omitted space before a conditional-expression colon at the end of a line.
+- The boundary between an empty while loop's closing parenthesis and same-line semicolon.
+- One space before an empty `{ }` on the constructor initializer's line, including multiline initializers. A Tab separator is not exempt.
+- No space between an anonymous method's `delegate` keyword and `(`.
+
+<a id="zss0058"></a>
+<a id="zss2003"></a>
+
+### ZSS0058 / ZSS2003 · Compact method and anonymous function bodies
+
+A method, local function, lambda or anonymous method may have a single-line block containing at most two simple statements: calls/assignments, local declarations, return or throw. The exception suppresses block-boundary IDE0055 and block-local IDE2001; it does not suppress formatting within expressions. Three or more statements, nested control flow, multiline bodies and yield statements are not exempt. The separate one-statement limit for try/catch/finally remains unchanged.
+
+```csharp
+public int Next(int value) { value++; return value; }
+```
+
+<a id="zss1303"></a>
+
+### ZSS1303 · Technical text
+
+Suppresses CA1303 only for these recognized cases:
+
+- String overloads of the actual BCL `System.MemoryExtensions.AsSpan` and `AsMemory` methods. Same-named application methods are not exempt.
+- Compile-time constants consisting entirely of one or more complete ANSI CSI sequences (`ESC [` followed by parameter/intermediate bytes and a final byte). Visible prefixes/suffixes and incomplete sequences are not exempt.
+- Compile-time drawings with at least two nonempty lines, containing only whitespace and `_ / \ | + - =` drawing characters. Letters, digits and other characters are not exempt; the constant's name is irrelevant.
+
+This does not disable naming heuristics or change exception/UI message checks. String transformations do not establish that the resulting text is exempt from localization; review its eventual use.
+
+<a id="zss2002"></a>
+
+### ZSS2002 · Empty while loops
+
+Allows `while(queue.TryDequeue(out _));` without IDE2001, assuming `queue` is a concurrent queue. Nonempty loop bodies still start on another line. This exception does not determine whether the empty loop is intentional.
+
+<a id="zss1006"></a>
+
+### ZSS1006 · Private static readonly fields
+
+Private `static readonly` fields may use either `_camelCase` or `__PascalCase__`, such as `__GetHandlersMethodTemplate__`. Exactly two underscores surround a name starting with an uppercase letter and containing only letters and digits. This IDE1006 exception does not cover instance fields, mutable static fields, public fields or locals.
 
 <a id="configuration"></a>
 

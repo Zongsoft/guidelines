@@ -10,7 +10,7 @@ The [rule catalog](../RULES.md) is the reference for diagnostic behavior, except
 
 | Rule | Action | Constraints preserved |
 | --- | --- | --- |
-| [ZS0005](../RULES.md#zs0005) | Remove unused using | Rechecks compiler CS8019; retains ordinary `using System;`, used imports, comments and directives; does not organize other imports |
+| [ZS0005](../RULES.md#zs0005) | Remove unused using | Rechecks compiler CS8019; retains all ordinary namespace imports, used imports, comments and directives; does not organize other imports |
 | [ZS2003](../RULES.md#zs2003) | Insert blank line | Changes only the reported boundary; preserves indentation, CRLF/LF, comments and directives; inserts outside multiline trailing comments without formatting the file |
 
 Both actions have English and Simplified Chinese titles and support individual fixes and document/project/solution Fix All. Each batch handles the selected rule only.
@@ -38,7 +38,7 @@ Suppressions do not count as fixes. Disabled rules and explicitly permitted patt
 | `IDE0049` | Reuse the SDK predefined-type keyword fix | Preserve meaning; validate in the IDE or `dotnet format style`, not only during builds |
 | `IDE0065`, `IDE0161` | Reuse SDK using-placement and file-scoped namespace fixes | Do not force unsafe conversions involving multiple/nested namespaces, directives or changed binding |
 | `IDE1006` | Prefer SDK naming actions and Roslyn Rename, level B | Resolve collisions and references across files, overloads and interface implementations; public APIs, serialization, reflection and configuration require review |
-| `IDE0055`, `IDE2001` | Reuse local SDK fixes with exception regression tests | Retain permitted directive indentation and compact try/catch/finally; whole-file formatting is not a precise fix |
+| `IDE0055`, `IDE2001` | Reuse local SDK fixes with exception regression tests | Retain permitted directive indentation and compact try/catch/finally and eligible two-statement method/lambda bodies; whole-file formatting is not a precise fix |
 | `ZS1304` | Next: fixed resource key to an existing Designer property; level A only when equivalent | Prove resource-manager identity, key, accessibility, return type and culture behavior; do not guess missing properties |
 | `CA1303` | Existing-resource selection first, extraction to ResX later; level B | Distinguish user text from identifiers; choose resource/key and preserve placeholders, evaluation and exception parameter names |
 | `CS4014` | Context-specific assistance, level B/C | Adding await can change signatures, exception propagation, order and callers; supervised background work is not automatically converted |
@@ -60,7 +60,7 @@ This matrix covers every guideline chapter. Assign new ZS IDs only after definin
 | 3.2 Using aliases | Find symbol-bound alias references, replace with `global::` qualified names, then remove the alias | Check generics, nested types, attributes, nameof constant values and conditional branches; decline when binding or values change |
 | 3.2 Global using in production; test Global.cs exception | Define readable project-type/exception settings before diagnostic or migration work | Global imports affect multiple files; simply removing global is unsafe; retain permitted test imports |
 | 3.3 Member sections and regions | Detect unambiguous empty/duplicate sections; offer selected-range assistance | Do not reorder field initializers, partial members or explanatory regions |
-| 3.4 Whitespace, expression bodies and separation | SDK formatting and ZS2003; define exceptions before further rules | Separate an assignment group only when more than two consecutive assignments/initializations precede a conditional or loop; keep independent control structures separated without mechanically splitting declaration/call/return transitions or related clauses |
+| 3.4 Whitespace, expression bodies and separation | SDK formatting and ZS2003; define exceptions before further rules | Separate an assignment group only when more than two consecutive assignments/initializations precede a conditional or loop; allow consecutive simple unbraced if statements; keep other independent control structures separated without mechanically splitting declaration/call/return transitions or related clauses |
 | 4 Comments and API documentation | Reuse compiler documentation diagnostics; optionally add signature-matching parameter skeletons | Do not invent descriptions, examples, thread-safety guarantees or copyright |
 | 5.1 Member access, locals and properties | Reuse qualification, var and automatic-property fixes; assess field-keyword support later | Preserve validation, notifications, initialization and attributes; do not remove backing fields used elsewhere or through reflection |
 | 5.2 Modern syntax | Reuse SDK actions within the configured language version | Do not upgrade SDKs automatically; preserve collection type, comparer, capacity and enumeration timing |
