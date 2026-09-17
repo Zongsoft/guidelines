@@ -2,6 +2,8 @@
 
 本规范面向 Zongsoft 框架及其应用项目的开发者，统一 .NET/C# 的代码风格、类型设计、公共契约和工程质量要求。
 
+📋 自动检测的诊断编号、级别、例外与修复示例统一见 [规则列表](RULES.zh-Hans.md#index)。本文保留编码和设计要求，工具的检测边界以规则列表说明为准。
+
 > **AI 编码入口：** [AI 开发协作规范（AGENTS.md）](AGENTS.md) 规定编码前阅读、修改边界、验证和交付流程，并引用本文作为编码与设计依据。
 
 **阅读导航**
@@ -227,48 +229,13 @@ public abstract class TextProcessorBase
 - 二元运算符两侧、逗号之后使用一个空格；一元运算符和成员访问运算符不加空格。
 - 一行只写一条普通语句或一个普通声明；`for` 头部、解构声明、自动属性访问器及上述简短异常处理块不受此限制。
 - 单语句且清晰的分支可以省略花括号，语句仍另起一行。多语句、多行复杂表达式或易产生悬空 `else` 的嵌套分支必须加花括号。
-- 尽量按职责和语句种类组织逻辑段，不同语句组之间留一个空行。连续的局部变量、常量及完整的解构声明可归为一组，不因变量类型不同而逐条分隔；声明组与后续调用、赋值或控制结构之间应分隔，反向切换到声明组时亦然。相关的赋值和调用可以连续排列，简短的“声明后直接返回”也可保持紧凑；不要仅因语法节点不同而机械地在每条语句之间插入空行。
+- 按职责组织逻辑段。连续超过两条赋值或初始化语句后紧接条件判断或循环时，先留一个空行；声明、调用、返回之间不机械分隔。计数方式、边界和示例见 [ZS2003](RULES.zh-Hans.md#zs2003)。
 - 同一层级的相邻独立控制语句或显式语句块之间留一个空行，避免逻辑段粘连；即使省略花括号、语句体仅占一行，也应分隔。注释行不能代替空行。`if`／`else if`／`else`、`try`／`catch`／`finally` 和 `do`／`while` 属于同一结构，其关联子句之间不因此插入空行；控制语句与其嵌套语句体也不拆开。
 - 优先使用提前返回减少嵌套。不要机械移除所有 `else`，成对分支在语义更清楚时保留。
 - 简单计算属性、转发方法、操作符和短构造函数优先使用表达式体；仅存储值的属性优先使用自动属性。包含多步操作、循环、异常处理或复杂分支时使用块体。
 - 长参数列表、链式调用和条件表达式按语义换行；避免多层三元表达式和为了压缩行数合并副作用。
 
-> 💡 **声明与操作分组：** 以下为方法体片段，假定 `value` 是待校验的参数。三条声明保持紧凑，随后执行的参数校验另成一组。
-
-```csharp
-var x = 1;
-var y = 2.0;
-var foo = "...";
-
-ArgumentNullException.ThrowIfNull(value);
-```
-
-> 💡 **独立逻辑分隔：** 以下为方法体片段，假定 `items` 为整数数组、`enabled` 为布尔参数，并已有 `Process(int)` 处理方法。三个控制结构各自完整，即使没有花括号，也以空行区分。
-
-```csharp
-for(var index = 0; index < items.Length; index++)
-	items[index]++;
-
-if(enabled)
-	Array.Reverse(items);
-
-foreach(var item in items)
-	Process(item);
-```
-
-> 💡 **简短异常处理：** 以下为属性片段，假定 `_lock` 是所属对象持有的 `ReaderWriterLockSlim`，`_list` 是需要保护的集合。各异常处理子句分别占一行，进入锁与释放锁的关系清楚。
-
-```csharp
-public int Count
-{
-	get
-	{
-		_lock.EnterReadLock();
-		try { return _list.Count; }
-		finally { _lock.ExitReadLock(); }
-	}
-}
-```
+> 💡 **规则示例：** [语句组分隔与紧凑逻辑段](RULES.zh-Hans.md#zs2003)、[条件编译指令缩进](RULES.zh-Hans.md#zss0055)、[单行异常处理](RULES.zh-Hans.md#zss0056)。
 
 <a id="documentation"></a>
 
@@ -446,21 +413,7 @@ Dictionary<string, object> parameters = new(StringComparer.OrdinalIgnoreCase)
 - 参数名、协议字段、配置键、路径、正则表达式、命令标识和机器解析的固定文本不属于翻译内容。异常中的参数名使用 `nameof`；已有 `ThrowIfNull` 等框架校验 API 无需另造消息。自定义 UI／日志接口及文本的真实用途仍需审查，不能单凭字符串存在与否判断违规。
 - 通用资源基础设施确需按动态键解析时，应集中封装。Roslyn 的 `LocalizableResourceString` 等要求延迟选择语言的 API，可以使用 `nameof(生成的资源属性)` 和生成类的 `ResourceManager`，保留资源键的编译期关联；普通消息仍优先直接读取生成属性。
 
-> 🛠️ **资源生成配置：** 以下项目片段适用于 SDK 风格 C# 项目。`ResXFileCodeGenerator` 是 Visual Studio 自定义工具；仅设置 `Generator` 不会让 `dotnet build` 自动重新生成 Designer 文件。CI 编译已提交的生成文件，并将 `.resx` 编译为嵌入资源或卫星程序集。
-
-```xml
-<ItemGroup>
-	<EmbeddedResource Update="Properties/Resources.resx">
-		<Generator>ResXFileCodeGenerator</Generator>
-		<LastGenOutput>Resources.Designer.cs</LastGenOutput>
-	</EmbeddedResource>
-	<Compile Update="Properties/Resources.Designer.cs">
-		<DesignTime>true</DesignTime>
-		<AutoGen>true</AutoGen>
-		<DependentUpon>Resources.resx</DependentUpon>
-	</Compile>
-</ItemGroup>
-```
+> 🛠️ **检测与配置：** [CA1303](RULES.zh-Hans.md#ca1303) 辅助检查可翻译文本，[ZS1304](RULES.zh-Hans.md#zs1304) 检查固定资源键的访问；项目 XML 配置和 Designer 生成步骤见 [资源生成配置](RULES.zh-Hans.md#resource-generation)。
 
 以下为参数校验片段，假定默认资源已定义 `InvalidValue`，并由工具生成对应属性：
 
@@ -489,11 +442,9 @@ if(value < 0)
 
 ### 8.3 自动化规范检查
 
-🛠️ 已支持的 IDE 修复及命令行用法见 [代码规范检查](README.zh-Hans.md#自动修复)，全部规范的自动修复边界与实施顺序见 [代码修复技术规划](analysis/CODE_FIXES.zh-Hans.md)。自动修复后仍应检查差异，涉及设计、兼容性和资源所有权的要求继续人工审查。
-
-- 使用配套 [`.editorconfig`](.editorconfig) 统一编辑器设置，并引用 `Zongsoft.CodeAnalysis` NuGet 包自动加载 [C# 规则](analysis/analyzers/src/Zongsoft.CodeAnalysis.Analyzers.globalconfig) 和构建分析。规则随包版本升级，项目只保留有意的本地覆盖；接入、检查命令及覆盖范围见 [🛠️ 代码规范检查](README.zh-Hans.md#code-analysis)。
-- 明确的命名和布局要求作为警告；`var`、表达式体等允许按场景选择的写法保持为建议。严格模式可将指定风格警告升级为错误，存量项目按项目或修改范围逐步治理。
-- 自动检查不能替代设计与契约审查。`using` 别名、全局引用适用范围、按依赖分组与长度排序、中文职责分段等规则仍按本文人工核对。
+- 使用配套 `.editorconfig` 和 `Zongsoft.CodeAnalysis` NuGet 包，项目只保留有意的本地覆盖。接入、自动同步及代码只读检查方式见 [🛠️ 代码规范检查](README.zh-Hans.md#code-analysis)。
+- 诊断级别、检测边界与自动修复能力见 [📋 规则列表](RULES.zh-Hans.md#index)；VS 中的自定义诊断帮助链接指向对应规则。自动修复后检查差异，设计、兼容性及资源所有权继续人工审查。
+- 尚未自动覆盖的要求见 [人工审查清单](RULES.zh-Hans.md#review)，后续修复实现安排见 [技术规划](analysis/CODE_FIXES.zh-Hans.md)。
 
 <a id="references"></a>
 

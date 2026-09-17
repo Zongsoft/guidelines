@@ -9,7 +9,7 @@ using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 namespace Zongsoft.CodeAnalysis.Analyzers;
 
-/// <summary>检查同一语句列表中声明分组和独立控制结构之间的空行。</summary>
+/// <summary>检查连续赋值组与条件或循环之间，以及独立控制结构之间的空行。</summary>
 [DiagnosticAnalyzer(LanguageNames.CSharp)]
 public sealed class StatementSpacingAnalyzer : DiagnosticAnalyzer
 {
@@ -17,7 +17,8 @@ public sealed class StatementSpacingAnalyzer : DiagnosticAnalyzer
 		"ZS2003",
 		new LocalizableResourceString(nameof(Properties.Resources.StatementSpacingTitle), Properties.Resources.ResourceManager, typeof(Properties.Resources)),
 		new LocalizableResourceString(nameof(Properties.Resources.StatementSpacingMessage), Properties.Resources.ResourceManager, typeof(Properties.Resources)),
-		"Style", DiagnosticSeverity.Warning, true);
+		"Style", DiagnosticSeverity.Warning, true,
+		helpLinkUri: "https://github.com/Zongsoft/Guidelines/blob/main/RULES.zh-Hans.md#zs2003");
 
 	public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => ImmutableArray.Create(_rule);
 
@@ -32,6 +33,7 @@ public sealed class StatementSpacingAnalyzer : DiagnosticAnalyzer
 	{
 		var text = context.Node.SyntaxTree.GetText(context.CancellationToken);
 		StatementSyntax previous = null;
+		var assignments = 0;
 
 		//仅比较同一列表的直接子语句，不把 else、catch、finally 或循环体拆开。
 		foreach(var child in context.Node.ChildNodes())
@@ -41,60 +43,44 @@ public sealed class StatementSpacingAnalyzer : DiagnosticAnalyzer
 			if(current == null)
 				continue;
 
-			if(RequiresSeparation(previous, current) && !HasBlankLine(text, previous.Span.End, current.SpanStart))
+			var separated = previous != null && HasBlankLine(text, previous.Span.End, current.SpanStart);
+
+			if(separated)
+				assignments = 0;
+
+			if(previous != null && !separated &&
+				(IsControl(previous) && IsControl(current) || assignments > 2 && IsConditionalOrLoop(current)))
 				context.ReportDiagnostic(Diagnostic.Create(_rule, current.GetFirstToken().GetLocation()));
 
+			assignments = IsAssignment(current) ? assignments + 1 : 0;
 			previous = current;
 		}
 	}
 
-	private static bool RequiresSeparation(StatementSyntax previous, StatementSyntax current)
+	private static bool IsAssignment(StatementSyntax statement)
 	{
-		if(previous == null)
-			return false;
-
-		if(IsControl(previous) && IsControl(current))
+		if(statement is ExpressionStatementSyntax expression && expression.Expression is AssignmentExpressionSyntax)
 			return true;
 
-		var previousDeclaration = IsDeclaration(previous);
-		var currentDeclaration = IsDeclaration(current);
-
-		if(previousDeclaration == currentDeclaration)
-			return false;
-
-		//声明和操作分组；短小的“声明后直接返回”仍可作为同一逻辑段。
-		var operation = previousDeclaration ? current : previous;
-		return operation is ExpressionStatementSyntax || IsControl(operation);
-	}
-
-	private static bool IsDeclaration(StatementSyntax statement) => statement is LocalDeclarationStatementSyntax ||
-		statement is ExpressionStatementSyntax expression &&
-		expression.Expression is AssignmentExpressionSyntax assignment &&
-		assignment.IsKind(SyntaxKind.SimpleAssignmentExpression) && IsDeclarationTarget(assignment.Left);
-
-	private static bool IsDeclarationTarget(ExpressionSyntax expression)
-	{
-		if(expression is DeclarationExpressionSyntax)
-			return true;
-
-		if(expression is TupleExpressionSyntax tuple)
+		if(statement is LocalDeclarationStatementSyntax declaration)
 		{
-			foreach(var argument in tuple.Arguments)
+			//按语句计数，多变量声明或解构赋值都只计一次。
+			foreach(var variable in declaration.Declaration.Variables)
 			{
-				if(!IsDeclarationTarget(argument.Expression))
-					return false;
+				if(variable.Initializer != null)
+					return true;
 			}
-
-			return tuple.Arguments.Count > 0;
 		}
 
 		return false;
 	}
 
-	private static bool IsControl(StatementSyntax statement) => statement is IfStatementSyntax ||
+	private static bool IsConditionalOrLoop(StatementSyntax statement) => statement is IfStatementSyntax ||
 		statement is ForStatementSyntax || statement is CommonForEachStatementSyntax ||
 		statement is WhileStatementSyntax || statement is DoStatementSyntax ||
-		statement is SwitchStatementSyntax || statement is TryStatementSyntax ||
+		statement is SwitchStatementSyntax;
+
+	private static bool IsControl(StatementSyntax statement) => IsConditionalOrLoop(statement) || statement is TryStatementSyntax ||
 		statement is UsingStatementSyntax || statement is LockStatementSyntax ||
 		statement is CheckedStatementSyntax || statement is UnsafeStatementSyntax || statement is BlockSyntax;
 

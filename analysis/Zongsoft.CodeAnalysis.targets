@@ -3,7 +3,21 @@
 	<PropertyGroup Condition="'$(MSBuildProjectExtension)' == '.csproj'">
 		<WarningsAsErrors>$(WarningsAsErrors);CS4014;CA2012</WarningsAsErrors>
 	</PropertyGroup>
+
 	<PropertyGroup Condition="'$(MSBuildProjectExtension)' == '.csproj' and '$(ZongsoftCodeStyleStrict)' == 'true'">
 		<WarningsAsErrors>$(WarningsAsErrors);ZS0005;ZS2003;ZS1304;CA1303;IDE0009;IDE0055;IDE0065;IDE0161;IDE1006;IDE2001</WarningsAsErrors>
 	</PropertyGroup>
+
+	<!-- 仅实际构建时同步；不修改 VS 快速最新检查设置。 -->
+	<Target Name="_SynchronizeZongsoftGuidelines" BeforeTargets="PrepareForBuild"
+		Condition="'$(MSBuildProjectExtension)' == '.csproj' and '$(ZongsoftGuidelinesSynchronization)' != '' and '$(DesignTimeBuild)' != 'true'">
+		<PropertyGroup>
+			<_ZongsoftGuidelinesDirectory>$([MSBuild]::NormalizePath('$(MSBuildProjectDirectory)', '$(ZongsoftGuidelinesSynchronization)'))</_ZongsoftGuidelinesDirectory>
+		</PropertyGroup>
+
+		<Error Condition="!$([System.IO.Directory]::Exists('$(_ZongsoftGuidelinesDirectory)'))" Code="ZSCFG001"
+			Text="Cannot synchronize '.editorconfig' file. ZongsoftGuidelinesSynchronization must specify an existing directory: $(_ZongsoftGuidelinesDirectory)" />
+		<Copy SourceFiles="$(MSBuildThisFileDirectory)../.editorconfig"
+			DestinationFiles="$(_ZongsoftGuidelinesDirectory)/.editorconfig" SkipUnchangedFiles="true" Retries="3" />
+	</Target>
 </Project>

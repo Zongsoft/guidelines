@@ -50,5 +50,4 @@ jobs:
         working-directory: analysis
         env:
           NUGET_API_KEY: ${{ steps.login.outputs.NUGET_API_KEY }}
-        # 前一步已构建并测试，取得临时凭据后仅执行发布任务。
         run: dotnet cake build.cake --edition=Release --target=pack --exclusive

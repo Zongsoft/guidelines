@@ -10,7 +10,7 @@ Add a package reference to an SDK-style C# project:
 
 ```xml
 <ItemGroup>
-	<PackageReference Include="Zongsoft.CodeAnalysis" Version="0.1.0" PrivateAssets="all" />
+	<PackageReference Include="Zongsoft.CodeAnalysis" Version="0.2.0" PrivateAssets="all" />
 </ItemGroup>
 ```
 
@@ -22,28 +22,15 @@ Normal builds report configured style violations as warnings. Set `ZongsoftCodeS
 
 ## Rules and exceptions
 
-| Component | Behavior |
-| --- | --- |
-| `UnusedUsingAnalyzer` / `ZS0005` | Uses compiler diagnostic CS8019 to report each unused import; permits ordinary `using System;` only when it resolves to the global System namespace |
-| `StyleSuppressor` / `ZSS0055` | Suppresses IDE0055 only for whitespace before `#if`, `#elif`, `#else` and `#endif` |
-| `StyleSuppressor` / `ZSS0056`, `ZSS2001` | Permits compact try/catch/finally clauses when every clause occupies one line and contains one simple statement; suppresses block-boundary IDE0055 and block-local IDE2001, while retaining expression-formatting diagnostics |
-| `StatementSpacingAnalyzer` / `ZS2003` | Requires blank lines at declaration/expression and declaration/control boundaries in either direction, and between adjacent independent control structures. Applies to blocks, switch sections and top-level statements, including unbraced bodies. Consecutive declarations, short declaration-then-return sequences, related clauses and nested bodies remain together; comments do not replace blank lines |
-| SDK `CA1303` | Checks hardcoded Console output, parameters/properties marked `Localizable(true)` and the Text/Message/Caption naming heuristic |
-| `ResourceAccessAnalyzer` / `ZS1304` | Reports fixed-key calls to `ResourceManager.GetString/GetObject/GetStream`; use generated Designer properties; generated code and dynamic keys are excluded |
+The [📋 rule catalog](https://github.com/Zongsoft/Guidelines/blob/main/RULES.md#index) centralizes severity, triggers, exceptions, examples and fixes for imports, statement spacing, localization, naming and formatting exceptions.
 
-The shared `Zongsoft.CodeAnalysis.Analyzers.globalconfig` defines UPPER_SNAKE_CASE local constants and camelCase ordinary locals through naming rules; no custom analyzer is needed for this distinction.
-
-The built-in IDE0005 can combine consecutive unused imports, so the package disables it and uses ZS0005 to report imports individually. Aliases, `using static`, `global using` and `System.*` are outside the System exception. Like IDE0005, build-time unused-import analysis requires `GenerateDocumentationFile=true`; the package preserves an explicit choice to disable XML documentation. Framework Core already enables it.
-
-Localization requires the neutral `.resx` to use `ResXFileCodeGenerator`, with the generated `*.Designer.cs` committed and its properties used by application code. This analyzer has English neutral resources and a `zh-Hans` translation; its Chinese satellite assembly is packed under `analyzers/dotnet/cs/zh-Hans`. Roslyn diagnostics use `nameof(generated property)` with `LocalizableResourceString` to defer language selection instead of freezing it when descriptors are created.
-
-CA1303 naming heuristics cannot determine every string's purpose. Protocol keys, paths, machine-readable text and custom UI/logging APIs still require review; use `Localizable(false)` on parameters or properties that clearly do not need translation where appropriate. Fixed-key lookup wrappers, ResX/Designer synchronization and generator configuration in other projects also require review. Ordinary `dotnet build` does not run the VS custom tool; CI uses the committed generated files.
+In VS2026, follow a custom ZS diagnostic's help link, or select its Error List entry and press F1, to open its online rule anchor. SDK diagnostics retain Microsoft links. Custom links open the Chinese catalog with an English language switch; both RULES.md and RULES.zh-Hans.md are included in the package.
 
 ## Code fixes
 
 In Visual Studio 2026, place the caret on a ZS0005 or ZS2003 diagnostic and press `Ctrl+.` to select **Remove unused using** or **Insert blank line**. Preview and apply an individual fix, or use Fix All for the same rule in a document, project or solution. The providers load from this package; no separate VSIX is required.
 
-ZS0005 retains ordinary `using System;`, comments and directives. ZS2003 inserts a blank line only at the statement-group boundary, preserving indentation and line endings without formatting unrelated code. SDK rules use their SDK-provided fixes; this package does not yet offer custom resource migration for ZS1304 or CA1303.
+See [ZS0005](https://github.com/Zongsoft/Guidelines/blob/main/RULES.md#zs0005) and [ZS2003](https://github.com/Zongsoft/Guidelines/blob/main/RULES.md#zs2003) for fix scope and preservation guarantees. Opening rule help does not change source code.
 
 From the project directory, restrict CLI fixes to specific files and diagnostics:
 
@@ -63,6 +50,26 @@ Keep editor settings such as Tab indentation, CRLF and file-specific exceptions 
 The package contains the analyzer under `analyzers/dotnet/cs` and automatically imported settings under `buildTransitive`. It includes no lib/ref assemblies or Roslyn dependencies and adds no business runtime assembly reference. The analyzer and its tests declare build settings and dependency versions in their own project files, without enabling Central Package Management.
 
 > 💡 `dotnet format whitespace` compares formatted text directly and does not apply diagnostic suppressors, so it may flag permitted layouts. Use loaded-analyzer build diagnostics for these exceptions. Formatting fixes should be limited to changed files and reviewed. IDE0049 requires the editor or a separate `dotnet format style <project> --diagnostics IDE0049 --verify-no-changes` check.
+
+## EditorConfig synchronization
+
+For **0.2.0 and later**, set one property in the consuming repository's root `Directory.Build.props`:
+
+```xml
+<PropertyGroup>
+	<ZongsoftGuidelinesSynchronization>$(MSBuildThisFileDirectory)</ZongsoftGuidelinesSynchronization>
+</PropertyGroup>
+```
+
+The value is the destination directory; unset or empty disables synchronization. After package restore, normal builds automatically synchronize the referenced package's template to that directory's `.editorconfig` before compilation preparation. No separate synchronization or check command is needed.
+
+The complete template is copied with its encoding and line endings, without merging local edits. The built-in MSBuild Copy task creates missing files and copies files whose size or modification time differs; it skips files when both match, without comparing their contents. Put intentional overrides in subdirectory `.editorconfig` files. Review and commit the synchronized root file so editors can use it before package restore.
+
+The destination directory must exist; relative paths resolve against the consuming project directory. Invalid directories report ZSCFG001 and write failures fail the build. Failed copies are retried up to three times. Multi-target and solution builds are supported; parallel projects may copy the same template more than once. Use one analyzer package version throughout a repository.
+
+Visual Studio's fast up-to-date check remains enabled. When VS skips MSBuild, synchronization does not run; use Rebuild or Clean followed by Build when needed. Standalone restore, clean and design-time builds do not synchronize, and Clean does not delete the repository's `.editorconfig`.
+
+Include `.editorconfig text eol=crlf` in the consuming repository's `.gitattributes` for consistent Windows/Linux checkouts; guidelines and framework already do so. After upgrading or rolling back the package, the next actual build synchronizes that version's template.
 
 ## Cake workflow
 
@@ -125,6 +132,6 @@ Code-fix tests load the actual package through MEF and validate exact edits, com
 
 Both Debug and Release packages are written directly to `analysis` as `Zongsoft.CodeAnalysis.<Version>.nupkg`. A subsequent build of the same version replaces that package; compiler outputs remain separated by configuration, and the publishing workflow always uses Release. Other versions may remain in the directory; publication selects only the current project version.
 
-Publish a validated version to an accessible NuGet feed before using it in other machines or CI. Packing does not publish. Update the version in `analysis/analyzers/src/Zongsoft.CodeAnalysis.Analyzers.csproj` for each release, then upgrade consuming projects; do not overwrite published versions. Merge editor-template changes separately when needed.
+Publish a validated version to an accessible NuGet feed before using it in other machines or CI. Packing does not publish. Update the version in `analysis/analyzers/src/Zongsoft.CodeAnalysis.Analyzers.csproj` for each release, then upgrade consuming projects; do not overwrite published versions. When synchronization is enabled, the next actual build updates the editor template.
 
 See the [setup and coverage guide](https://github.com/Zongsoft/Guidelines/blob/main/README.md#code-analysis) for central configuration, local package validation and upgrade steps, and the [coding guidelines](https://github.com/Zongsoft/Guidelines/blob/main/zongsoft.csharp.guidelines.md) for the complete development rules.

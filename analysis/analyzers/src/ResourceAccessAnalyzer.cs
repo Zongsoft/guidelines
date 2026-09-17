@@ -15,7 +15,8 @@ public sealed class ResourceAccessAnalyzer : DiagnosticAnalyzer
 		"ZS1304",
 		new LocalizableResourceString(nameof(Properties.Resources.ResourceAccessTitle), Properties.Resources.ResourceManager, typeof(Properties.Resources)),
 		new LocalizableResourceString(nameof(Properties.Resources.ResourceAccessMessage), Properties.Resources.ResourceManager, typeof(Properties.Resources)),
-		"Globalization", DiagnosticSeverity.Warning, true);
+		"Globalization", DiagnosticSeverity.Warning, true,
+		helpLinkUri: "https://github.com/Zongsoft/Guidelines/blob/main/RULES.zh-Hans.md#zs1304");
 
 	public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => ImmutableArray.Create(_rule);
 

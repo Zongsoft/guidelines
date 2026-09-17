@@ -320,33 +320,101 @@ public sealed class StyleIntegrationTest
 	[Theory]
 	[InlineData(false)]
 	[InlineData(true)]
-	public async Task SeparatesDeclarationGroupFromInvocation(bool separated)
+	public async Task AllowsDeclarationGroupBeforeInvocation(bool separated)
 	{
 		var body = "var x = 1;\n\t\tvar y = 2.0;\n\t\tvar foo = \"...\";\n" + (separated ? "\n" : "") + "\t\tArgumentNullException.ThrowIfNull(items);";
 		var result = await BuildAsync(WrapBody(body));
-		if(separated)
-		{
-			Assert.True(result.ExitCode == 0, result.Output);
-			Assert.DoesNotContain("ZS2003", result.Output);
-		}
-		else
-		{
-			Assert.NotEqual(0, result.ExitCode);
-			Assert.Contains("Example.cs(12,3): error ZS2003", result.Output);
-			Assert.DoesNotContain("Example.cs(10,3): error ZS2003", result.Output);
-			Assert.DoesNotContain("Example.cs(11,3): error ZS2003", result.Output);
-		}
+		Assert.True(result.ExitCode == 0, result.Output);
+		Assert.DoesNotContain("ZS2003", result.Output);
 	}
 
 	[Theory]
 	[InlineData("var count = items.Length;\n\t\titems[0] = count;")]
 	[InlineData("GC.KeepAlive(items);\n\t\tvar count = items.Length;")]
 	[InlineData("var count = items.Length;\n\t\tif(enabled)\n\t\t\tGC.KeepAlive(count);")]
-	public async Task ReportsDeclarationGroupTransitions(string body)
+	[InlineData("var count = items.Length;\n\t\tcount += 1;\n\t\tif(enabled)\n\t\t\tGC.KeepAlive(count);")]
+	[InlineData("int x = 1, y = 2, z = 3;\n\t\tif(enabled)\n\t\t\tGC.KeepAlive(x + y + z);")]
+	[InlineData("var count = items.Length;\n\t\tcount += 1;\n\n\t\tcount += 2;\n\t\tif(enabled)\n\t\t\tGC.KeepAlive(count);")]
+	[InlineData("var count = items.Length;\n\t\tcount += 1;\n\t\tGC.KeepAlive(count);\n\t\tcount += 2;\n\t\tif(enabled)\n\t\t\tGC.KeepAlive(count);")]
+	[InlineData("var count = items.Length;\n\t\tcount += 1;\n\t\tint next;\n\t\tcount += 2;\n\t\tif(enabled)\n\t\t\tGC.KeepAlive(count);")]
+	public async Task AllowsShortOrInterruptedAssignmentGroups(string body)
 	{
 		var result = await BuildAsync(WrapBody(body));
-		Assert.NotEqual(0, result.ExitCode);
-		Assert.Contains("Example.cs(10,3): error ZS2003", result.Output);
+		Assert.True(result.ExitCode == 0, result.Output);
+		Assert.DoesNotContain("ZS2003", result.Output);
+	}
+
+	[Theory]
+	[InlineData(1, false)]
+	[InlineData(2, false)]
+	[InlineData(3, false)]
+	[InlineData(4, false)]
+	[InlineData(3, true)]
+	public async Task RequiresBlankLineAfterMoreThanTwoAssignments(int count, bool separated)
+	{
+		var body = string.Join("\n\t\t", Enumerable.Repeat("items[0] = 1;", count)) +
+			(separated ? "\n\n" : "\n") + "\t\tif(enabled)\n\t\t\tArray.Reverse(items);";
+		var result = await BuildAsync(WrapBody(body));
+		if(count > 2 && !separated)
+		{
+			Assert.NotEqual(0, result.ExitCode);
+			var positions = System.Text.RegularExpressions.Regex.Matches(result.Output, @"Example\.cs\(\d+,\d+\): error ZS2003")
+				.Select(match => match.Value).Distinct().ToArray();
+			Assert.Equal($"Example.cs({9 + count},3): error ZS2003", Assert.Single(positions));
+		}
+		else
+		{
+			Assert.True(result.ExitCode == 0, result.Output);
+			Assert.DoesNotContain("ZS2003", result.Output);
+		}
+	}
+
+	[Theory]
+	[InlineData("if(enabled)\n\t\t\tGC.KeepAlive(count);", true)]
+	[InlineData("switch(count)\n\t\t{\n\t\t\tcase 1: break;\n\t\t}", true)]
+	[InlineData("for(var index = 0; index < count; index++)\n\t\t\tGC.KeepAlive(index);", true)]
+	[InlineData("foreach(var item in items)\n\t\t\tGC.KeepAlive(item);", true)]
+	[InlineData("foreach(var (first, second) in new[] { (1, 2) })\n\t\t\tGC.KeepAlive(first + second);", true)]
+	[InlineData("while(enabled)\n\t\t\tenabled = false;", true)]
+	[InlineData("do { enabled = false; } while(enabled);", true)]
+	[InlineData("GC.KeepAlive(count);", false)]
+	[InlineData("return;", false)]
+	[InlineData("try { GC.KeepAlive(count); }\n\t\tfinally { GC.KeepAlive(items); }", false)]
+	[InlineData("lock(items)\n\t\t\tGC.KeepAlive(count);", false)]
+	[InlineData("using(var stream = new global::System.IO.MemoryStream())\n\t\t\tGC.KeepAlive(stream);", false)]
+	public async Task ChecksAssignmentGroupBeforeConditionsAndLoopsOnly(string next, bool expected)
+	{
+		var result = await BuildAsync(WrapBody("var (count, text) = (1, \"value\");\n\t\tcount += 1;\n\t\t(count, text) = (2, text.Trim());\n\t\t" + next));
+		if(expected)
+		{
+			Assert.NotEqual(0, result.ExitCode);
+			Assert.Contains("Example.cs(12,3): error ZS2003", result.Output);
+			Assert.DoesNotContain("Example.cs(10,3): error ZS2003", result.Output);
+			Assert.DoesNotContain("Example.cs(11,3): error ZS2003", result.Output);
+		}
+		else
+		{
+			Assert.True(result.ExitCode == 0, result.Output);
+			Assert.DoesNotContain("ZS2003", result.Output);
+		}
+	}
+
+	[Fact]
+	public async Task AllowsDocumentedAssignmentGroup()
+	{
+		var source = "using System;\n\nnamespace Samples;\n\npublic static class Sample\n{\n\tpublic static void Run(int[] items)\n\t{\n\t\tvar count = items.Length;\n\t\tvar index = 0;\n\t\tvar enabled = count > 0;\n\n\t\tif(enabled)\n\t\t\tProcess(items[index]);\n\t}\n\n\tprivate static void Process(int value) => GC.KeepAlive(value);\n}\n";
+		var result = await BuildAsync(source);
+		Assert.True(result.ExitCode == 0, result.Output);
+		Assert.DoesNotContain("ZS2003", result.Output);
+	}
+
+	[Fact]
+	public async Task AllowsEntityCreationMappingAndReturn()
+	{
+		var source = "using System;\n\nnamespace Samples;\n\npublic static class Sample\n{\n\tpublic static object Create(Type type, Action<object, object> map, object state)\n\t{\n\t\tvar entity = GetCreator(type)();\n\t\tmap?.Invoke(entity, state);\n\t\treturn entity;\n\t}\n\n\tprivate static Func<object> GetCreator(Type type) => () => Activator.CreateInstance(type);\n}\n";
+		var result = await BuildAsync(source);
+		Assert.True(result.ExitCode == 0, result.Output);
+		Assert.DoesNotContain("ZS2003", result.Output);
 	}
 
 	[Theory]

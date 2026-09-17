@@ -2,7 +2,7 @@
 	<PropertyGroup>
 		<TargetFramework>netstandard2.0</TargetFramework>
 		<LangVersion>latest</LangVersion>
-		<Version>0.1.0</Version>
+		<Version>0.2.0</Version>
 		<IsPackable>true</IsPackable>
 		<IncludeBuildOutput>false</IncludeBuildOutput>
 		<NoDefaultExcludes>true</NoDefaultExcludes>
@@ -37,6 +37,8 @@
 		<None Include="../../../.editorconfig" Pack="true" PackagePath="/" />
 		<None Include="../../README.md" Pack="true" PackagePath="README.md" />
 		<None Include="../../README.zh-Hans.md" Pack="true" PackagePath="README.zh-Hans.md" />
+		<None Include="../../../RULES.md" Pack="true" PackagePath="RULES.md" />
+		<None Include="../../../RULES.zh-Hans.md" Pack="true" PackagePath="RULES.zh-Hans.md" />
 	</ItemGroup>
 
 	<ItemGroup>

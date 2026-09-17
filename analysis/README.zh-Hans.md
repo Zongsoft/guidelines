@@ -10,7 +10,7 @@
 
 ```xml
 <ItemGroup>
-	<PackageReference Include="Zongsoft.CodeAnalysis" Version="0.1.0" PrivateAssets="all" />
+	<PackageReference Include="Zongsoft.CodeAnalysis" Version="0.2.0" PrivateAssets="all" />
 </ItemGroup>
 ```
 
@@ -22,28 +22,15 @@ NuGet 自动加载分析器 DLL、SDK 构建风格检查和共享 Global Analyze
 
 ## 规则与例外
 
-| 组件 | 行为 |
-| --- | --- |
-| `UnusedUsingAnalyzer` / `ZS0005` | 使用编译器 CS8019 逐条报告未使用引用；仅豁免解析为全局 System 命名空间的普通 `using System;` |
-| `StyleSuppressor` / `ZSS0055` | 仅豁免 `#if`、`#elif`、`#else`、`#endif` 行前空白上的 IDE0055 |
-| `StyleSuppressor` / `ZSS0056`、`ZSS2001` | 当 try/catch/finally 的每个子句都各占一行且仅含一条简单语句时，豁免块边界 IDE0055 和块内 IDE2001；语句内部的格式问题仍会报告 |
-| `StatementSpacingAnalyzer` / `ZS2003` | 声明组与调用、赋值或控制结构的双向边界，以及相邻独立控制结构之间应有空行；覆盖语句块、switch 分支、顶层语句和无花括号写法。连续声明、简短的声明后返回、关联子句和嵌套语句体不拆分；注释行不代替空行 |
-| SDK `CA1303` | 检查 Console 提示、标记为 `Localizable(true)` 的参数／属性及 Text、Message、Caption 命名启发式识别的硬编码文本 |
-| `ResourceAccessAnalyzer` / `ZS1304` | 固定资源键直接调用 `ResourceManager.GetString/GetObject/GetStream` 时提示改用 Designer 生成属性；生成代码与动态键解析不报告 |
+[📋 规则列表](https://github.com/Zongsoft/Guidelines/blob/main/RULES.zh-Hans.md#index) 集中说明各诊断的级别、触发条件、例外、示例及修复能力，包括未使用引用、语句空行、本地化、命名及格式豁免。
 
-共享 `Zongsoft.CodeAnalysis.Analyzers.globalconfig` 通过命名规则区分 UPPER_SNAKE_CASE 局部常量与 camelCase 普通局部变量，无需为此编写自定义分析器。
-
-内置 IDE0005 会合并连续的未使用引用，因此本包禁用它，以 ZS0005 逐条定位。别名、`using static`、`global using` 和 `System.*` 不属于 System 导入例外。与 IDE0005 相同，构建时的未使用引用检查要求 `GenerateDocumentationFile=true`；本包保留项目显式关闭 XML 文档的选择。框架 Core 已开启文档生成。
-
-本地化规则要求默认 `.resx` 使用 `ResXFileCodeGenerator` 生成并提交 `*.Designer.cs`，业务代码通过生成属性访问资源。分析器本身使用英文默认资源和 `zh-Hans` 翻译，中文卫星程序集随包放在 `analyzers/dotnet/cs/zh-Hans`。Roslyn 诊断使用 `nameof(生成属性)` 和 `LocalizableResourceString` 延迟选择语言，避免在创建描述符时固定语言。
-
-CA1303 的命名启发式不能准确识别所有文本用途；协议键、路径、机器文本以及自定义 UI／日志接口需要人工审查，必要时对明确不需翻译的参数或属性使用 `Localizable(false)`。固定键查询包装器、Designer 与 ResX 是否同步及其他项目是否正确设置生成器也需要审查。VS 自定义工具不在普通 `dotnet build` 时运行，CI 使用提交的生成文件。
+在 VS2026 中点击自定义 ZS 诊断的帮助链接，或在错误列表中选择规则后按 F1，可打开规则对应的在线锚点。SDK 诊断保留微软链接。规则列表同时提供英文版，并以 RULES.md / RULES.zh-Hans.md 随包分发。
 
 ## 代码修复
 
 在 Visual Studio 2026 中将光标放在 ZS0005 或 ZS2003 的警告位置，按 `Ctrl+.` 打开快速操作，选择“移除未使用的引用”或“插入空行”。可先预览，再修复单处或同一规则在文档、项目、解决方案内的所有位置。修复器随本包加载，无需另外安装 VSIX。
 
-ZS0005 保留普通 `using System;` 和注释、条件编译指令；ZS2003 只在语句组边界补空行，保留现有缩进与换行符，不格式化其他代码。SDK 规则使用 SDK 自带修复；ZS1304 和 CA1303 的资源迁移尚未提供本包自定义修复。
+修复范围与保留行为分别见 [ZS0005](https://github.com/Zongsoft/Guidelines/blob/main/RULES.zh-Hans.md#zs0005) 和 [ZS2003](https://github.com/Zongsoft/Guidelines/blob/main/RULES.zh-Hans.md#zs2003)。打开规则帮助不会自动修改源码。
 
 也可在项目目录中限定文件和诊断执行：
 
@@ -63,6 +50,26 @@ Tab 缩进、CRLF 和各类文件例外等编辑器设置保留在仓库的 `.ed
 包内分析器位于 `analyzers/dotnet/cs`，自动导入的构建配置位于 `buildTransitive`。包不含 lib/ref 程序集或 Roslyn 依赖，也不增加业务运行时程序集引用。分析器及测试的构建设置和依赖版本直接在各自项目文件中声明，不启用中央包版本管理。
 
 > 💡 `dotnet format whitespace` 直接比较格式化结果，不执行诊断抑制器，仍可能报告规范允许的排版。这些例外以加载分析器的构建诊断为准；自动排版应限定修改范围并检查差异。IDE0049 需要编辑器或单独执行 `dotnet format style <project> --diagnostics IDE0049 --verify-no-changes` 补充检查。
+
+## EditorConfig 同步
+
+**0.2.0 及后续版本**只需在消费仓库根目录的 `Directory.Build.props` 中设置：
+
+```xml
+<PropertyGroup>
+	<ZongsoftGuidelinesSynchronization>$(MSBuildThisFileDirectory)</ZongsoftGuidelinesSynchronization>
+</PropertyGroup>
+```
+
+属性值是同步目标目录；未设置或为空时不启用。还原包后，正常构建会在编译准备阶段自动将当前引用包的模板同步为目标目录的 `.editorconfig`，无需单独运行同步或检查命令。
+
+同步完整复制模板并保留编码与换行，不合并本地修改；使用 MSBuild 内置 Copy 任务，缺失时创建，大小或修改时间不同则复制，两者都相同时跳过，不逐字节比较内容。项目例外放在相应子目录的 `.editorconfig`，同步后检查差异并提交根文件，让编辑器在包还原前也能使用配置。
+
+目标目录必须存在，相对路径以消费项目目录为基准。目录无效时报 ZSCFG001，写入失败使构建失败。复制失败最多重试 3 次；支持多目标和解决方案构建，并行项目可能重复复制同一模板，不保证只写入一次。同一仓库应统一分析器包版本。
+
+保留 VS 快速最新检查：VS 判断项目已是最新而跳过 MSBuild 时不同步，需要时执行“重新生成”，或“清理”后再“生成”。单独还原、清理及设计时构建不执行同步，Clean 不删除仓库的 `.editorconfig`。
+
+消费仓库的 `.gitattributes` 应包含 `.editorconfig text eol=crlf`，让 Windows 和 Linux 的 Git 检出保留相同换行。guidelines 和 framework 已配置此项。升级或回退包后，通过下一次实际构建同步对应版本的模板。
 
 ## Cake 构建流程
 
@@ -125,6 +132,6 @@ dotnet pack ./analysis/analyzers/src/Zongsoft.CodeAnalysis.Analyzers.csproj -c R
 
 Debug 和 Release 的 NuGet 包都直接生成在 `analysis`，文件名为 `Zongsoft.CodeAnalysis.<Version>.nupkg`。相同版本后构建的包覆盖前一次产物；编译输出仍按配置隔离，发布工作流固定使用 Release。其他历史版本可保留，发布任务仅选择项目当前版本。
 
-供其他机器或 CI 使用前，应将验证通过的版本发布到可访问的 NuGet 源；打包不会自动发布。每次发布在 `analysis/analyzers/src/Zongsoft.CodeAnalysis.Analyzers.csproj` 递增版本，再由消费项目升级；不覆盖已发布版本。编辑器模板变化时按需单独合并。
+供其他机器或 CI 使用前，应将验证通过的版本发布到可访问的 NuGet 源；打包不会自动发布。每次发布在 `analysis/analyzers/src/Zongsoft.CodeAnalysis.Analyzers.csproj` 递增版本，再由消费项目升级；不覆盖已发布版本。启用同步后，编辑器模板随下一次实际构建更新。
 
 中央配置、本地包验证及升级步骤见 [配套说明](https://github.com/Zongsoft/Guidelines/blob/main/README.zh-Hans.md#code-analysis)，完整开发要求见 [开发规范](https://github.com/Zongsoft/Guidelines/blob/main/zongsoft.csharp.guidelines.md)。

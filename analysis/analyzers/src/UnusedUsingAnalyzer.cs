@@ -16,7 +16,8 @@ public sealed class UnusedUsingAnalyzer : DiagnosticAnalyzer
 		"ZS0005",
 		new LocalizableResourceString(nameof(Properties.Resources.UnusedUsingTitle), Properties.Resources.ResourceManager, typeof(Properties.Resources)),
 		new LocalizableResourceString(nameof(Properties.Resources.UnusedUsingMessage), Properties.Resources.ResourceManager, typeof(Properties.Resources)),
-		"Style", DiagnosticSeverity.Warning, true);
+		"Style", DiagnosticSeverity.Warning, true,
+		helpLinkUri: "https://github.com/Zongsoft/Guidelines/blob/main/RULES.zh-Hans.md#zs0005");
 
 	public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => ImmutableArray.Create(_rule);
 

@@ -29,6 +29,56 @@ public class CodeFixTest
 			.Select(path => MetadataReference.CreateFromFile(path)).ToImmutableArray<MetadataReference>());
 
 	[Theory]
+	[InlineData("ZS0005", "using System.Text;\nclass Sample { }")]
+	[InlineData("ZS1304", "class Sample { string Read() => new System.Resources.ResourceManager(typeof(Sample)).GetString(\"Name\"); }")]
+	[InlineData("ZS2003", "class Sample { void Run() { if(true) { } if(false) { } } }")]
+	public async Task DiagnosticsLinkToRuleAnchors(string id, string source)
+	{
+		using var workspace = new AdhocWorkspace();
+		var document = AddDocument(workspace.CurrentSolution, source);
+		var diagnostic = Assert.Single(await GetDiagnosticsAsync(document, id));
+		var anchor = id.ToLowerInvariant();
+		Assert.Equal("https://github.com/Zongsoft/Guidelines/blob/main/RULES.zh-Hans.md#" + anchor, diagnostic.Descriptor.HelpLinkUri);
+
+		foreach(var file in new[] { "RULES.md", "RULES.zh-Hans.md" })
+			Assert.Contains("<a id=\"" + anchor + "\"></a>", ReadPackageText(file));
+	}
+
+	[Fact]
+	public void RuleCatalogCoversPackagedDiagnosticsAndConfiguration()
+	{
+		var english = ReadPackageText("RULES.md");
+		var chinese = ReadPackageText("RULES.zh-Hans.md");
+		var englishAnchors = System.Text.RegularExpressions.Regex.Matches(english, "<a id=\"([^\"]+)\"></a>")
+			.Select(match => match.Groups[1].Value).ToArray();
+		var chineseAnchors = System.Text.RegularExpressions.Regex.Matches(chinese, "<a id=\"([^\"]+)\"></a>")
+			.Select(match => match.Groups[1].Value).ToArray();
+		Assert.NotEmpty(englishAnchors);
+		Assert.Equal(englishAnchors, chineseAnchors);
+		Assert.Equal(englishAnchors.Length, englishAnchors.Distinct().Count());
+
+		var ids = System.Text.RegularExpressions.Regex.Matches(ReadPackageText("Zongsoft.CodeAnalysis.Analyzers.globalconfig"), @"dotnet_diagnostic\.(\w+)\.severity")
+			.Select(match => match.Groups[1].Value).ToArray();
+		Assert.NotEmpty(ids);
+		Assert.All(ids, id => Assert.Contains(id.ToLowerInvariant(), englishAnchors));
+
+		var analyzers = _package.Value.Analyzer.GetTypes().Where(type => !type.IsAbstract && typeof(DiagnosticAnalyzer).IsAssignableFrom(type))
+			.Select(type => (DiagnosticAnalyzer)Activator.CreateInstance(type)).ToArray();
+		var descriptors = analyzers.SelectMany(analyzer => analyzer.SupportedDiagnostics).ToArray();
+		Assert.Equal(new[] { "ZS0005", "ZS1304", "ZS2003" }, descriptors.Select(rule => rule.Id).OrderBy(id => id).ToArray());
+		Assert.All(descriptors, rule => Assert.Equal("https://github.com/Zongsoft/Guidelines/blob/main/RULES.zh-Hans.md#" + rule.Id.ToLowerInvariant(), rule.HelpLinkUri));
+		Assert.All(analyzers.OfType<DiagnosticSuppressor>().SelectMany(analyzer => analyzer.SupportedSuppressions),
+			rule => Assert.Contains(rule.Id.ToLowerInvariant(), englishAnchors));
+
+		var configuration = System.Text.RegularExpressions.Regex.Matches(ReadPackageText("buildTransitive/Zongsoft.CodeAnalysis.targets"), "Code=\"(ZSCFG[0-9]+)\"")
+			.Select(match => match.Groups[1].Value).Distinct().ToArray();
+		Assert.Equal(new[] { "ZSCFG001" }, configuration);
+		Assert.All(configuration, id => Assert.Contains(id.ToLowerInvariant(), englishAnchors));
+		Assert.Contains("/RULES.md#index", ReadPackageText("README.md"));
+		Assert.Contains("/RULES.zh-Hans.md#index", ReadPackageText("README.zh-Hans.md"));
+	}
+
+	[Theory]
 	[InlineData("using System.Text;\n", "")]
 	[InlineData("using Text = System.Text.StringBuilder;\n", "")]
 	[InlineData("using static System.Math;\n", "")]
@@ -56,15 +106,15 @@ public class CodeFixTest
 	}
 
 	[Theory]
-	[InlineData("var x = 1;\n\t\tSystem.GC.KeepAlive(x);", "var x = 1;\n\n\t\tSystem.GC.KeepAlive(x);")]
-	[InlineData("var x = 1; // value\n\t\t// consume\n\t\tSystem.GC.KeepAlive(x);", "var x = 1; // value\n\n\t\t// consume\n\t\tSystem.GC.KeepAlive(x);")]
-	[InlineData("var x = 1;\n#if true\n\t\tSystem.GC.KeepAlive(x);\n#endif", "var x = 1;\n\n#if true\n\t\tSystem.GC.KeepAlive(x);\n#endif")]
+	[InlineData("var y = 2;\n\t\tvar z = 3;\n\t\tvar x = 1;\n\t\tif(x > 0) { System.GC.KeepAlive(x); }", "var y = 2;\n\t\tvar z = 3;\n\t\tvar x = 1;\n\n\t\tif(x > 0) { System.GC.KeepAlive(x); }")]
+	[InlineData("var y = 2;\n\t\tvar z = 3;\n\t\tvar x = 1; // value\n\t\t// consume\n\t\tif(x > 0) { System.GC.KeepAlive(x); }", "var y = 2;\n\t\tvar z = 3;\n\t\tvar x = 1; // value\n\n\t\t// consume\n\t\tif(x > 0) { System.GC.KeepAlive(x); }")]
+	[InlineData("var y = 2;\n\t\tvar z = 3;\n\t\tvar x = 1;\n#if true\n\t\tif(x > 0) { System.GC.KeepAlive(x); }\n#endif", "var y = 2;\n\t\tvar z = 3;\n\t\tvar x = 1;\n\n#if true\n\t\tif(x > 0) { System.GC.KeepAlive(x); }\n#endif")]
 	[InlineData("if(true) { }\n\t\tforeach(var item in new int[0]) { }", "if(true) { }\n\n\t\tforeach(var item in new int[0]) { }")]
-	[InlineData("var x = 1; System.GC.KeepAlive(x);", "var x = 1;\n\n\t\tSystem.GC.KeepAlive(x);")]
-	[InlineData("var x = 1; /* keep */ System.GC.KeepAlive(x);", "var x = 1; /* keep */\n\n\t\tSystem.GC.KeepAlive(x);")]
-	[InlineData("var (x, y) = (1, 2);\n\t\tSystem.GC.KeepAlive(x + y);", "var (x, y) = (1, 2);\n\n\t\tSystem.GC.KeepAlive(x + y);")]
-	[InlineData("var x = 1; /* multi\nline */\n\t\tSystem.GC.KeepAlive(x);", "var x = 1; /* multi\nline */\n\n\t\tSystem.GC.KeepAlive(x);")]
-	[InlineData("var x = 1; /* multi\nline */ System.GC.KeepAlive(x);", "var x = 1; /* multi\nline */\n\n\t\tSystem.GC.KeepAlive(x);")]
+	[InlineData("var y = 2;\n\t\tvar z = 3;\n\t\tvar x = 1; if(x > 0) { System.GC.KeepAlive(x); }", "var y = 2;\n\t\tvar z = 3;\n\t\tvar x = 1;\n\n\t\tif(x > 0) { System.GC.KeepAlive(x); }")]
+	[InlineData("var y = 2;\n\t\tvar z = 3;\n\t\tvar x = 1; /* keep */ if(x > 0) { System.GC.KeepAlive(x); }", "var y = 2;\n\t\tvar z = 3;\n\t\tvar x = 1; /* keep */\n\n\t\tif(x > 0) { System.GC.KeepAlive(x); }")]
+	[InlineData("var z = 3;\n\t\tz += 1;\n\t\tvar (x, y) = (1, 2);\n\t\tif(x > 0) { System.GC.KeepAlive(x + y); }", "var z = 3;\n\t\tz += 1;\n\t\tvar (x, y) = (1, 2);\n\n\t\tif(x > 0) { System.GC.KeepAlive(x + y); }")]
+	[InlineData("var y = 2;\n\t\tvar z = 3;\n\t\tvar x = 1; /* multi\nline */\n\t\tif(x > 0) { System.GC.KeepAlive(x); }", "var y = 2;\n\t\tvar z = 3;\n\t\tvar x = 1; /* multi\nline */\n\n\t\tif(x > 0) { System.GC.KeepAlive(x); }")]
+	[InlineData("var y = 2;\n\t\tvar z = 3;\n\t\tvar x = 1; /* multi\nline */ if(x > 0) { System.GC.KeepAlive(x); }", "var y = 2;\n\t\tvar z = 3;\n\t\tvar x = 1; /* multi\nline */\n\n\t\tif(x > 0) { System.GC.KeepAlive(x); }")]
 	public async Task InsertsBlankLineWithoutFormatting(string before, string after)
 	{
 		foreach(var newline in new[] { "\r\n", "\n" })
@@ -85,7 +135,7 @@ public class CodeFixTest
 	public async Task FixesSpacingInSwitchAndTopLevelStatements(bool topLevel)
 	{
 		using var workspace = new AdhocWorkspace();
-		var body = "var x = 1;\r\nSystem.GC.KeepAlive(x);";
+		var body = "var x = 1;\r\nx += 1;\r\nx += 2;\r\nif(x > 0) { System.GC.KeepAlive(x); }";
 		var source = topLevel ? body : Wrap("switch(1)\n\t\t{\n\t\t\tcase 1:\n" + body + "\n\t\t\t\tbreak;\n\t\t}");
 		var document = AddDocument(workspace.CurrentSolution, source);
 
@@ -96,7 +146,7 @@ public class CodeFixTest
 		Assert.Single(diagnostics.Select(item => item.Location.SourceSpan).Distinct());
 
 		var result = await ApplyAsync(Assert.Single(await GetActionsAsync(document, diagnostics[0])), document.Id);
-		Assert.Equal(source.Replace("var x = 1;\r\n", "var x = 1;\r\n\r\n"), (await result.GetTextAsync(TestContext.Current.CancellationToken)).ToString());
+		Assert.Equal(source.Replace("x += 2;\r\n", "x += 2;\r\n\r\n"), (await result.GetTextAsync(TestContext.Current.CancellationToken)).ToString());
 		await AssertCleanAsync(result, "ZS2003");
 	}
 
@@ -203,7 +253,7 @@ public class CodeFixTest
 		{
 			CultureInfo.CurrentUICulture = CultureInfo.GetCultureInfo(language);
 			using var workspace = new AdhocWorkspace();
-			var document = AddDocument(workspace.CurrentSolution, "using System.Text;\n" + Wrap("var x = 1;\n\t\tSystem.GC.KeepAlive(x);"));
+			var document = AddDocument(workspace.CurrentSolution, "using System.Text;\n" + Wrap("var x = 1;\n\t\tx += 1;\n\t\tx += 2;\n\t\tif(x > 0) { System.GC.KeepAlive(x); }"));
 
 			Assert.Equal(usingTitle, Assert.Single(await GetActionsAsync(document, Assert.Single(await GetDiagnosticsAsync(document, "ZS0005")))).Title);
 			Assert.Equal(spacingTitle, Assert.Single(await GetActionsAsync(document, Assert.Single(await GetDiagnosticsAsync(document, "ZS2003")))).Title);
@@ -266,7 +316,24 @@ public class CodeFixTest
 	}
 
 	private static DiagnosticAnalyzer GetAnalyzer(string id) => (DiagnosticAnalyzer)Activator.CreateInstance(
-		_package.Value.Analyzer.GetType("Zongsoft.CodeAnalysis.Analyzers." + (id == "ZS0005" ? "UnusedUsingAnalyzer" : "StatementSpacingAnalyzer"), true));
+		_package.Value.Analyzer.GetType("Zongsoft.CodeAnalysis.Analyzers." + (id switch
+		{
+			"ZS0005" => "UnusedUsingAnalyzer",
+			"ZS1304" => "ResourceAccessAnalyzer",
+			"ZS2003" => "StatementSpacingAnalyzer",
+			_ => throw new ArgumentOutOfRangeException(nameof(id)),
+		}), true));
+
+	private static string ReadPackageText(string name)
+	{
+		var metadata = typeof(CodeFixTest).Assembly.GetCustomAttributes<AssemblyMetadataAttribute>().ToDictionary(item => item.Key, item => item.Value);
+		var path = Path.Combine(metadata["AnalyzerPackageDirectory"], $"Zongsoft.CodeAnalysis.{metadata["AnalyzerPackageVersion"]}.nupkg");
+		using var archive = ZipFile.OpenRead(path);
+		var entry = archive.GetEntry(name);
+		Assert.NotNull(entry);
+		using var reader = new StreamReader(entry.Open());
+		return reader.ReadToEnd();
+	}
 
 	private static (Assembly, Assembly, string[]) LoadPackage()
 	{

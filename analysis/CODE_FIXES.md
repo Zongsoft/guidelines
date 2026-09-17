@@ -4,12 +4,14 @@
 
 This plan covers existing diagnostics and requirements not yet checked automatically, based on the [coding guidelines](../zongsoft.csharp.guidelines.md) and current Global AnalyzerConfig. Deterministic violations should have previewable fixes; changes requiring a business decision should offer bounded assistance. Architecture, public compatibility, ownership and translation cannot all be corrected automatically.
 
+The [rule catalog](../RULES.md) is the reference for diagnostic behavior, exceptions and VS help links; this document covers fix implementation and future work.
+
 ## ✅ 1. Delivered in the first phase
 
 | Rule | Action | Constraints preserved |
 | --- | --- | --- |
-| `ZS0005` | Remove unused using | Rechecks compiler CS8019; retains ordinary `using System;`, used imports, comments and directives; does not organize other imports |
-| `ZS2003` | Insert blank line | Changes only the reported boundary; preserves indentation, CRLF/LF, comments and directives; inserts outside multiline trailing comments without formatting the file |
+| [ZS0005](../RULES.md#zs0005) | Remove unused using | Rechecks compiler CS8019; retains ordinary `using System;`, used imports, comments and directives; does not organize other imports |
+| [ZS2003](../RULES.md#zs2003) | Insert blank line | Changes only the reported boundary; preserves indentation, CRLF/LF, comments and directives; inserts outside multiline trailing comments without formatting the file |
 
 Both actions have English and Simplified Chinese titles and support individual fixes and document/project/solution Fix All. Each batch handles the selected rule only.
 
@@ -58,7 +60,7 @@ This matrix covers every guideline chapter. Assign new ZS IDs only after definin
 | 3.2 Using aliases | Find symbol-bound alias references, replace with `global::` qualified names, then remove the alias | Check generics, nested types, attributes, nameof constant values and conditional branches; decline when binding or values change |
 | 3.2 Global using in production; test Global.cs exception | Define readable project-type/exception settings before diagnostic or migration work | Global imports affect multiple files; simply removing global is unsafe; retain permitted test imports |
 | 3.3 Member sections and regions | Detect unambiguous empty/duplicate sections; offer selected-range assistance | Do not reorder field initializers, partial members or explanatory regions |
-| 3.4 Whitespace, expression bodies and separation | SDK formatting and ZS2003; define exceptions before further rules | Retain related clauses, contiguous declarations and short declaration-return groups |
+| 3.4 Whitespace, expression bodies and separation | SDK formatting and ZS2003; define exceptions before further rules | Separate an assignment group only when more than two consecutive assignments/initializations precede a conditional or loop; keep independent control structures separated without mechanically splitting declaration/call/return transitions or related clauses |
 | 4 Comments and API documentation | Reuse compiler documentation diagnostics; optionally add signature-matching parameter skeletons | Do not invent descriptions, examples, thread-safety guarantees or copyright |
 | 5.1 Member access, locals and properties | Reuse qualification, var and automatic-property fixes; assess field-keyword support later | Preserve validation, notifications, initialization and attributes; do not remove backing fields used elsewhere or through reflection |
 | 5.2 Modern syntax | Reuse SDK actions within the configured language version | Do not upgrade SDKs automatically; preserve collection type, comparer, capacity and enumeration timing |
