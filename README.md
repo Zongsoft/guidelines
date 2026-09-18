@@ -21,13 +21,13 @@ This tooling packages the enforceable rules from the [coding guidelines](zongsof
 
 | File | Responsibility |
 | --- | --- |
-| [`.editorconfig`](.editorconfig) | Tab indentation, CRLF, file-type exceptions and existing VB preferences; C# diagnostic rules are no longer duplicated here |
+| [`.editorconfig`](.editorconfig) | Tab indentation, CRLF, file-type exceptions and existing VB preferences |
 | [`Zongsoft.CodeAnalysis.Analyzers.globalconfig`](analysis/analyzers/src/Zongsoft.CodeAnalysis.Analyzers.globalconfig) | C# style, naming and diagnostic severity, loaded automatically from the package |
 | [`Zongsoft.CodeAnalysis.props`](analysis/Zongsoft.CodeAnalysis.props) / [`.targets`](analysis/Zongsoft.CodeAnalysis.targets) | Automatically imported NuGet build settings for SDK switches, global configuration registration and strict checks |
 | [`analysis`](analysis/README.md) | Analyzer sources, the packaging project and regression tests using actual package consumers |
 | [`.gitattributes`](.gitattributes) | LF for `.sh`, CRLF for `.cmd` |
 
-The package places its DLL under the standard `analyzers/dotnet/cs` path and imports settings through `buildTransitive`. It contains no business runtime assemblies or Roslyn runtime dependencies. It supports SDK-style C# projects using PackageReference; validation uses the .NET 10 SDK and covers net8.0, net9.0 and net10.0. SDK-provided rules change with the SDK and should be revalidated after upgrades.
+The package places its DLL under the standard `analyzers/dotnet/cs` path and imports settings through `buildTransitive`. It contains no business runtime assemblies or Roslyn runtime dependencies. It requires VS2026 or the .NET 10 SDK and supports SDK-style C# projects using PackageReference, with net8.0, net9.0 and net10.0 target frameworks. SDK-provided rules change with the SDK and should be revalidated after upgrades.
 
 ### Project setup
 
@@ -35,14 +35,14 @@ For projects without Central Package Management, add:
 
 ```xml
 <ItemGroup>
-	<PackageReference Include="Zongsoft.CodeAnalysis" Version="0.2.0" PrivateAssets="all" />
+	<PackageReference Include="Zongsoft.CodeAnalysis" Version="1.0.0" PrivateAssets="all" />
 </ItemGroup>
 ```
 
 With Central Package Management, declare the version in `Directory.Packages.props`:
 
 ```xml
-<PackageVersion Include="Zongsoft.CodeAnalysis" Version="0.2.0" />
+<PackageVersion Include="Zongsoft.CodeAnalysis" Version="1.0.0" />
 ```
 
 Add the versionless reference to the C# project or shared `Directory.Build.props`:
@@ -55,9 +55,9 @@ Add the versionless reference to the C# project or shared `Directory.Build.props
 
 After restore, NuGet automatically loads the analyzer and shared rules. No manual props imports, source copies or submodule initialization are needed. `PrivateAssets="all"` prevents rules from flowing to downstream consumers through business libraries. Each project that needs the checks should reference the package explicitly; a repository can add that reference in its shared build file.
 
-Keep editor settings in the root EditorConfig. For initial setup, use this repository's file or the `.editorconfig` template at the package root as a reference. Merge existing settings as needed, preserving project exceptions. C# rules come from the packaged Global AnalyzerConfig, while matching local EditorConfig settings take precedence. When migrating, remove copied C# rules and retain only intentional project overrides so stale settings do not block package upgrades. Framework has completed this migration, and both repositories retain identical root EditorConfig files.
+Keep editor settings in the root EditorConfig. For initial setup, use this repository's file or the `.editorconfig` template at the package root as a reference. Merge existing settings as needed, preserving project exceptions. C# rules come from the packaged Global AnalyzerConfig, while matching local EditorConfig settings take precedence. Declare only intentional project overrides in local configuration.
 
-From version 0.2.0, set `ZongsoftGuidelinesSynchronization` to the repository root to enable [automatic build-time synchronization](analysis/README.md#editorconfig-synchronization). The guidelines file is the maintained source; consumers commit synchronized copies and keep intentional overrides in subdirectory configs. Use Rebuild if VS skips the build.
+Set `ZongsoftGuidelinesSynchronization` to the repository root to enable [automatic build-time synchronization](analysis/README.md#editorconfig-synchronization). The guidelines file is the maintained source; consumers commit synchronized copies and keep intentional overrides in subdirectory configs. Use Rebuild if VS skips the build.
 
 ### Packaging, validation and upgrades
 
@@ -74,7 +74,7 @@ dotnet pack ./analysis/analyzers/src/Zongsoft.CodeAnalysis.Analyzers.csproj -c R
 
 Release packages are generated in `analysis` by default. Retrieve the `.nupkg` there for publication.
 
-Tests first create the package, then build isolated temporary consumer projects through PackageReference. Each project uses a separate package cache to avoid false results from stale versions. The package version is maintained in `analysis/analyzers/src/Zongsoft.CodeAnalysis.Analyzers.csproj`; increment it for each new release instead of overwriting a published version.
+Tests first create the package, then build isolated temporary consumer projects through PackageReference. Each test run uses a fresh package cache to isolate the package under test. The package version is maintained in `analysis/analyzers/src/Zongsoft.CodeAnalysis.Analyzers.csproj`; increment it for each new release instead of overwriting a published version.
 
 Before the first publication, validate locally from framework:
 
@@ -91,7 +91,9 @@ Maintain, validate and publish new versions in guidelines. Consumers update Pack
 
 ### Automatic fixes
 
-ZS0005 (unused imports) and ZS2003 (statement-group blank lines) now have code-fix providers distributed with the NuGet package. Press `Ctrl+.` at a diagnostic in VS2026 to preview an individual fix or apply Fix All for the same rule across a document, project or solution. See [usage](analysis/README.md#code-fixes) and the [full implementation plan](analysis/CODE_FIXES.md). Other custom fixes, including localization migration, remain planned work.
+Localization checks: ZS1301 checks direct exception messages, ZS1302 checks non-ASCII text in handwritten strings, and ZS1304 checks resource-property access. All three are disabled when `IsTestProject=true`. CA1303 is disabled by default. Variables, exception factories and constructor chains are not traced; absence of diagnostics does not prove localization. See the rule catalog for precise boundaries.
+
+ZS0005 (unused imports) and ZS2003 (statement-group blank lines) provide code-fix providers distributed with the NuGet package. Press `Ctrl+.` at a diagnostic in VS2026 to preview an individual fix or apply Fix All for the same rule across a document, project or solution. See [usage](analysis/README.md#code-fixes). Localization migration requires manual changes.
 
 ### Check commands
 

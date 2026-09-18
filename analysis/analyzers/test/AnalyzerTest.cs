@@ -97,10 +97,9 @@ public sealed class AnalyzerTest
 
 	[Theory]
 	[InlineData("\t\tif(value == 0) return 0;\n\t\treturn value;", "IDE2001")]
-	[InlineData("\t\ttry { value++; return value; }\n\t\tfinally { value++; }", "IDE2001")]
-	[InlineData("\t\ttry { global::System.Action action = () => { if(value > 0) value++; }; }\n\t\tfinally { value++; }\n\t\treturn value;", "IDE2001")]
-	[InlineData("\t\ttry { return value; }\n\t\tfinally { value++; value++; }", "IDE2001")]
-	[InlineData("\t\ttry { return value; }\n\t\tcatch(global::System.Exception) { value++; return value; }", "IDE2001")]
+	[InlineData("\t\ttry { value++; value++; return value; }\n\t\tfinally { value++; }", "IDE2001")]
+	[InlineData("\t\ttry { return value; }\n\t\tfinally { value++; value++; value++; }", "IDE2001")]
+	[InlineData("\t\ttry { return value; }\n\t\tcatch(global::System.Exception) { value++; value++; return value; }", "IDE2001")]
 	[InlineData("\t\ttry { return value+1; }\n\t\tfinally { value++; }", "IDE0055")]
 	[InlineData("\t\tif (value == 0)\n\t\t\treturn 0;\n\t\treturn value;", "IDE0055")]
 	public async Task RejectsNonCompactStatements(string body, string diagnostic)
@@ -175,10 +174,8 @@ public sealed class AnalyzerTest
 	}
 
 	[Theory]
-	[InlineData("for(var index = 0; index < items.Length; index++)\n\t\t\t;\n\t\tif(enabled)\n\t\t\t;\n\t\tforeach(var item in items)\n\t\t\t;", "ZS2003", 2)]
-	[InlineData("for(var index = 0; index < items.Length; index++)\n\t\t\titems[index]++;\n\t\tif(enabled)\n\t\t\tArray.Reverse(items);\n\t\tforeach(var item in items)\n\t\t\tGC.KeepAlive(item);", "ZS2003", 2)]
 	[InlineData("if(enabled)\n\t\t{\n\t\t\tArray.Reverse(items);\n\t\t}\n\t\twhile(enabled)\n\t\t\tenabled = false;", "ZS2003", 1)]
-	[InlineData("if(enabled)\n\t\t\tArray.Reverse(items);\n\t\t//Next independent statement.\n\t\tforeach(var item in items)\n\t\t\tGC.KeepAlive(item);", "ZS2003", 1)]
+	[InlineData("if(enabled)\n\t\t{\n\t\t\tArray.Reverse(items);\n\t\t}\n\t\t//Next independent statement.\n\t\tforeach(var item in items)\n\t\t\tGC.KeepAlive(item);", "ZS2003", 1)]
 	public async Task ReportsAdjacentControlStatements(string body, string diagnostic, int count)
 	{
 		var result = await AnalyzeAsync(WrapBody(body));
@@ -195,6 +192,8 @@ public sealed class AnalyzerTest
 	[InlineData("if(enabled)\n\t\t\tforeach(var item in items)\n\t\t\t\tGC.KeepAlive(item);\n\t\telse\n\t\t\tArray.Reverse(items);")]
 	[InlineData("do\n\t\t{\n\t\t\tenabled = false;\n\t\t}\n\t\twhile(enabled);")]
 	[InlineData("if(enabled)\n\t\t\tArray.Reverse(items);\n\n\t\t//Next independent statement.\n\t\tforeach(var item in items)\n\t\t\tGC.KeepAlive(item);")]
+	[InlineData("for(var index = 0; index < items.Length; index++)\n\t\t\t;\n\t\tif(enabled)\n\t\t\t;\n\t\tforeach(var item in items)\n\t\t\t;")]
+	[InlineData("for(var index = 0; index < items.Length; index++)\n\t\t\titems[index]++;\n\t\tif(enabled)\n\t\t\tArray.Reverse(items);\n\t\tforeach(var item in items)\n\t\t\tGC.KeepAlive(item);")]
 	public async Task AllowsSeparatedAndRelatedStatements(string body)
 	{
 		var result = await AnalyzeAsync(WrapBody(body));
@@ -205,7 +204,7 @@ public sealed class AnalyzerTest
 	[Fact]
 	public async Task ChecksSwitchSectionsAndTopLevelStatements()
 	{
-		var source = "using System;\n\nvar items = new[] { 1 };\nforeach(var item in items)\n\tGC.KeepAlive(item);\nif(items.Length > 0)\n\tArray.Reverse(items);\n\nswitch(items.Length)\n{\n\tcase 1:\n\t\tif(items.Length > 0)\n\t\t\tArray.Reverse(items);\n\t\tforeach(var item in items)\n\t\t\tGC.KeepAlive(item);\n\t\tbreak;\n}\n";
+		var source = "using System;\n\nvar items = new[] { 1 };\nforeach(var item in items)\n{ GC.KeepAlive(item); }\nif(items.Length > 0)\n\tArray.Reverse(items);\n\nswitch(items.Length)\n{\n\tcase 1:\n\t\tif(items.Length > 0)\n\t\t{ Array.Reverse(items); }\n\t\tforeach(var item in items)\n\t\t\tGC.KeepAlive(item);\n\t\tbreak;\n}\n";
 		var result = await AnalyzeAsync(source, executable: true);
 		Assert.False(result.Success, result.Output);
 		Assert.Contains("Example.cs(6,1): error ZS2003", result.Output);
@@ -214,45 +213,25 @@ public sealed class AnalyzerTest
 
 	[Theory]
 	[InlineData("throw new ArgumentException(\"Invalid items.\", nameof(items));")]
-	[InlineData("Console.WriteLine(\"Ready.\");")]
-	[InlineData("Console.WriteLine(\"Count: {0}\", items.Length);")]
 	public async Task ReportsNonLocalizedMessages(string body)
 	{
 		var result = await AnalyzeAsync(WrapBody(body));
 		Assert.False(result.Success, result.Output);
 		Assert.Contains("Example.cs(9,", result.Output);
-		Assert.Contains("error CA1303", result.Output);
+		Assert.Contains("error ZS1301", result.Output);
 	}
 
-	[Theory]
-	[InlineData(true)]
-	[InlineData(false)]
-	public async Task RespectsLocalizableAttribute(bool localizable)
-	{
-		var source = "namespace Samples;\n\npublic static class Sample\n{\n\tpublic static void Show([global::System.ComponentModel.Localizable(" + (localizable ? "true" : "false") + ")] string message) => global::System.GC.KeepAlive(message);\n\tpublic static void Run() => Show(\"Ready.\");\n}\n";
-		var result = await AnalyzeAsync(source);
-		if(localizable)
-		{
-			Assert.False(result.Success, result.Output);
-			Assert.Contains("error CA1303", result.Output);
-		}
-		else
-		{
-			Assert.True(result.Success, result.Output);
-			Assert.DoesNotContain("CA1303", result.Output);
-		}
-	}
 
 	[Theory]
 	[InlineData(false)]
 	[InlineData(true)]
 	public async Task NewRulesRespectSeverityOverrides(bool disabled)
 	{
-		var source = WrapBody("if(enabled)\n\t\t\tArray.Reverse(items);\n\t\tforeach(var item in items)\n\t\t\tGC.KeepAlive(item);\n\n\t\tConsole.WriteLine(\"Ready.\");\n\t\tvar manager = new global::System.Resources.ResourceManager(typeof(Sample));\n\t\tGC.KeepAlive(manager.GetString(\"Ready\"));");
-		var config = disabled ? "root = true\r\n[*]\r\nindent_style = tab\r\nindent_size = 4\r\ntab_width = 4\r\n[*.cs]\r\ndotnet_diagnostic.ZS2003.severity = none\r\ndotnet_diagnostic.ZS1304.severity = none\r\ndotnet_diagnostic.CA1303.severity = none\r\n" : null;
+		var source = WrapBody("if(enabled)\n\t\t{\n\t\t\tArray.Reverse(items);\n\t\t}\n\t\tforeach(var item in items)\n\t\t\tGC.KeepAlive(item);\n\n\t\tGC.KeepAlive(new Exception(\"Ready.\"));\n\t\tvar manager = new global::System.Resources.ResourceManager(typeof(Sample));\n\t\tGC.KeepAlive(manager.GetString(\"Ready\"));");
+		var config = disabled ? "root = true\r\n[*]\r\nindent_style = tab\r\nindent_size = 4\r\ntab_width = 4\r\n[*.cs]\r\ndotnet_diagnostic.ZS2003.severity = none\r\ndotnet_diagnostic.ZS1304.severity = none\r\ndotnet_diagnostic.ZS1301.severity = none\r\n" : null;
 		var result = await AnalyzeAsync(source, strict: disabled, editorConfig: config);
 		Assert.True(result.Success, result.Output);
-		foreach(var diagnostic in new[] { "ZS2003", "ZS1304", "CA1303" })
+		foreach(var diagnostic in new[] { "ZS2003", "ZS1304", "ZS1301" })
 		{
 			if(disabled)
 				Assert.DoesNotContain(diagnostic, result.Output);
@@ -278,7 +257,7 @@ public sealed class AnalyzerTest
 	{
 		var result = await AnalyzeAsync(WrapBody("ArgumentNullException.ThrowIfNull(items);\n\t\tGC.KeepAlive(\"application/json\");\n\t\tConsole.WriteLine(global::Zongsoft.CodeAnalysis.Analyzers.Properties.Resources.UnusedUsingTitle);\n\t\tthrow new ArgumentException(global::Zongsoft.CodeAnalysis.Analyzers.Properties.Resources.UnusedUsingTitle, nameof(items));"), resources: true);
 		Assert.True(result.Success, result.Output);
-		Assert.DoesNotContain("CA1303", result.Output);
+		Assert.DoesNotContain("ZS1301", result.Output);
 		Assert.DoesNotContain("ZS1304", result.Output);
 	}
 
@@ -294,7 +273,7 @@ public sealed class AnalyzerTest
 	[Fact]
 	public async Task IgnoresGeneratedControlStatements()
 	{
-		var source = "// <auto-generated/>\n" + WrapBody("if(enabled)\n\t\t\tArray.Reverse(items);\n\t\tforeach(var item in items)\n\t\t\tGC.KeepAlive(item);");
+		var source = "// <auto-generated/>\n" + WrapBody("if(enabled)\n\t\t{\n\t\t\tArray.Reverse(items);\n\t\t}\n\t\tforeach(var item in items)\n\t\t\tGC.KeepAlive(item);");
 		var result = await AnalyzeAsync(source);
 		Assert.True(result.Success, result.Output);
 		Assert.DoesNotContain("ZS2003", result.Output);
@@ -305,7 +284,7 @@ public sealed class AnalyzerTest
 	[InlineData("zh-Hans", "语句组之间应留一个空行")]
 	public async Task LocalizesAnalyzerDiagnostics(string language, string message)
 	{
-		var result = await AnalyzeAsync(WrapBody("if(enabled)\n\t\t\tArray.Reverse(items);\n\t\tforeach(var item in items)\n\t\t\tGC.KeepAlive(item);"), language: language, strict: false);
+		var result = await AnalyzeAsync(WrapBody("if(enabled)\n\t\t{\n\t\t\tArray.Reverse(items);\n\t\t}\n\t\tforeach(var item in items)\n\t\t\tGC.KeepAlive(item);"), language: language, strict: false);
 		Assert.True(result.Success, result.Output);
 		Assert.Contains("warning ZS2003: " + message, result.Output);
 	}

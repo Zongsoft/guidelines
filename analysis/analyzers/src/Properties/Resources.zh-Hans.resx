@@ -34,7 +34,7 @@
 		<value>指令允许保留与代码相同的缩进。</value>
 	</data>
 	<data name="BlockSuppression" xml:space="preserve">
-		<value>简单的 try/catch/finally 子句允许单行块。</value>
+		<value>try/catch/finally 子句包含不超过两条语句时允许单行书写。</value>
 	</data>
 	<data name="LayoutSuppression" xml:space="preserve">
 		<value>允许规范规定的局部对齐与紧凑语法边界。</value>
@@ -45,10 +45,19 @@
 	<data name="FieldNameSuppression" xml:space="preserve">
 		<value>私有字段可以使用全大写名称，或以下划线开头并结尾的名称。</value>
 	</data>
-	<data name="TechnicalTextSuppression" xml:space="preserve">
-		<value>字符串视图转换、终端控制序列和纯字符图案不要求本地化。</value>
-	</data>
 	<data name="CompactBodySuppression" xml:space="preserve">
 		<value>单行方法体和匿名函数体允许包含至多两条简单语句。</value>
+	</data>
+	<data name="ExceptionMessageTitle" xml:space="preserve">
+		<value>本地化异常消息</value>
+	</data>
+	<data name="ExceptionMessageDiagnostic" xml:space="preserve">
+		<value>通过生成的资源属性提供异常消息中的固定文本</value>
+	</data>
+	<data name="LocalizedTextTitle" xml:space="preserve">
+		<value>本地化非 ASCII 文字</value>
+	</data>
+	<data name="LocalizedTextDiagnostic" xml:space="preserve">
+		<value>将字符串中的非 ASCII 文字移入资源；常量位置需要调整设计</value>
 	</data>
 </root>

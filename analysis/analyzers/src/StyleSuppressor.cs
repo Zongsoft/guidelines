@@ -40,7 +40,9 @@ public sealed class StyleSuppressor : DiagnosticSuppressor
 			}
 
 			var node = root.FindToken(span.Start).Parent;
-			var statement = node?.AncestorsAndSelf().OfType<TryStatementSyntax>().FirstOrDefault();
+			var statement = node?.AncestorsAndSelf()
+				.TakeWhile(ancestor => !(ancestor is AnonymousFunctionExpressionSyntax) && !(ancestor is LocalFunctionStatementSyntax))
+				.OfType<TryStatementSyntax>().FirstOrDefault();
 
 			if(statement == null)
 				continue;
@@ -72,22 +74,10 @@ public sealed class StyleSuppressor : DiagnosticSuppressor
 		return root.FindTrivia(position, findInsideTrivia: false).GetStructure() is DirectiveTriviaSyntax;
 	}
 
-	private static bool IsCompact(BlockSyntax block, SourceText text)
-	{
-		var keyword = block.Parent.GetFirstToken();
-		if(block.Statements.Count > 1 || block.ContainsDiagnostics || block.ContainsDirectives ||
-			text.Lines.GetLineFromPosition(keyword.SpanStart).LineNumber != text.Lines.GetLineFromPosition(block.CloseBraceToken.Span.End).LineNumber)
-			return false;
-
-		if(block.Statements.Count == 0)
-			return true;
-
-		if(block.Statements[0].DescendantNodes().OfType<StatementSyntax>().Any())
-			return false;
-
-		return block.Statements[0] is ExpressionStatementSyntax || block.Statements[0] is ReturnStatementSyntax ||
-			block.Statements[0] is ThrowStatementSyntax || block.Statements[0] is LocalDeclarationStatementSyntax;
-	}
+	private static bool IsCompact(BlockSyntax block, SourceText text) =>
+		block.Statements.Count <= 2 && !block.ContainsDiagnostics && !block.ContainsDirectives &&
+		text.Lines.GetLineFromPosition(block.Parent.GetFirstToken().SpanStart).LineNumber ==
+		text.Lines.GetLineFromPosition(block.CloseBraceToken.Span.End).LineNumber;
 
 	private static ImmutableArray<BlockSyntax> GetBlocks(TryStatementSyntax statement)
 	{

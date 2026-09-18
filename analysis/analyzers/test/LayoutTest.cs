@@ -36,6 +36,26 @@ public sealed class LayoutTest
 	[InlineData("try\n\t\t{\n\t\t\tGC.KeepAlive(exception);\n\t\t\tGC.KeepAlive(onError);\n\t\t}\n\t\tcatch { }")]
 	public async Task AllowsCompactAndPartialExceptionBlocks(string body) => await AssertCleanAsync(Wrap("public void Run(Action<Exception> onError, Exception exception)\n\t{\n\t\t" + body + "\n\t}"));
 
+	[Theory]
+	[InlineData("public void Run(int value)\n\t{\n\t\ttry { value++; GC.KeepAlive(value); } catch { value--; GC.KeepAlive(value); } finally { value = 0; GC.KeepAlive(value); }\n\t}")]
+	[InlineData("public void Run(int value)\n\t{\n\t\twhile(value-- > 0)\n\t\t{\n\t\t\ttry { GC.KeepAlive(value); }\n\t\t\tcatch(InvalidOperationException) { GC.KeepAlive(value); continue; }\n\t\t\tcatch(Exception) { GC.KeepAlive(value); break; }\n\t\t}\n\t}")]
+	[InlineData("public global::System.Collections.Generic.IEnumerable<int> Read()\n\t{\n\t\ttry { GC.KeepAlive(1); }\n\t\tcatch { GC.KeepAlive(2); yield break; }\n\t}")]
+	[InlineData("public void Run(int value)\n\t{\n\t\ttry { if(value > 0) GC.KeepAlive(value); } catch { while(value-- > 0) GC.KeepAlive(value); } finally { if(value < 0) GC.KeepAlive(value); }\n\t}")]
+	[InlineData("public void Run(int value)\n\t{\n\t\ttry { if(value > 0) { GC.KeepAlive(value); } GC.KeepAlive(value); } catch { }\n\t}")]
+	[InlineData("public int Read(int value)\n\t{\n\t\ttry { global::System.Action action = () => { if(value > 0) value++; }; }\n\t\tfinally { value++; }\n\t\treturn value;\n\t}")]
+	public async Task AllowsCompactExceptionStatements(string members) => await AssertCleanAsync(Wrap(members));
+
+	[Theory]
+	[InlineData("try { value++; value++; value++; } catch { }")]
+	[InlineData("try { } catch { value++; value++; value++; }")]
+	[InlineData("try { } finally { value++; value++; value++; }")]
+	public async Task RejectsThreeStatementExceptionClauses(string body)
+	{
+		var result = await AnalyzeAsync(Wrap("public void Run(int value)\n\t{\n\t\t" + body + "\n\t}"));
+		Assert.Contains("error IDE2001", result.Output);
+		Assert.DoesNotContain("error CS", result.Output);
+	}
+
 	[Fact]
 	public async Task AllowsLineEndingConditionalColon() => await AssertCleanAsync(Wrap("public int Read(int interval, int longest)\n\t{\n\t\tlongest = interval > 0 ?\n\t\t\tMath.Max(interval, longest):\n\t\t\tMath.Min(interval, longest);\n\t\treturn longest;\n\t}"));
 
@@ -106,15 +126,48 @@ public sealed class LayoutTest
 	[Theory]
 	[InlineData("if(value == 0)\n\t\t\treturn;\n\t\tif(value == 1)\n\t\t\treturn;", true)]
 	[InlineData("if(value == 0)\n\t\t{\n\t\t\treturn;\n\t\t}\n\t\tif(value == 1)\n\t\t\treturn;", false)]
-	[InlineData("if(value == 0)\n\t\t\treturn;\n\t\twhile(value > 1)\n\t\t\tvalue--;", false)]
+	[InlineData("if(value == 0)\n\t\t\treturn;\n\t\twhile(value > 1)\n\t\t\tvalue--;", true)]
 	[InlineData("if(value == 0)\n\t\t\treturn;\n\t\telse\n\t\t\tvalue++;\n\t\tif(value == 1)\n\t\t\treturn;", false)]
-	public async Task ChecksConsecutiveUnbracedIfs(string body, bool allowed)
+	[InlineData("while(value > 0)\n\t\t\tif(value-- == 1)\n\t\t\t\treturn;\n\t\twhile(value > 0)\n\t\t\tvalue--;", false)]
+	[InlineData("while(value > 0)\n\t\t{\n\t\t\tvalue--;\n\t\t}\n\t\twhile(value > 0)\n\t\t\tvalue--;", false)]
+	public async Task ChecksConsecutiveUnbracedControls(string body, bool allowed)
 	{
 		var result = await AnalyzeAsync(Wrap("public void Run(int value)\n\t{\n\t\t" + body + "\n\t}"));
 		if(allowed)
 			Assert.True(result.Success, result.Output);
 		else
 			Assert.Contains("error ZS2003", result.Output);
+	}
+
+	[Theory]
+	[InlineData(0, 0)]
+	[InlineData(0, 1)]
+	[InlineData(0, 2)]
+	[InlineData(0, 3)]
+	[InlineData(1, 0)]
+	[InlineData(1, 1)]
+	[InlineData(1, 2)]
+	[InlineData(1, 3)]
+	[InlineData(2, 0)]
+	[InlineData(2, 1)]
+	[InlineData(2, 2)]
+	[InlineData(2, 3)]
+	[InlineData(3, 0)]
+	[InlineData(3, 1)]
+	[InlineData(3, 2)]
+	[InlineData(3, 3)]
+	public async Task AllowsSimpleControlPairs(int first, int second)
+	{
+		string[] statements =
+		[
+			"if(value > 0)\n\t\t\tvalue--;",
+			"for(var index = 0; index < value; index++)\n\t\t\tGC.KeepAlive(index);",
+			"foreach(var item in (int[])[value])\n\t\t\tGC.KeepAlive(item);",
+			"while(value > 0)\n\t\t\tvalue--;",
+		];
+		var result = await AnalyzeAsync(Wrap("public void Run(int value)\n\t{\n\t\t" + statements[first] + "\n\t\t" + statements[second] + "\n\t}"));
+		Assert.True(result.Success, result.Output);
+		Assert.DoesNotContain("ZS2003", result.Output);
 	}
 
 	[Theory]
@@ -150,16 +203,51 @@ public sealed class LayoutTest
 	[InlineData("public int Read(int value)\n\t{\n\t\treturn value > 0 ||\n\t\t      value < -1 ? 1 : 0;\n\t}", "IDE0055")]
 	[InlineData("public void Run(int value)\n\t{\n\t\twhile(value > 0) value--;\n\t}", "IDE2001")]
 	[InlineData("public void Run()\n\t{\n\t\twhile(((Func<bool>)(() => { if(true) return false; return false; }))());\n\t}", "IDE2001")]
-	[InlineData("public void Run(int value)\n\t{\n\t\ttry { value++; value++; } catch { }\n\t}", "IDE2001")]
+	[InlineData("public void Run(int value)\n\t{\n\t\ttry { value++; value++; value++; } catch { }\n\t}", "IDE2001")]
 	[InlineData("public void Run(int value)\n\t{\n\t\ttry { value+=1; } catch { }\n\t}", "IDE0055")]
 	[InlineData("public int Read(int value) => Math.Abs(value : value);", "IDE0055")]
+	[InlineData("public bool Read(int value)\n\t{\n\t\treturn value > 0 ||\n\t\t       value<-1;\n\t}", "IDE0055")]
+	[InlineData("public void Run()\n\t{\n\t\t  GC.KeepAlive(1);\n\t}", "IDE0055")]
+	[InlineData("public string Read(string first, string second)\n\t{\n\t\treturn string.Concat(first,\n                             second);\n\t}", "IDE0055")]
+	[InlineData("public int Read(int value) { value++; value++; return value; }", "IDE2001")]
+	[InlineData("public Action Read() => () => { GC.KeepAlive(1); GC.KeepAlive(2); GC.KeepAlive(3); };", "IDE2001")]
+	[InlineData("public Action Read() => () => { if(true) GC.KeepAlive(1); };", "IDE2001")]
+	[InlineData("public int Read(int value) { value+=1; return value; }", "IDE0055")]
+	[InlineData("public Func<int, int> Read() => value => { value+=1; return value; };", "IDE0055")]
+	[InlineData("public int Read(int value)\n\t{\n\t\ttry {\n\t\t\treturn value;\n\t\t}\n\t\tfinally { GC.KeepAlive(value); }\n\t}", "IDE0055")]
+	[InlineData("public Sample() :\n\t\tthis(1)\t{ }\n\tpublic Sample(int value) { }", "IDE0055")]
+	[InlineData("private int value = 1;\n\tpublic int Value => value;", "IDE1006")]
+	[InlineData("private int _Value = 1;\n\tpublic int Value => _Value;", "IDE1006")]
+	[InlineData("public int Read()\n\t{\n\t\tvar VALUE = 1;\n\t\treturn VALUE;\n\t}", "IDE1006")]
+	[InlineData("private const int value = 1;\n\tpublic int Value => value;", "IDE1006")]
+	[InlineData("protected int _value = 1;", "IDE1006")]
+	[InlineData("public void Run(int value)\n\t{\n\t\tif(value == 0)\n\t\t\treturn;\n\t\telse\n\t\t\tvalue++;\n\t\tif(value == 1)\n\t\t\treturn;\n\t}", "ZS2003")]
 	public async Task RetainsNearbyViolations(string members, string diagnostic)
 	{
 		var result = await AnalyzeAsync(Wrap(members));
 		Assert.Contains("error " + diagnostic, result.Output);
 	}
 
-	private static string Wrap(string members) => "using System;\n\nnamespace Samples;\n\npublic class Sample\n{\n\t" + members + "\n}\n";
+	[Theory]
+	[InlineData("public void Run(Exception error)\n\t{\n\t\tthrow error is InvalidOperationException ? error :\n\t\t      new InvalidOperationException(error.Message, error);\n\t}")]
+	[InlineData("public bool Read(Type type)\n\t{\n\t\treturn !(type.IsPrimitive || type.IsArray || type.IsEnum ||\n\t\t         type == typeof(string) ||\n\t\t         type == typeof(decimal));\n\t}")]
+	[InlineData("public string Read(string first, string second)\n\t{\n\t\treturn string.Concat(first,\n\t\t                     second);\n\t}")]
+	[InlineData("public string Read(string first, string second)\n\t{\n\t\tvar result = string.Concat(first,\n\t\t                           second,\n\t\t                           first);\n\t\treturn result;\n\t}")]
+	[InlineData("public string Read(char[] values)\n\t{\n\t\tvar result = new string(values,\n\t\t                 0,\n\t\t                 values.Length);\n\t\treturn result;\n\t}")]
+	[InlineData("public Sample() :\n\t\tthis(1) { }\n\tpublic Sample(int value) { }")]
+	[InlineData("public Sample() :\n\t\tbase() { }")]
+	[InlineData("public int Read(Type type)\n\t{\n\t\treturn type.IsGenericType && type.IsValueType ?\n\t\t       1 : 0;\n\t}")]
+	[InlineData("public bool Read(bool value)\n\t{\n\t\tvalue = value ||\n\t\t      (value && value) ? value : false;\n\t\treturn value;\n\t}")]
+	[InlineData("public Action<object> Read() => delegate(object sender)\n\t{\n\t\tGC.KeepAlive(sender);\n\t};")]
+	[InlineData("public int Read(int value) { value++; return value; }")]
+	[InlineData("public int Read() { return 0; }")]
+	[InlineData("public int Read()\n\t{\n\t\tint Local(int value) { value++; return value; }\n\t\treturn Local(1);\n\t}")]
+	[InlineData("public Func<int, int> Read() => value => { value++; return value; };")]
+	[InlineData("public Action Read() => () => { GC.KeepAlive(1); GC.KeepAlive(2); };")]
+	[InlineData("public Func<int, int> Read() => delegate(int value) { value++; return value; };")]
+	public async Task AllowsCompactAndAlignedExpressions(string members) => await AssertCleanAsync(Wrap(members));
+
+	private static string Wrap(string members) => "using System;\nusing System.Linq;\n\nnamespace Samples;\n\npublic class Sample\n{\n\t" + members + "\n}\n";
 	private static Task<AnalysisResult> AnalyzeAsync(string source) => AnalyzerRunner.AnalyzeAsync(source, true, true, null, false, false, null);
 	private static async Task AssertCleanAsync(string source)
 	{

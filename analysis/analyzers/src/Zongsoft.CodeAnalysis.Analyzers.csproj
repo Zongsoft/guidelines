@@ -2,11 +2,13 @@
 	<PropertyGroup>
 		<TargetFramework>netstandard2.0</TargetFramework>
 		<LangVersion>latest</LangVersion>
-		<Version>0.4.0</Version>
+		<Version>1.0.0</Version>
 		<IsPackable>true</IsPackable>
 		<IncludeBuildOutput>false</IncludeBuildOutput>
 		<NoDefaultExcludes>true</NoDefaultExcludes>
 		<EnforceExtendedAnalyzerRules>true</EnforceExtendedAnalyzerRules>
+		<!-- 不维护诊断发布历史。 -->
+		<NoWarn>$(NoWarn);RS2008</NoWarn>
 		<SuppressDependenciesWhenPacking>true</SuppressDependenciesWhenPacking>
 		<DevelopmentDependency>true</DevelopmentDependency>
 		<PackageId>Zongsoft.CodeAnalysis</PackageId>
@@ -23,7 +25,7 @@
 
 	<ItemGroup>
 		<ProjectReference Include="../../fixes/src/Zongsoft.CodeAnalysis.Fixes.csproj" ReferenceOutputAssembly="false" PrivateAssets="all" />
-		<PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="3.8.0" PrivateAssets="all" />
+		<PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="5.9.0" PrivateAssets="all" />
 	</ItemGroup>
 
 	<ItemGroup>
@@ -33,6 +35,7 @@
 		<None Include="$(OutputPath)$(AssemblyName).dll" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false" />
 		<None Include="../../Zongsoft.CodeAnalysis.props" Pack="true" PackagePath="buildTransitive" />
 		<None Include="../../Zongsoft.CodeAnalysis.targets" Pack="true" PackagePath="buildTransitive" />
+		<None Update="Unicode.LICENSE.txt" Pack="true" PackagePath="licenses/Unicode.LICENSE.txt" />
 		<None Update="Zongsoft.CodeAnalysis.Analyzers.globalconfig" Pack="true" PackagePath="/" />
 		<None Include="../../../.editorconfig" Pack="true" PackagePath="/" />
 		<None Include="../../README.md" Pack="true" PackagePath="README.md" />

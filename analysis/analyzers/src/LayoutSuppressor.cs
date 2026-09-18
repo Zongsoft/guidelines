@@ -95,31 +95,50 @@ public sealed class LayoutSuppressor : DiagnosticSuppressor
 	private static bool IsContinuation(SyntaxToken token, SourceText text, int tabWidth)
 	{
 		var line = text.Lines.GetLineFromPosition(token.SpanStart);
-		if(!IsWhitespace(text, line.Start, token.SpanStart) ||
-			!token.Parent.AncestorsAndSelf().Any(node =>
-				node is BinaryExpressionSyntax binary && (binary.Right.GetFirstToken() == token || binary.Left.GetFirstToken() == token) ||
-				node is ConditionalExpressionSyntax conditional && (conditional.Condition.GetFirstToken() == token || conditional.WhenTrue.GetFirstToken() == token || conditional.WhenFalse.GetFirstToken() == token)))
+		if(!IsWhitespace(text, line.Start, token.SpanStart))
 			return false;
 
-		//限定为初始化、赋值或 return 中的表达式续行，不放宽调用参数与任意语句缩进。
-		foreach(var expression in token.Parent.AncestorsAndSelf().OfType<ExpressionSyntax>())
+		var isOperand = false;
+		foreach(var node in token.Parent.AncestorsAndSelf())
 		{
-			if(!(expression is BinaryExpressionSyntax) && !(expression is ConditionalExpressionSyntax))
-				continue;
+			if(node is BinaryExpressionSyntax binary && (binary.Right.GetFirstToken() == token || binary.Left.GetFirstToken() == token))
+			{
+				isOperand = true;
+				if(IsAligned(token, binary.GetFirstToken(), text, tabWidth))
+					return true;
+			}
 
-			var assignment = expression.Parent as AssignmentExpressionSyntax;
-			if(!(expression.Parent is EqualsValueClauseSyntax) && !(expression.Parent is ReturnStatementSyntax) && assignment?.Right != expression)
-				continue;
+			if(node is ConditionalExpressionSyntax conditional &&
+				(isOperand || conditional.Condition.GetFirstToken() == token || conditional.WhenTrue.GetFirstToken() == token || conditional.WhenFalse.GetFirstToken() == token) &&
+				(IsAligned(token, conditional.GetFirstToken(), text, tabWidth) || conditional.Parent is AssignmentExpressionSyntax assignment &&
+					IsAligned(token, assignment.OperatorToken, text, tabWidth)))
+				return true;
 
-			var first = expression.GetFirstToken();
-			if(text.Lines.GetLineFromPosition(first.SpanStart).LineNumber < line.LineNumber &&
-				(GetColumn(text, first.SpanStart, tabWidth) == GetColumn(text, token.SpanStart, tabWidth) ||
-					expression is ConditionalExpressionSyntax && assignment != null &&
-					GetColumn(text, assignment.OperatorToken.SpanStart, tabWidth) == GetColumn(text, token.SpanStart, tabWidth)))
+			//实参可对齐首个实参；构造调用也允许对齐 new 后的类型名。
+			if(node is ArgumentSyntax argument && argument.GetFirstToken() == token && argument.Parent is BaseArgumentListSyntax arguments &&
+				(IsAligned(token, arguments.Arguments.First().GetFirstToken(), text, tabWidth) || arguments.Parent is ObjectCreationExpressionSyntax creation &&
+					IsAligned(token, creation.Type.GetFirstToken(), text, tabWidth)))
 				return true;
 		}
 
 		return false;
+	}
+
+	private static bool IsAligned(SyntaxToken token, SyntaxToken anchor, SourceText text, int tabWidth)
+	{
+		var line = text.Lines.GetLineFromPosition(token.SpanStart);
+		var reference = text.Lines.GetLineFromPosition(anchor.SpanStart);
+		if(reference.LineNumber >= line.LineNumber || GetColumn(text, token.SpanStart, tabWidth) != GetColumn(text, anchor.SpanStart, tabWidth))
+			return false;
+
+		//保留原行的 Tab 层级；额外空白只用于对齐，不能将块缩进整体改为空格。
+		for(var offset = 0; reference.Start + offset < anchor.SpanStart && text[reference.Start + offset] == '\t'; offset++)
+		{
+			if(line.Start + offset >= token.SpanStart || text[line.Start + offset] != '\t')
+				return false;
+		}
+
+		return true;
 	}
 
 	private static int GetColumn(SourceText text, int position, int tabWidth)

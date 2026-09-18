@@ -26,6 +26,10 @@ public sealed class ResourceAccessAnalyzer : DiagnosticAnalyzer
 		context.EnableConcurrentExecution();
 		context.RegisterCompilationStartAction(compilation =>
 		{
+			if(compilation.Options.AnalyzerConfigOptionsProvider.GlobalOptions.TryGetValue("build_property.IsTestProject", out var value) &&
+				bool.TryParse(value, out var testProject) && testProject)
+				return;
+
 			var manager = compilation.Compilation.GetTypeByMetadataName("System.Resources.ResourceManager");
 
 			if(manager == null)

@@ -10,13 +10,13 @@ Add a package reference to an SDK-style C# project:
 
 ```xml
 <ItemGroup>
-	<PackageReference Include="Zongsoft.CodeAnalysis" Version="0.2.0" PrivateAssets="all" />
+	<PackageReference Include="Zongsoft.CodeAnalysis" Version="1.0.0" PrivateAssets="all" />
 </ItemGroup>
 ```
 
 With Central Package Management, declare the version in `Directory.Packages.props` and omit `Version` from the reference. `PrivateAssets="all"` prevents the analyzer from becoming a dependency of the consuming project's published package; projects that need these rules should reference it explicitly.
 
-NuGet automatically loads the analyzer DLL, SDK code-style build settings and shared Global AnalyzerConfig. No source copies or manual props imports are required. The analyzer targets netstandard2.0 and uses Roslyn 3.8 public APIs; validation covers net8.0, net9.0 and net10.0 with the .NET 10 SDK.
+NuGet automatically loads the analyzer DLL, SDK code-style build settings and shared Global AnalyzerConfig. No source copies or manual props imports are required. The analyzer uses Roslyn 5.9 APIs and requires a VS2026 or .NET 10 SDK compiler host with Roslyn 5.9 or later. Its assembly targets netstandard2.0; consuming projects can target net8.0, net9.0 and net10.0. The application target framework and the compiler that loads analyzers are separate requirements.
 
 Normal builds report configured style violations as warnings. Set `ZongsoftCodeStyleStrict=true` in the project or pass `-p:ZongsoftCodeStyleStrict=true` to promote selected style warnings to errors. CS4014 and CA2012 remain errors.
 
@@ -25,6 +25,8 @@ Normal builds report configured style violations as warnings. Set `ZongsoftCodeS
 The [📋 rule catalog](https://github.com/Zongsoft/Guidelines/blob/main/RULES.md#index) centralizes severity, triggers, exceptions, examples and fixes for imports, statement spacing, localization, naming and formatting exceptions.
 
 In VS2026, follow a custom ZS diagnostic's help link, or select its Error List entry and press F1, to open its online rule anchor. SDK diagnostics retain Microsoft links. Custom links open the Chinese catalog with an English language switch; both RULES.md and RULES.zh-Hans.md are included in the package.
+
+Localization checks: ZS1301 checks direct exception messages, ZS1302 checks non-ASCII text in handwritten strings, and ZS1304 checks resource-property access. All three are disabled when `IsTestProject=true`. CA1303 is disabled by default. Variables, exception factories and constructor chains are not traced; absence of diagnostics does not prove localization. See the rule catalog for precise boundaries.
 
 ## Code fixes
 
@@ -39,13 +41,13 @@ dotnet format analyzers ./Example.csproj --diagnostics ZS0005 ZS2003 --include .
 dotnet format analyzers ./Example.csproj --diagnostics ZS0005 ZS2003 --include ./Example.cs --verify-no-changes
 ```
 
-The first command changes the selected file; the second only checks it. See the [code fix implementation plan](https://github.com/Zongsoft/Guidelines/blob/main/analysis/CODE_FIXES.md) for full guideline coverage, resource-generation constraints and phased acceptance.
+The first command changes the selected file; the second only checks it. See the rule catalog for other rules and their fixes.
 
 ## Configuration
 
 The source file for [the global rules](analyzers/src/Zongsoft.CodeAnalysis.Analyzers.globalconfig) is maintained in analyzers/src; [props](Zongsoft.CodeAnalysis.props) and [targets](Zongsoft.CodeAnalysis.targets) are maintained in this directory. Their NuGet package paths remain the package root and buildTransitive, respectively.
 
-Keep editor settings such as Tab indentation, CRLF and file-specific exceptions in the repository's `.editorconfig`; a template is included in the package at `.editorconfig`. C# diagnostic settings come from `Zongsoft.CodeAnalysis.Analyzers.globalconfig` at the package root, loaded through `buildTransitive/Zongsoft.CodeAnalysis.props`, and update with the package version. Local EditorConfig settings take precedence: remove obsolete copied C# rules when migrating, while retaining intentional project overrides.
+Keep editor settings such as Tab indentation, CRLF and file-specific exceptions in the repository's `.editorconfig`; a template is included in the package at `.editorconfig`. C# diagnostic settings come from `Zongsoft.CodeAnalysis.Analyzers.globalconfig` at the package root, loaded through `buildTransitive/Zongsoft.CodeAnalysis.props`, and update with the package version. Local EditorConfig settings take precedence: declare only intentional project overrides.
 
 The package contains the analyzer under `analyzers/dotnet/cs` and automatically imported settings under `buildTransitive`. It includes no lib/ref assemblies or Roslyn dependencies and adds no business runtime assembly reference. The analyzer and its tests declare build settings and dependency versions in their own project files, without enabling Central Package Management.
 
@@ -53,7 +55,7 @@ The package contains the analyzer under `analyzers/dotnet/cs` and automatically 
 
 ## EditorConfig synchronization
 
-For **0.2.0 and later**, set one property in the consuming repository's root `Directory.Build.props`:
+Set one property in the consuming repository's root `Directory.Build.props`:
 
 ```xml
 <PropertyGroup>
@@ -126,12 +128,23 @@ dotnet test ./analysis/Zongsoft.CodeAnalysis.slnx
 dotnet pack ./analysis/analyzers/src/Zongsoft.CodeAnalysis.Analyzers.csproj -c Release
 ```
 
-The regression suite uses the .NET 10 SDK and xUnit v3 through VSTest. It packs the analyzer, then builds isolated temporary consumer projects using PackageReference, a local package source and separate package caches. Assertions check diagnostic IDs and source locations, exit codes, analyzer loading and unchanged source text. Failures include the build output; temporary directories retain `build.log` for diagnosis.
+The regression suite uses the .NET 10 SDK and xUnit v3 through VSTest. It packs the analyzer, then builds isolated temporary consumer projects using PackageReference, a local package source and a fresh package cache for each test run. Assertions check diagnostic IDs and source locations, exit codes, analyzer loading and unchanged source text. Failures include the build output; temporary directories retain `build.log` for diagnosis.
 
 Code-fix tests load the actual package through MEF and validate exact edits, comments and directives, localized titles, absence of new compiler errors, and document/project/solution batch scopes in Roslyn workspaces.
 
-Both Debug and Release packages are written directly to `analysis` as `Zongsoft.CodeAnalysis.<Version>.nupkg`. A subsequent build of the same version replaces that package; compiler outputs remain separated by configuration, and the publishing workflow always uses Release. Other versions may remain in the directory; publication selects only the current project version.
+Both Debug and Release packages are written directly to `analysis` as `Zongsoft.CodeAnalysis.<Version>.nupkg`. A subsequent build of the same version replaces that package; compiler outputs remain separated by configuration, and the publishing workflow always uses Release. Publication selects only the current project version.
 
 Publish a validated version to an accessible NuGet feed before using it in other machines or CI. Packing does not publish. Update the version in `analysis/analyzers/src/Zongsoft.CodeAnalysis.Analyzers.csproj` for each release, then upgrade consuming projects; do not overwrite published versions. When synchronization is enabled, the next actual build updates the editor template.
 
 See the [setup and coverage guide](https://github.com/Zongsoft/Guidelines/blob/main/README.md#code-analysis) for central configuration, local package validation and upgrade steps, and the [coding guidelines](https://github.com/Zongsoft/Guidelines/blob/main/zongsoft.csharp.guidelines.md) for the complete development rules.
+
+<a id="unicode"></a>
+## Unicode data
+
+ZS1302 uses pinned Unicode 17.0 tables; builds and analysis require no network access. To maintain these tables, download the official [DerivedGeneralCategory.txt](https://www.unicode.org/Public/17.0.0/ucd/extracted/DerivedGeneralCategory.txt) and [emoji-data.txt](https://www.unicode.org/Public/17.0.0/ucd/emoji/emoji-data.txt) into one temporary directory, then run from the repository root:
+
+```powershell
+python analysis/analyzers/tool/generate-unicode.py <data-directory>
+```
+
+The script generates `analyzers/src/UnicodeText.Generated.cs`. The package includes the [Unicode license](analyzers/src/Unicode.LICENSE.txt).

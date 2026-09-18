@@ -25,13 +25,13 @@ internal static class AnalyzerRunner
 		((string)AppContext.GetData("TRUSTED_PLATFORM_ASSEMBLIES")).Split(Path.PathSeparator)
 			.Select(path => MetadataReference.CreateFromFile(path)).ToImmutableArray<MetadataReference>());
 
-	public static async Task<AnalysisResult> AnalyzeAsync(string source, bool documentation, bool strict, string editorConfig, bool resources, bool executable, string language)
+	public static async Task<AnalysisResult> AnalyzeAsync(string source, bool documentation, bool strict, string editorConfig, bool resources, bool executable, string language, string testProject = null)
 	{
 		var environment = _environment.Value;
 		var path = Path.Combine(environment.Directory, "Example.cs");
 		var configuration = AnalyzerConfigSet.Create(new[]
 		{
-			AnalyzerConfig.Parse(environment.Configuration, Path.Combine(environment.Directory, "Zongsoft.globalconfig")),
+			AnalyzerConfig.Parse(environment.Configuration + (testProject == null ? "" : "\nbuild_property.IsTestProject = " + testProject + "\n"), Path.Combine(environment.Directory, "Zongsoft.globalconfig")),
 			AnalyzerConfig.Parse(editorConfig ?? "root = true\n[*]\nindent_style = tab\nindent_size = 4\ntab_width = 4\nend_of_line = crlf\n",
 				Path.Combine(environment.Directory, ".editorconfig")),
 		});
@@ -108,7 +108,7 @@ internal static class AnalyzerRunner
 
 		Assert.Contains(analyzers, analyzer => analyzer is DiagnosticSuppressor);
 
-		foreach(var id in new[] { "ZS0005", "ZS1304", "ZS2003", "IDE0055", "IDE1006", "IDE2001", "CA1303" })
+		foreach(var id in new[] { "ZS0005", "ZS1301", "ZS1302", "ZS1304", "ZS2003", "IDE0055", "IDE1006", "IDE2001", "CA1303" })
 			Assert.Contains(analyzers, analyzer => analyzer.SupportedDiagnostics.Any(rule => rule.Id == id));
 
 		var configuration = configurationText +

@@ -61,7 +61,7 @@ namespace Zongsoft.CodeAnalysis.Analyzers.Properties {
         }
 
         /// <summary>
-        ///   查找类似 Simple try/catch/finally clauses may use single-line blocks. 的本地化字符串。
+        ///   查找类似 Try/catch/finally clauses with at most two statements may use single-line blocks. 的本地化字符串。
         /// </summary>
         internal static string BlockSuppression {
             get {
@@ -97,6 +97,24 @@ namespace Zongsoft.CodeAnalysis.Analyzers.Properties {
         }
 
         /// <summary>
+        ///   查找类似 Provide fixed exception message text through a generated resource property 的本地化字符串。
+        /// </summary>
+        internal static string ExceptionMessageDiagnostic {
+            get {
+                return ResourceManager.GetString("ExceptionMessageDiagnostic", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   查找类似 Localize exception messages 的本地化字符串。
+        /// </summary>
+        internal static string ExceptionMessageTitle {
+            get {
+                return ResourceManager.GetString("ExceptionMessageTitle", resourceCulture);
+            }
+        }
+
+        /// <summary>
         ///   查找类似 Private fields may use uppercase names or names enclosed in underscores. 的本地化字符串。
         /// </summary>
         internal static string FieldNameSuppression {
@@ -111,6 +129,24 @@ namespace Zongsoft.CodeAnalysis.Analyzers.Properties {
         internal static string LayoutSuppression {
             get {
                 return ResourceManager.GetString("LayoutSuppression", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   查找类似 Move non-ASCII text into resources; redesign contexts that require constants 的本地化字符串。
+        /// </summary>
+        internal static string LocalizedTextDiagnostic {
+            get {
+                return ResourceManager.GetString("LocalizedTextDiagnostic", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   查找类似 Localize non-ASCII text 的本地化字符串。
+        /// </summary>
+        internal static string LocalizedTextTitle {
+            get {
+                return ResourceManager.GetString("LocalizedTextTitle", resourceCulture);
             }
         }
 
@@ -147,15 +183,6 @@ namespace Zongsoft.CodeAnalysis.Analyzers.Properties {
         internal static string StatementSpacingTitle {
             get {
                 return ResourceManager.GetString("StatementSpacingTitle", resourceCulture);
-            }
-        }
-
-        /// <summary>
-        ///   查找类似 String view conversions, terminal control sequences, and character drawings do not require localization. 的本地化字符串。
-        /// </summary>
-        internal static string TechnicalTextSuppression {
-            get {
-                return ResourceManager.GetString("TechnicalTextSuppression", resourceCulture);
             }
         }
 

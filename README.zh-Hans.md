@@ -21,7 +21,7 @@
 
 | 文件 | 职责 |
 | --- | --- |
-| [`.editorconfig`](.editorconfig) | 编辑器的 Tab、CRLF、文件类型例外和既有 VB 偏好；不再复制 C# 检测规则 |
+| [`.editorconfig`](.editorconfig) | 编辑器的 Tab、CRLF、文件类型例外和既有 VB 偏好 |
 | [`Zongsoft.CodeAnalysis.Analyzers.globalconfig`](analysis/analyzers/src/Zongsoft.CodeAnalysis.Analyzers.globalconfig) | C# 风格、命名、诊断严重级别，随包自动加载 |
 | [`Zongsoft.CodeAnalysis.props`](analysis/Zongsoft.CodeAnalysis.props) / [`.targets`](analysis/Zongsoft.CodeAnalysis.targets) | NuGet 自动导入的 SDK 开关、全局规则注册与严格检查 |
 | [`analysis`](analysis/README.zh-Hans.md) | 分析器源码、打包项目和真实包消费回归测试 |
@@ -35,14 +35,14 @@
 
 ```xml
 <ItemGroup>
-	<PackageReference Include="Zongsoft.CodeAnalysis" Version="0.2.0" PrivateAssets="all" />
+	<PackageReference Include="Zongsoft.CodeAnalysis" Version="1.0.0" PrivateAssets="all" />
 </ItemGroup>
 ```
 
 使用中央包版本管理时，在 `Directory.Packages.props` 添加版本：
 
 ```xml
-<PackageVersion Include="Zongsoft.CodeAnalysis" Version="0.2.0" />
+<PackageVersion Include="Zongsoft.CodeAnalysis" Version="1.0.0" />
 ```
 
 在 C# 项目或公共 `Directory.Build.props` 中添加不带版本的引用：
@@ -55,9 +55,9 @@
 
 还原后，NuGet 自动加载分析器和共享规则，无需手工导入 props、复制源码或初始化子模块。`PrivateAssets="all"` 防止规则经业务库传递给下游；每个需要执行规范的项目应明确引用，仓库可以在公共构建文件统一添加。
 
-保留根 EditorConfig 的编辑器设置。初次接入可参考本仓库文件或包中的 `.editorconfig` 模板，已有配置应按需合并，不覆盖项目例外。C# 规则来自包内 Global AnalyzerConfig；本地 EditorConfig 的同名设置优先。因此从旧版迁移时应移除复制的 C# 规则，只保留有意的项目覆盖，避免旧规则阻挡包升级。框架已完成此迁移，两边的根 EditorConfig 仍保持一致。
+保留根 EditorConfig 的编辑器设置。初次接入可参考本仓库文件或包中的 `.editorconfig` 模板，已有配置应按需合并，不覆盖项目例外。C# 规则来自包内 Global AnalyzerConfig；本地 EditorConfig 的同名设置优先。本地配置仅需声明有意覆盖的规则。
 
-从 0.2.0 起，设置 `ZongsoftGuidelinesSynchronization` 为仓库根目录即可启用 [构建时自动同步](analysis/README.zh-Hans.md#editorconfig-同步)。guidelines 文件是唯一维护源，消费仓库提交同步副本，有意的项目例外放在子目录配置中。VS 跳过构建时可用“重新生成”触发同步。
+设置 `ZongsoftGuidelinesSynchronization` 为仓库根目录即可启用 [构建时自动同步](analysis/README.zh-Hans.md#editorconfig-同步)。guidelines 文件是唯一维护源，消费仓库提交同步副本，有意的项目例外放在子目录配置中。VS 跳过构建时可用“重新生成”触发同步。
 
 ### 打包、验证与升级
 
@@ -74,7 +74,7 @@ dotnet pack ./analysis/analyzers/src/Zongsoft.CodeAnalysis.Analyzers.csproj -c R
 
 Release 包默认生成在 `analysis`，可从该目录获取 `.nupkg` 文件后发布。
 
-测试会先生成包，再以 PackageReference 构建独立临时消费项目，每个项目使用独立包缓存，避免旧版本缓存造成误判。包版本在 `analysis/analyzers/src/Zongsoft.CodeAnalysis.Analyzers.csproj` 维护；发布新版必须递增版本，不覆盖已发布版本。
+测试会先生成包，再以 PackageReference 构建独立临时消费项目，每次测试运行使用全新包缓存，隔离被测包。包版本在 `analysis/analyzers/src/Zongsoft.CodeAnalysis.Analyzers.csproj` 维护；发布新版必须递增版本，不覆盖已发布版本。
 
 首次发布前可在 framework 本地验证：
 
@@ -85,13 +85,15 @@ dotnet build ./Zongsoft.Core/src/Zongsoft.Core.csproj --no-restore -p:GeneratePa
 
 上述本地包源仅用于发布前验证，不写入消费仓库配置。正式接入前需要把包发布到业务项目可访问的 NuGet 源；尚未发布的版本无法在全新工作区或 CI 仅从公共源还原。打包不会发布，发布源与权限按维护者流程处理。
 
-以后只在 guidelines 修改、验证并发布新版本，消费方更新 PackageReference 或中央版本后还原和构建。C# 检测规则随包版本升级；启用同步后，编辑器模板随实际构建更新。回退同样只需选择此前的包版本。
+在 guidelines 修改、验证并发布新版本，消费方更新 PackageReference 或中央版本后还原和构建。C# 检测规则随包版本升级；启用同步后，编辑器模板随实际构建更新。回退同样只需选择此前的包版本。
 
 > 💡 **文件格式：** 配置为新文件提供 CRLF 默认值，但编辑器可能把该值应用到已有文件。既有 LF 文件需用就近 `.editorconfig` 覆盖以保留原换行符。配置刻意不设置 `charset`，避免统一改写已有 BOM；新文件按开发规范保存为 UTF-8 无 BOM。Markdown 保留用于硬换行的行尾双空格，YAML 使用空格缩进，生成文件由生成器维护。
 
 ### 自动修复
 
-ZS0005（未使用引用）与 ZS2003（语句组空行）已提供随 NuGet 分发的代码修复器。在 VS2026 的警告位置按 `Ctrl+.`，可以预览单处修复，或修复文档、项目、解决方案内同一规则的所有位置。详见 [修复用法](analysis/README.zh-Hans.md#代码修复) 和 [完整实现规划](analysis/CODE_FIXES.zh-Hans.md)。本地化资源迁移等其他自定义修复仍属于后续规划。
+本地化检查：ZS1301 检查直接异常消息，ZS1302 检查手写字符串中的非 ASCII 文字，ZS1304 检查资源属性访问；三者均在 `IsTestProject=true` 时停用。CA1303 默认关闭。不追踪变量、异常工厂或构造链，未告警不等于已经本地化；详细边界见规则列表。
+
+ZS0005（未使用引用）与 ZS2003（语句组空行）提供随 NuGet 分发的代码修复器。在 VS2026 的警告位置按 `Ctrl+.`，可以预览单处修复，或修复文档、项目、解决方案内同一规则的所有位置。详见 [修复用法](analysis/README.zh-Hans.md#代码修复)。本地化资源迁移需人工处理。
 
 ### 检查命令
 
@@ -110,7 +112,7 @@ dotnet build ./Zongsoft.Core/src/Zongsoft.Core.csproj --no-restore -p:GeneratePa
 dotnet build ./Zongsoft.Core/src/Zongsoft.Core.csproj --no-restore -p:GeneratePackageOnBuild=false -p:ZongsoftCodeStyleStrict=true
 ```
 
-严格模式的具体诊断见 [规则索引](RULES.zh-Hans.md#index)。它检查整个项目的编译输入及实际构建的项目引用，不仅检查 Git 差异；历史项目可能有大量存量诊断，普通构建成功不能写成严格检查通过。
+严格模式的具体诊断见 [规则索引](RULES.zh-Hans.md#index)。它检查整个项目的编译输入及实际构建的项目引用，不仅检查 Git 差异；已有项目可能有大量待处理诊断，普通构建成功不能写成严格检查通过。
 
 `IDE0049`（使用 `int` 等类型关键字）不参与普通 `dotnet build`，即使启用构建风格分析也如此。补充以下只读检查，不能仅依赖严格构建覆盖这项规则：
 

@@ -2,12 +2,10 @@
 	<!-- 在项目属性之后追加，支持项目文件及命令行设置严格开关。 -->
 	<PropertyGroup Condition="'$(MSBuildProjectExtension)' == '.csproj'">
 		<WarningsAsErrors>$(WarningsAsErrors);CS4014;CA2012</WarningsAsErrors>
-		<!-- 测试消息用于构造场景及断言，不要求为其创建本地化资源。 -->
-		<NoWarn Condition="'$(IsTestProject)' == 'true'">$(NoWarn);CA1303</NoWarn>
 	</PropertyGroup>
 
 	<PropertyGroup Condition="'$(MSBuildProjectExtension)' == '.csproj' and '$(ZongsoftCodeStyleStrict)' == 'true'">
-		<WarningsAsErrors>$(WarningsAsErrors);ZS0005;ZS2003;ZS1304;CA1303;IDE0009;IDE0055;IDE0065;IDE0161;IDE1006;IDE2001</WarningsAsErrors>
+		<WarningsAsErrors>$(WarningsAsErrors);ZS0005;ZS2003;ZS1301;ZS1302;ZS1304;IDE0009;IDE0055;IDE0065;IDE0161;IDE1006;IDE2001</WarningsAsErrors>
 	</PropertyGroup>
 
 	<!-- 仅实际构建时同步；不修改 VS 快速最新检查设置。 -->

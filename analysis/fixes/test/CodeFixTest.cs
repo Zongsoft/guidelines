@@ -30,6 +30,8 @@ public class CodeFixTest
 
 	[Theory]
 	[InlineData("ZS0005", "using Binder = Microsoft.CSharp.RuntimeBinder;\nclass Sample { }")]
+	[InlineData("ZS1301", "class Sample { void Run() => throw new System.Exception(\"Failed.\"); }")]
+	[InlineData("ZS1302", "class Sample { string Text => \"你好\"; }")]
 	[InlineData("ZS1304", "class Sample { string Read() => new System.Resources.ResourceManager(typeof(Sample)).GetString(\"Name\"); }")]
 	[InlineData("ZS2003", "class Sample { void Run() { if(true) { } if(false) { } } }")]
 	public async Task DiagnosticsLinkToRuleAnchors(string id, string source)
@@ -65,7 +67,7 @@ public class CodeFixTest
 		var analyzers = _package.Value.Analyzer.GetTypes().Where(type => !type.IsAbstract && typeof(DiagnosticAnalyzer).IsAssignableFrom(type))
 			.Select(type => (DiagnosticAnalyzer)Activator.CreateInstance(type)).ToArray();
 		var descriptors = analyzers.SelectMany(analyzer => analyzer.SupportedDiagnostics).ToArray();
-		Assert.Equal(new[] { "ZS0005", "ZS1304", "ZS2003" }, descriptors.Select(rule => rule.Id).OrderBy(id => id).ToArray());
+		Assert.Equal(new[] { "ZS0005", "ZS1301", "ZS1302", "ZS1304", "ZS2003" }, descriptors.Select(rule => rule.Id).OrderBy(id => id).ToArray());
 		Assert.All(descriptors, rule => Assert.Equal("https://github.com/Zongsoft/Guidelines/blob/main/RULES.zh-Hans.md#" + rule.Id.ToLowerInvariant(), rule.HelpLinkUri));
 		Assert.All(analyzers.OfType<DiagnosticSuppressor>().SelectMany(analyzer => analyzer.SupportedSuppressions),
 			rule => Assert.Contains(rule.Id.ToLowerInvariant(), englishAnchors));
@@ -322,6 +324,7 @@ public class CodeFixTest
 		_package.Value.Analyzer.GetType("Zongsoft.CodeAnalysis.Analyzers." + (id switch
 		{
 			"ZS0005" => "UnusedUsingAnalyzer",
+			"ZS1301" or "ZS1302" => "LocalizationAnalyzer",
 			"ZS1304" => "ResourceAccessAnalyzer",
 			"ZS2003" => "StatementSpacingAnalyzer",
 			_ => throw new ArgumentOutOfRangeException(nameof(id)),

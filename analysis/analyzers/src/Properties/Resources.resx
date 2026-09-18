@@ -34,7 +34,7 @@
 		<value>Directives may use the surrounding code indentation.</value>
 	</data>
 	<data name="BlockSuppression" xml:space="preserve">
-		<value>Simple try/catch/finally clauses may use single-line blocks.</value>
+		<value>Try/catch/finally clauses with at most two statements may use single-line blocks.</value>
 	</data>
 	<data name="LayoutSuppression" xml:space="preserve">
 		<value>Documented alignment and compact token boundaries are allowed.</value>
@@ -45,10 +45,19 @@
 	<data name="FieldNameSuppression" xml:space="preserve">
 		<value>Private fields may use uppercase names or names enclosed in underscores.</value>
 	</data>
-	<data name="TechnicalTextSuppression" xml:space="preserve">
-		<value>String view conversions, terminal control sequences, and character drawings do not require localization.</value>
-	</data>
 	<data name="CompactBodySuppression" xml:space="preserve">
 		<value>Single-line method and anonymous function bodies may contain at most two simple statements.</value>
+	</data>
+	<data name="ExceptionMessageTitle" xml:space="preserve">
+		<value>Localize exception messages</value>
+	</data>
+	<data name="ExceptionMessageDiagnostic" xml:space="preserve">
+		<value>Provide fixed exception message text through a generated resource property</value>
+	</data>
+	<data name="LocalizedTextTitle" xml:space="preserve">
+		<value>Localize non-ASCII text</value>
+	</data>
+	<data name="LocalizedTextDiagnostic" xml:space="preserve">
+		<value>Move non-ASCII text into resources; redesign contexts that require constants</value>
 	</data>
 </root>

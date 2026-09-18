@@ -110,9 +110,10 @@ dotnet_diagnostic.IDE0005.severity = none
 dotnet_diagnostic.ZS0005.severity = warning
 dotnet_diagnostic.ZS2003.severity = warning
 dotnet_diagnostic.ZS1304.severity = warning
-# 用户可见文本：包含 Console、Localizable(true) 以及 Text/Message/Caption 命名启发式。
-dotnet_diagnostic.CA1303.severity = warning
-dotnet_code_quality.CA1303.use_naming_heuristic = true
+# 本地化由确定性的自定义规则检查；消费项目可自行启用原生 CA1303。
+dotnet_diagnostic.ZS1301.severity = warning
+dotnet_diagnostic.ZS1302.severity = warning
+dotnet_diagnostic.CA1303.severity = none
 dotnet_diagnostic.IDE0009.severity = warning
 # IDE0049 不在构建时运行，需用编辑器或 dotnet format style 补充检查。
 dotnet_diagnostic.IDE0049.severity = warning

@@ -6,7 +6,7 @@ This page documents diagnostic severity, triggers, exceptions and fixes in `Zong
 
 [Index](#index) · [Custom rules](#custom-rules) · [SDK rules](#sdk-rules) · [Exceptions](#suppressions) · [Configuration](#configuration) · [Review](#review) · [References](#references)
 
-> 💡 **Open a rule from VS:** Custom diagnostics `ZS0005`, `ZS1304` and `ZS2003` carry help links to stable anchors in the Chinese catalog. Use the diagnostic help link or the rule code in the Error List; selecting an entry and pressing `F1` also opens help. SDK IDE/CA and compiler diagnostics retain their official links. Opening help and applying a `Ctrl+.` code fix are separate actions.
+> 💡 **Open a rule from VS:** Custom diagnostics `ZS0005`, `ZS1301`, `ZS1302`, `ZS1304` and `ZS2003` carry help links to stable anchors in the Chinese catalog. Use the diagnostic help link or the rule code in the Error List; selecting an entry and pressing `F1` also opens help. SDK IDE/CA and compiler diagnostics retain their official links. Opening help and applying a `Ctrl+.` code fix are separate actions.
 
 This catalog describes the current main branch; actual behavior depends on the installed package and SDK versions. Merge new documentation to GitHub's `main` branch, publish the updated package and upgrade consuming projects for both online links and new behavior to become available. Help links open the Chinese page by default; its language switch opens this English version. Both versions retain identical rule anchors.
 
@@ -19,6 +19,8 @@ Severities below come from the packaged [Global AnalyzerConfig](https://github.c
 | ID | Rule | Default / strict build | Fix |
 | --- | --- | --- | --- |
 | [ZS0005](#zs0005) | Remove unused alias, static and global imports | Warning / error | ✅ Remove unused using |
+| [ZS1301](#zs1301) | Localize exception messages | Warning / error | Manual migration |
+| [ZS1302](#zs1302) | Localize non-ASCII text | Warning / error | Manual migration |
 | [ZS1304](#zs1304) | Access fixed resource entries through generated properties | Warning / error | Manual resource-access migration |
 | [ZS2003](#zs2003) | Separate specified statement groups | Warning / error | ✅ Insert blank line |
 | [IDE0009](#ide0009) | Qualify instance member access with `this.` | Warning / error | SDK |
@@ -28,7 +30,6 @@ Severities below come from the packaged [Global AnalyzerConfig](https://github.c
 | [IDE0161](#ide0161) | Use file-scoped namespaces | Warning / error | SDK |
 | [IDE1006](#ide1006) | Symbol naming | Warning / error | SDK; review public contracts |
 | [IDE2001](#ide2001) | Put embedded statements on separate lines | Warning / error | SDK; review exceptions |
-| [CA1303](#ca1303) | Localize user-visible text | Warning / error | No custom resource-migration fix |
 | [CA2012](#ca2012) | Consume ValueTask correctly | Error / error | Follow the async contract |
 | [CS4014](#cs4014) | Observe asynchronous task completion | Error / error | Follow task ownership |
 
@@ -50,14 +51,57 @@ Severities below come from the packaged [Global AnalyzerConfig](https://github.c
 
 This rule only checks usage. Alias restrictions, global imports, dependency grouping and namespace-length ordering remain review requirements under guideline 3.2.
 
+<a id="zs1301"></a>
+
+### ZS1301 · Localize exception messages
+
+- **Trigger:** An object creation of `System.Exception` or a derived class supplies directly written, non-whitespace string text to a declared `string message` parameter (exact name, case-insensitive). Positional/named arguments, ordinary construction, `throw new` and target-typed `new(...)` behave alike.
+- **Scope:** String literals, parentheses/built-in casts, fixed built-in concatenation fragments, interpolation text and directly written string interpolation expressions. `System.String.Format` checks the template, not formatting data arguments. Each fixed fragment is reported once.
+- **Deliberately untracked:** Variables, const identifiers, fields, properties, arbitrary return values, exception factories, constructor chains, user-defined operators/conversions and conditional expressions. Names such as `reason`, `text`, `errorMessage` and `paramName` are not guessed. Omitted optional defaults are not checked at call sites.
+- **Exceptions:** null, empty and whitespace-only text. Direct numeric, punctuation, Emoji, ANSI and drawing messages still report. `LocalizableAttribute` has no effect.
+- **Fix:** Use a generated resource property or resource format template. Resource keys use dots, exception message keys end in `.Message`, and equivalent messages should reuse an entry. No resource-migration fix is provided.
+- **Configuration:** `dotnet_diagnostic.ZS1301.severity`; warning normally, error in strict mode.
+
+```csharp
+throw new Exception("Failed.");                            //ZS1301
+throw new Exception(message: $"Invalid value: {value}");   //ZS1301
+throw new Exception(Properties.Resources.Failure_Message); //Resource access
+throw new Exception(message);                             //Not traced
+```
+
+The caller supplies resource properties and variables in these fragments. No diagnostic does not prove localization; the rule checks direct text, not its runtime provenance.
+
+<a id="zs1302"></a>
+
+### ZS1302 · Localize non-ASCII text
+
+- **Trigger:** Handwritten C# strings contain non-ASCII letters, including Chinese/Japanese/Korean/Thai, Cyrillic, Greek, Arabic, accented Latin and combining marks attached to letters.
+- **All locations:** Ordinary, verbatim, raw and UTF-8 literals; interpolation text and format text; locals, fields, property initializers, attributes and defaults. Paths, JSON keys, regex and technical keys have no allowlist. Decoded `\u`/`\U` escapes behave like literal characters; values assembled across expressions are not traced.
+- **Character boundary:** Pinned Unicode 17.0 Letter/Mark categories and Emoji properties. ASCII letters, Emoji, icons, punctuation, ordinary mathematical symbols, controls, private-use icons and isolated marks do not trigger on their own. Both `é` and `e\u0301` trigger; variation selectors do not. Emoji mixed with Chinese still triggers.
+- **Excluded input:** Comments, ordinary identifiers, character literals, generated code and `.resx`. Runtime values are not inferred. The rule does not guess a language, and `LocalizableAttribute` does not exempt text.
+- **Deduplication:** A fragment checked as an exception message reports ZS1301 only. Disabling ZS1301 still allows ZS1302.
+- **Fix:** Move text to resources. Constant-only contexts such as attributes and defaults require redesign, not an invalid property substitution. No automatic fix is supplied.
+- **Configuration:** `dotnet_diagnostic.ZS1302.severity`; warning normally, error in strict mode.
+
+```csharp
+var title = "你好";       //ZS1302
+var title = "café";      //ZS1302
+var icon = "ℹ️ 👩🏽‍💻";  //Allowed
+var title = "ℹ️ 提示";  //ZS1302
+```
+
+**Shared boundary:** ZS1301, ZS1302 and ZS1304 do not register checks when `IsTestProject=true`, in both IDE and builds. Missing/false values enable checks. No project-name, folder or test-framework heuristics are used. Generated code is excluded. A test project's exemption does not propagate to production references.
+
+Unicode data and license: [categories](https://www.unicode.org/Public/17.0.0/ucd/extracted/DerivedGeneralCategory.txt), [Emoji](https://www.unicode.org/Public/17.0.0/ucd/emoji/emoji-data.txt), [regeneration](https://github.com/Zongsoft/Guidelines/blob/main/analysis/README.md#unicode). Tables are regenerated by maintainers; builds and analysis require no network access.
+
 <a id="zs1304"></a>
 
 ### ZS1304 · Use generated resource properties
 
 - **Trigger:** A direct `ResourceManager.GetString`, `GetObject` or `GetStream` call whose first argument is a compile-time nonempty string key, including calls through ResourceManager-derived types.
-- **Exceptions:** Dynamic keys and generated code are excluded. Unrelated methods with the same names are not reported.
+- **Exceptions:** Test projects, dynamic keys and generated code are excluded. Unrelated methods with the same names are not reported.
 - **Fix:** Maintain the entry in the neutral `.resx` and access the property generated by `ResXFileCodeGenerator`. No automatic fix is provided: replacing a string with an assumed property can be unsafe.
-- **Configuration:** `dotnet_diagnostic.ZS1304.severity`. [CA1303](#ca1303) helps find hardcoded text that needs translation.
+- **Configuration:** `dotnet_diagnostic.ZS1304.severity`. [ZS1301](#zs1301) and [ZS1302](#zs1302) find hardcoded text that needs translation.
 
 Method-body fragments, assuming `manager` is a ResourceManager and the neutral resource defines `InvalidValue`:
 
@@ -71,7 +115,7 @@ var message = manager.GetString("InvalidValue");
 var message = Properties.Resources.InvalidValue;
 ```
 
-These are separate before/after fragments. Parameter names, protocol fields, paths and machine-readable text are not translation content. Custom lookup wrappers, resource synchronization and text purpose still require review.
+These are separate before/after fragments. ZS1304 checks fixed resource access; string content is checked separately by ZS1301 and ZS1302. Custom lookup wrappers and resource synchronization require review.
 
 <a id="resource-generation"></a>
 
@@ -104,7 +148,7 @@ Ordinary `dotnet build` does not run Visual Studio custom tools. Regenerate and 
 1. More than two consecutive assignment or initialization statements immediately followed by `if`, `switch`, `for`, `foreach`, `while` or `do`.
 2. Adjacent independent control structures or explicit blocks at the same level. Control structures include those conditions and loops, plus `try`, `using`, `lock`, `checked`/`unchecked` and `unsafe` blocks.
 
-Consecutive simple `if` statements may omit the blank line when neither has braces, an `else`, or a nested control structure as its body. A block, an `else`, or an adjacent loop still requires separation.
+Consecutive simple `if`, `for`, `foreach` and `while` statements may omit blank lines, including mixed sequences. Each body must be a single non-control statement without braces, and an `if` must have no `else`. A block, an `else`, or a nested control structure still requires separation.
 
 **Counting and exceptions:** Initialized local or constant declarations and ordinary, compound and deconstruction assignments count by statement. A multi-variable declaration or deconstruction counts once. A blank line or another statement kind ends the run; comments do not replace blank lines. One or two assignments, or assignments followed by a call or return, do not require separation on that basis. Related `if/else`, `try/catch/finally` and `do/while` clauses and nested bodies remain together. Applies to blocks, switch sections and top-level statements; generated code is excluded.
 
@@ -127,15 +171,13 @@ map?.Invoke(entity, state);
 return entity;
 ```
 
-Separate adjacent independent control structures too, using the same `items`, `enabled` and `Process(int)` context:
+Consecutive simple unbraced controls may omit blank lines. This compliant example uses the same `items`, `enabled` and `Process(int)` context:
 
 ```csharp
 for(var index = 0; index < items.Length; index++)
 	items[index]++;
-
 if(enabled)
 	Array.Reverse(items);
-
 foreach(var item in items)
 	Process(item);
 ```
@@ -196,18 +238,6 @@ Naming rules distinguish symbol kind, visibility and `const`; more specific cons
 
 Simple branches may omit braces, but their statements start on another line. `csharp_style_allow_embedded_statements_on_same_line_experimental = false` is experimental and must be rechecked after SDK upgrades. [ZSS2001](#zss2001) exempts eligible compact try/catch/finally clauses; [ZSS2002](#zss2002) exempts empty `while(...);` loops; [ZSS2003](#zss2003) exempts single-line method and anonymous function bodies with at most two simple statements. [Official rule](https://learn.microsoft.com/en-us/dotnet/fundamentals/code-analysis/style-rules/ide2001)
 
-<a id="ca1303"></a>
-
-### CA1303 · Localize visible text
-
-String view conversions, fixed control sequences and character drawings receive narrow [ZSS1303](#zss1303) exceptions. Natural-language messages remain checked.
-
-**Test-project exception:** C# projects with `IsTestProject=true` do not report CA1303, including in strict mode. The package appends this ID to `NoWarn`; it does not infer test status from directory or assembly names. Other rules remain enabled, and production projects still require localization.
-
-Reports hardcoded Console text and strings passed to parameters or properties marked `Localizable(true)`. The package enables `dotnet_code_quality.CA1303.use_naming_heuristic = true` for Text/Message/Caption naming heuristics. Follow [resource generation](#resource-generation), then access Designer properties.
-
-Heuristics cannot determine every string's purpose. Review machine text, protocol keys, paths and custom UI/logging APIs; use `Localizable(false)` on parameters or properties that clearly do not need translation where appropriate. No custom resource-migration fix is provided. [Official rule](https://learn.microsoft.com/en-us/dotnet/fundamentals/code-analysis/quality-rules/ca1303)
-
 <a id="ca2012"></a>
 
 ### CA2012 · ValueTask consumption
@@ -228,7 +258,8 @@ These rules are `none` in the package configuration. Projects may deliberately o
 
 | ID | Reason |
 | --- | --- |
-| <a id="ide0005"></a>IDE0005 | Replaced by [ZS0005](#zs0005) to retain ordinary namespace imports |
+| <a id="ca1303"></a>CA1303 | Localization scope is defined by [ZS1301](#zs1301)/[ZS1302](#zs1302); consumers may explicitly enable native SDK checks |
+| <a id="ide0005"></a>IDE0005 | Unused imports are checked by [ZS0005](#zs0005), which permits ordinary namespace imports |
 | <a id="ide0001"></a>IDE0001 | Preserve `global::` names used to resolve conflicts |
 | <a id="ide0002"></a>IDE0002 | Avoid automatically simplifying those qualified accesses |
 | <a id="ide0003"></a>IDE0003 | Do not uniformly simplify `this.`; fields cannot be configured by visibility |
@@ -262,7 +293,7 @@ Suppresses IDE0055 for indentation before all `#` directives, including `#pragma
 
 ### ZSS0056 / ZSS2001 · Compact exception handling
 
-Each clause is evaluated separately: a single-line try/catch/finally clause containing zero or one simple statement is exempt from block-boundary IDE0055 and block-local IDE2001. Adjacent compact clauses may share a line, and compact and multiline clauses may be mixed. Multiple statements, nested control flow, multiline expressions and formatting inside statements are not exempt.
+Each try/catch/finally clause is evaluated separately: a single-line clause containing at most two direct statements is exempt from block-boundary IDE0055 and block-local IDE2001. Statement types are unrestricted, including break, continue, yield break and control flow; nested statements are not counted again in the outer clause, while local and anonymous function bodies are checked independently. Adjacent compact clauses may share a line, and compact and multiline clauses may be mixed. More than two direct statements, multiline layouts and formatting inside expressions are not exempt.
 
 Property fragment, assuming `_lock` is the object's ReaderWriterLockSlim and `_list` is the protected collection:
 
@@ -285,7 +316,8 @@ public int Count
 Suppresses IDE0055 only at these locations; other formatting inside statements remains checked:
 
 - Alignment whitespace between a declaration type and variable name, or before its initializer `=`.
-- Binary or conditional expression continuations in initializers, assignments or `return` statements aligned with the expression start. Conditional assignments may also align with `=` (display columns honor `tab_width`).
+- Binary/conditional expression continuations aligned with the expression start, including operands inside lambdas, throw statements, parentheses and negation. Conditional assignments may also align with `=`.
+- Subsequent call arguments aligned with the first argument; constructor arguments may also align with the type name after `new`. Preserve the starting line's Tab indentation and add alignment whitespace; display columns honor `tab_width`. This does not exempt incorrect block indentation or operator spacing inside expressions.
 - Omitted spaces between parameter attribute lists, or between the last attribute list and the parameter type or modifier.
 - Spaces before tuple-element colons; an omitted space before a conditional-expression colon at the end of a line.
 - The boundary between an empty while loop's closing parenthesis and same-line semicolon.
@@ -297,23 +329,11 @@ Suppresses IDE0055 only at these locations; other formatting inside statements r
 
 ### ZSS0058 / ZSS2003 · Compact method and anonymous function bodies
 
-A method, local function, lambda or anonymous method may have a single-line block containing at most two simple statements: calls/assignments, local declarations, return or throw. The exception suppresses block-boundary IDE0055 and block-local IDE2001; it does not suppress formatting within expressions. Three or more statements, nested control flow, multiline bodies and yield statements are not exempt. The separate one-statement limit for try/catch/finally remains unchanged.
+A method, local function, lambda or anonymous method may have a single-line block containing at most two simple statements: calls/assignments, local declarations, return or throw. The exception suppresses block-boundary IDE0055 and block-local IDE2001; it does not suppress formatting within expressions. Three or more statements, nested control flow, multiline bodies and yield statements are not exempt. Try/catch/finally follows its separate limit of two direct statements per clause, with unrestricted statement types.
 
 ```csharp
 public int Next(int value) { value++; return value; }
 ```
-
-<a id="zss1303"></a>
-
-### ZSS1303 · Technical text
-
-Suppresses CA1303 only for these recognized cases:
-
-- String overloads of the actual BCL `System.MemoryExtensions.AsSpan` and `AsMemory` methods. Same-named application methods are not exempt.
-- Compile-time constants consisting entirely of one or more complete ANSI CSI sequences (`ESC [` followed by parameter/intermediate bytes and a final byte). Visible prefixes/suffixes and incomplete sequences are not exempt.
-- Compile-time drawings with at least two nonempty lines, containing only whitespace and `_ / \ | + - =` drawing characters. Letters, digits and other characters are not exempt; the constant's name is irrelevant.
-
-This does not disable naming heuristics or change exception/UI message checks. String transformations do not establish that the resulting text is exempt from localization; review its eventual use.
 
 <a id="zss2002"></a>
 
@@ -366,4 +386,4 @@ Passing analysis does not establish full compliance. Continue reviewing design, 
 - [Analyzer configuration files](https://learn.microsoft.com/en-us/dotnet/fundamentals/code-analysis/configuration-files) and [dotnet format](https://learn.microsoft.com/en-us/dotnet/core/tools/dotnet-format): precedence, read-only checks and fix scope.
 - [DiagnosticSuppressor](https://learn.microsoft.com/en-us/dotnet/api/microsoft.codeanalysis.diagnostics.diagnosticsuppressor): exceptions for individual diagnostic locations.
 
-> 🔗 **Maintenance:** Rule anchors use lowercase diagnostic IDs, such as `#zs2003`, and must survive heading changes. New diagnostics require updates to both catalogs, help links, severity, fix status and tests. Retain old anchors so links from published packages keep working.
+> 🔗 **Maintenance:** Rule anchors use lowercase diagnostic IDs, such as `#zs2003`, and must survive heading changes. New diagnostics require updates to both catalogs, help links, severity, fix status and tests. Remove the corresponding anchors and references when deleting a rule.

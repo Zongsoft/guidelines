@@ -8,12 +8,12 @@ using Xunit;
 
 namespace Zongsoft.CodeAnalysis.Analyzers.Tests;
 
-public abstract class EditorConfigBuildTest(string framework) : EditorConfigFixture
+public sealed class EditorConfigBuildTest : EditorConfigFixture
 {
 	[Fact]
 	public async Task BuildSynchronizesAndSkipsMatchingSizeAndTimestamp()
 	{
-		var consumer = await CreateAsync(framework);
+		var consumer = await CreateAsync();
 		Assert.False(File.Exists(consumer.Config));
 		var localConfig = Path.Combine(Path.GetDirectoryName(consumer.Project), ".editorconfig");
 		var localContent = "[*.cs]\r\nindent_size = 2\r\n";
@@ -57,8 +57,3 @@ public abstract class EditorConfigBuildTest(string framework) : EditorConfigFixt
 		Assert.Equal(timestamp, File.GetLastWriteTimeUtc(consumer.Config));
 	}
 }
-
-//每个目标框架使用独立测试类，允许 xUnit 在限制的并发数内调度。
-public sealed class Net8EditorConfigBuildTest() : EditorConfigBuildTest("net8.0");
-public sealed class Net9EditorConfigBuildTest() : EditorConfigBuildTest("net9.0");
-public sealed class Net10EditorConfigBuildTest() : EditorConfigBuildTest("net10.0");

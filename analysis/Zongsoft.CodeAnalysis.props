@@ -5,6 +5,7 @@
 		<EnforceCodeStyleInBuild Condition="'$(EnforceCodeStyleInBuild)' == ''">true</EnforceCodeStyleInBuild>
 	</PropertyGroup>
 	<ItemGroup Condition="'$(MSBuildProjectExtension)' == '.csproj'">
+		<CompilerVisibleProperty Include="IsTestProject" />
 		<GlobalAnalyzerConfigFiles Include="$(MSBuildThisFileDirectory)../Zongsoft.CodeAnalysis.Analyzers.globalconfig" />
 	</ItemGroup>
 </Project>

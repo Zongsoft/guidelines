@@ -10,13 +10,13 @@
 
 ```xml
 <ItemGroup>
-	<PackageReference Include="Zongsoft.CodeAnalysis" Version="0.2.0" PrivateAssets="all" />
+	<PackageReference Include="Zongsoft.CodeAnalysis" Version="1.0.0" PrivateAssets="all" />
 </ItemGroup>
 ```
 
 采用中央包版本管理时，在 `Directory.Packages.props` 声明版本，并省略引用中的 `Version`。`PrivateAssets="all"` 防止分析器成为消费项目发布包的依赖；需要执行规范的项目应明确引用。
 
-NuGet 自动加载分析器 DLL、SDK 构建风格检查和共享 Global AnalyzerConfig，无需复制源码或手工导入 props。分析器面向 netstandard2.0，使用 Roslyn 3.8 公共 API；已使用 .NET 10 SDK 验证 net8.0、net9.0 和 net10.0。
+NuGet 自动加载分析器 DLL、SDK 构建风格检查和共享 Global AnalyzerConfig，无需复制源码或手工导入 props。分析器使用 Roslyn 5.9 API，开发环境要求支持 Roslyn 5.9 的 VS2026 或 .NET 10 SDK。程序集目标为 netstandard2.0，消费项目可面向 net8.0、net9.0、net10.0；消费项目的目标框架与加载分析器的编译器版本是两个独立条件。
 
 普通构建将配置的风格问题报告为警告。在项目中设置 `ZongsoftCodeStyleStrict=true`，或传入 `-p:ZongsoftCodeStyleStrict=true`，可将指定风格警告升级为错误。CS4014 和 CA2012 始终保持为错误。
 
@@ -25,6 +25,8 @@ NuGet 自动加载分析器 DLL、SDK 构建风格检查和共享 Global Analyze
 [📋 规则列表](https://github.com/Zongsoft/Guidelines/blob/main/RULES.zh-Hans.md#index) 集中说明各诊断的级别、触发条件、例外、示例及修复能力，包括未使用引用、语句空行、本地化、命名及格式豁免。
 
 在 VS2026 中点击自定义 ZS 诊断的帮助链接，或在错误列表中选择规则后按 F1，可打开规则对应的在线锚点。SDK 诊断保留微软链接。规则列表同时提供英文版，并以 RULES.md / RULES.zh-Hans.md 随包分发。
+
+本地化检查：ZS1301 检查直接异常消息，ZS1302 检查手写字符串中的非 ASCII 文字，ZS1304 检查资源属性访问；三者均在 `IsTestProject=true` 时停用。CA1303 默认关闭。不追踪变量、异常工厂或构造链，未告警不等于已经本地化；详细边界见规则列表。
 
 ## 代码修复
 
@@ -39,13 +41,13 @@ dotnet format analyzers ./Example.csproj --diagnostics ZS0005 ZS2003 --include .
 dotnet format analyzers ./Example.csproj --diagnostics ZS0005 ZS2003 --include ./Example.cs --verify-no-changes
 ```
 
-第一条修改指定文件，第二条仅验证。全部规范的后续覆盖、资源生成边界和分阶段验收见 [代码修复技术规划](https://github.com/Zongsoft/Guidelines/blob/main/analysis/CODE_FIXES.zh-Hans.md)。
+第一条修改指定文件，第二条仅验证。其他规则的修复方式见规则列表。
 
 ## 配置与边界
 
 [全局规则](analyzers/src/Zongsoft.CodeAnalysis.Analyzers.globalconfig) 的源文件在 analyzers/src 子目录维护，[props](Zongsoft.CodeAnalysis.props) 和 [targets](Zongsoft.CodeAnalysis.targets) 在当前目录维护；打包后仍分别放在包根目录和 buildTransitive 目录。
 
-Tab 缩进、CRLF 和各类文件例外等编辑器设置保留在仓库的 `.editorconfig`，包内 `.editorconfig` 提供模板。C# 检测规则来自包根目录的 `Zongsoft.CodeAnalysis.Analyzers.globalconfig`，由 `buildTransitive/Zongsoft.CodeAnalysis.props` 加载，并随包版本更新。本地 EditorConfig 同名配置优先；迁移时应移除过时的 C# 规则副本，只保留有意的项目覆盖。
+Tab 缩进、CRLF 和各类文件例外等编辑器设置保留在仓库的 `.editorconfig`，包内 `.editorconfig` 提供模板。C# 检测规则来自包根目录的 `Zongsoft.CodeAnalysis.Analyzers.globalconfig`，由 `buildTransitive/Zongsoft.CodeAnalysis.props` 加载，并随包版本更新。本地 EditorConfig 同名配置优先；项目仅需声明有意覆盖的规则。
 
 包内分析器位于 `analyzers/dotnet/cs`，自动导入的构建配置位于 `buildTransitive`。包不含 lib/ref 程序集或 Roslyn 依赖，也不增加业务运行时程序集引用。分析器及测试的构建设置和依赖版本直接在各自项目文件中声明，不启用中央包版本管理。
 
@@ -53,7 +55,7 @@ Tab 缩进、CRLF 和各类文件例外等编辑器设置保留在仓库的 `.ed
 
 ## EditorConfig 同步
 
-**0.2.0 及后续版本**只需在消费仓库根目录的 `Directory.Build.props` 中设置：
+在消费仓库根目录的 `Directory.Build.props` 中设置：
 
 ```xml
 <PropertyGroup>
@@ -126,12 +128,23 @@ dotnet test ./analysis/Zongsoft.CodeAnalysis.slnx
 dotnet pack ./analysis/analyzers/src/Zongsoft.CodeAnalysis.Analyzers.csproj -c Release
 ```
 
-回归测试使用 .NET 10 SDK 与 xUnit v3，经 VSTest 运行。测试先打包，再通过 PackageReference、本地包源和独立包缓存构建临时消费项目，断言诊断编号与源码位置、退出码、分析器加载状态及源码未改写。失败时显示完整构建输出，临时目录保留 `build.log` 供排查。
+回归测试使用 .NET 10 SDK 与 xUnit v3，经 VSTest 运行。测试先打包，再通过 PackageReference、本地包源和每次运行的全新包缓存构建临时消费项目，断言诊断编号与源码位置、退出码、分析器加载状态及源码未改写。失败时显示完整构建输出，临时目录保留 `build.log` 供排查。
 
 修复回归测试直接加载真实包中的 MEF 导出，在 Roslyn 工作区验证精确修改、注释与指令保留、中英文标题、无新增编译错误，以及文档／项目／解决方案的批量范围。
 
-Debug 和 Release 的 NuGet 包都直接生成在 `analysis`，文件名为 `Zongsoft.CodeAnalysis.<Version>.nupkg`。相同版本后构建的包覆盖前一次产物；编译输出仍按配置隔离，发布工作流固定使用 Release。其他历史版本可保留，发布任务仅选择项目当前版本。
+Debug 和 Release 的 NuGet 包都直接生成在 `analysis`，文件名为 `Zongsoft.CodeAnalysis.<Version>.nupkg`。相同版本后构建的包覆盖前一次产物；编译输出仍按配置隔离，发布工作流固定使用 Release。发布任务仅选择项目当前版本。
 
 供其他机器或 CI 使用前，应将验证通过的版本发布到可访问的 NuGet 源；打包不会自动发布。每次发布在 `analysis/analyzers/src/Zongsoft.CodeAnalysis.Analyzers.csproj` 递增版本，再由消费项目升级；不覆盖已发布版本。启用同步后，编辑器模板随下一次实际构建更新。
 
 中央配置、本地包验证及升级步骤见 [配套说明](https://github.com/Zongsoft/Guidelines/blob/main/README.zh-Hans.md#code-analysis)，完整开发要求见 [开发规范](https://github.com/Zongsoft/Guidelines/blob/main/zongsoft.csharp.guidelines.md)。
+
+<a id="unicode"></a>
+## Unicode 数据
+
+ZS1302 使用固定的 Unicode 17.0 分类表，构建和分析均不联网。维护分类表时，将官方 [DerivedGeneralCategory.txt](https://www.unicode.org/Public/17.0.0/ucd/extracted/DerivedGeneralCategory.txt) 和 [emoji-data.txt](https://www.unicode.org/Public/17.0.0/ucd/emoji/emoji-data.txt) 下载到同一临时目录，从仓库根目录执行：
+
+```powershell
+python analysis/analyzers/tool/generate-unicode.py <数据目录>
+```
+
+脚本生成 `analyzers/src/UnicodeText.Generated.cs`。Unicode 许可随包分发，见 [Unicode.LICENSE.txt](analyzers/src/Unicode.LICENSE.txt)。
