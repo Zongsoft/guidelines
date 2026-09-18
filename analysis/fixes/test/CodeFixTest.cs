@@ -117,6 +117,7 @@ public class CodeFixTest
 	[InlineData("var z = 3;\n\t\tz += 1;\n\t\tvar (x, y) = (1, 2);\n\t\tif(x > 0) { System.GC.KeepAlive(x + y); }", "var z = 3;\n\t\tz += 1;\n\t\tvar (x, y) = (1, 2);\n\n\t\tif(x > 0) { System.GC.KeepAlive(x + y); }")]
 	[InlineData("var y = 2;\n\t\tvar z = 3;\n\t\tvar x = 1; /* multi\nline */\n\t\tif(x > 0) { System.GC.KeepAlive(x); }", "var y = 2;\n\t\tvar z = 3;\n\t\tvar x = 1; /* multi\nline */\n\n\t\tif(x > 0) { System.GC.KeepAlive(x); }")]
 	[InlineData("var y = 2;\n\t\tvar z = 3;\n\t\tvar x = 1; /* multi\nline */ if(x > 0) { System.GC.KeepAlive(x); }", "var y = 2;\n\t\tvar z = 3;\n\t\tvar x = 1; /* multi\nline */\n\n\t\tif(x > 0) { System.GC.KeepAlive(x); }")]
+	[InlineData("if(true)\n\t\t\tSystem.GC.KeepAlive(1);\n\t\tif(true)\n\t\t\tSystem.GC.KeepAlive(2);\n\t\tforeach(var item in new int[0])\n\t\t\tSystem.GC.KeepAlive(item);", "if(true)\n\t\t\tSystem.GC.KeepAlive(1);\n\t\tif(true)\n\t\t\tSystem.GC.KeepAlive(2);\n\n\t\tforeach(var item in new int[0])\n\t\t\tSystem.GC.KeepAlive(item);")]
 	public async Task InsertsBlankLineWithoutFormatting(string before, string after)
 	{
 		foreach(var newline in new[] { "\r\n", "\n" })

@@ -148,7 +148,7 @@ Ordinary `dotnet build` does not run Visual Studio custom tools. Regenerate and 
 1. More than two consecutive assignment or initialization statements immediately followed by `if`, `switch`, `for`, `foreach`, `while` or `do`.
 2. Adjacent independent control structures or explicit blocks at the same level. Control structures include those conditions and loops, plus `try`, `using`, `lock`, `checked`/`unchecked` and `unsafe` blocks.
 
-Consecutive simple `if`, `for`, `foreach` and `while` statements may omit blank lines, including mixed sequences. Each body must be a single non-control statement without braces, and an `if` must have no `else`. A block, an `else`, or a nested control structure still requires separation.
+Consecutive simple control statements of the same kind (`if`, `for`, `foreach` or `while`) may omit blank lines; different kinds must be separated by a blank line. Each body must be a single non-control statement without braces, and an `if` must have no `else`. A block, an `else`, or a nested control structure still requires separation.
 
 **Counting and exceptions:** Initialized local or constant declarations and ordinary, compound and deconstruction assignments count by statement. A multi-variable declaration or deconstruction counts once. A blank line or another statement kind ends the run; comments do not replace blank lines. One or two assignments, or assignments followed by a call or return, do not require separation on that basis. Related `if/else`, `try/catch/finally` and `do/while` clauses and nested bodies remain together. Applies to blocks, switch sections and top-level statements; generated code is excluded.
 
@@ -171,15 +171,28 @@ map?.Invoke(entity, state);
 return entity;
 ```
 
-Consecutive simple unbraced controls may omit blank lines. This compliant example uses the same `items`, `enabled` and `Process(int)` context:
+This compliant method-body fragment groups controls by kind: blank lines are optional within a same-kind group and required between different kinds.
 
 ```csharp
-for(var index = 0; index < items.Length; index++)
-	items[index]++;
 if(enabled)
-	Array.Reverse(items);
+	;
+if(disabled)
+	;
+
+for(var i = 0; i < items.Length; i++)
+	;
+for(var j = 0; j < entries.Count; j++)
+	;
+
 foreach(var item in items)
-	Process(item);
+	;
+foreach(var entry in entries)
+	;
+
+while(enabled)
+	;
+while(disabled)
+	;
 ```
 
 **Fix:** `Ctrl+.` → **Insert blank line**, including Fix All in a document, project or solution. Only the reported boundary changes; indentation, CRLF/LF, comments and directives are preserved without formatting unrelated code. Configure `dotnet_diagnostic.ZS2003.severity`.

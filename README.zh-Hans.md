@@ -35,14 +35,14 @@
 
 ```xml
 <ItemGroup>
-	<PackageReference Include="Zongsoft.CodeAnalysis" Version="1.0.0" PrivateAssets="all" />
+	<PackageReference Include="Zongsoft.CodeAnalysis" Version="1.1.0" PrivateAssets="all" />
 </ItemGroup>
 ```
 
 使用中央包版本管理时，在 `Directory.Packages.props` 添加版本：
 
 ```xml
-<PackageVersion Include="Zongsoft.CodeAnalysis" Version="1.0.0" />
+<PackageVersion Include="Zongsoft.CodeAnalysis" Version="1.1.0" />
 ```
 
 在 C# 项目或公共 `Directory.Build.props` 中添加不带版本的引用：

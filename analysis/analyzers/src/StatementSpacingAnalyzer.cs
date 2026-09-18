@@ -49,7 +49,7 @@ public sealed class StatementSpacingAnalyzer : DiagnosticAnalyzer
 				assignments = 0;
 
 			if(previous != null && !separated &&
-				(IsControl(previous) && IsControl(current) && !(IsSimpleControl(previous) && IsSimpleControl(current)) || assignments > 2 && IsConditionalOrLoop(current)))
+				(IsControl(previous) && IsControl(current) && !IsSimpleControlPair(previous, current) || assignments > 2 && IsConditionalOrLoop(current)))
 				context.ReportDiagnostic(Diagnostic.Create(_rule, current.GetFirstToken().GetLocation()));
 
 			assignments = IsAssignment(current) ? assignments + 1 : 0;
@@ -74,6 +74,10 @@ public sealed class StatementSpacingAnalyzer : DiagnosticAnalyzer
 
 		return false;
 	}
+
+	private static bool IsSimpleControlPair(StatementSyntax first, StatementSyntax second) =>
+		IsSimpleControl(first) && IsSimpleControl(second) &&
+		(first.RawKind == second.RawKind || first is CommonForEachStatementSyntax && second is CommonForEachStatementSyntax);
 
 	private static bool IsSimpleControl(StatementSyntax statement)
 	{

@@ -35,14 +35,14 @@ For projects without Central Package Management, add:
 
 ```xml
 <ItemGroup>
-	<PackageReference Include="Zongsoft.CodeAnalysis" Version="1.0.0" PrivateAssets="all" />
+	<PackageReference Include="Zongsoft.CodeAnalysis" Version="1.1.0" PrivateAssets="all" />
 </ItemGroup>
 ```
 
 With Central Package Management, declare the version in `Directory.Packages.props`:
 
 ```xml
-<PackageVersion Include="Zongsoft.CodeAnalysis" Version="1.0.0" />
+<PackageVersion Include="Zongsoft.CodeAnalysis" Version="1.1.0" />
 ```
 
 Add the versionless reference to the C# project or shared `Directory.Build.props`:

@@ -1,3 +1,4 @@
+using System.Linq;
 using System.Threading.Tasks;
 
 using Xunit;
@@ -126,7 +127,7 @@ public sealed class LayoutTest
 	[Theory]
 	[InlineData("if(value == 0)\n\t\t\treturn;\n\t\tif(value == 1)\n\t\t\treturn;", true)]
 	[InlineData("if(value == 0)\n\t\t{\n\t\t\treturn;\n\t\t}\n\t\tif(value == 1)\n\t\t\treturn;", false)]
-	[InlineData("if(value == 0)\n\t\t\treturn;\n\t\twhile(value > 1)\n\t\t\tvalue--;", true)]
+	[InlineData("if(value == 0)\n\t\t\treturn;\n\t\twhile(value > 1)\n\t\t\tvalue--;", false)]
 	[InlineData("if(value == 0)\n\t\t\treturn;\n\t\telse\n\t\t\tvalue++;\n\t\tif(value == 1)\n\t\t\treturn;", false)]
 	[InlineData("while(value > 0)\n\t\t\tif(value-- == 1)\n\t\t\t\treturn;\n\t\twhile(value > 0)\n\t\t\tvalue--;", false)]
 	[InlineData("while(value > 0)\n\t\t{\n\t\t\tvalue--;\n\t\t}\n\t\twhile(value > 0)\n\t\t\tvalue--;", false)]
@@ -156,18 +157,26 @@ public sealed class LayoutTest
 	[InlineData(3, 1)]
 	[InlineData(3, 2)]
 	[InlineData(3, 3)]
-	public async Task AllowsSimpleControlPairs(int first, int second)
+	public async Task ChecksSimpleControlStatementSeparation(int first, int second)
 	{
 		string[] statements =
 		[
-			"if(value > 0)\n\t\t\tvalue--;",
-			"for(var index = 0; index < value; index++)\n\t\t\tGC.KeepAlive(index);",
-			"foreach(var item in (int[])[value])\n\t\t\tGC.KeepAlive(item);",
-			"while(value > 0)\n\t\t\tvalue--;",
+			"if(enabled)\n\t\t\tGC.KeepAlive(items);",
+			"for(var index = 0; index < items.Length; index++)\n\t\t\titems[index]++;",
+			"foreach(var item in items)\n\t\t\tGC.KeepAlive(item);",
+			"while(enabled)\n\t\t\t;",
 		];
-		var result = await AnalyzeAsync(Wrap("public void Run(int value)\n\t{\n\t\t" + statements[first] + "\n\t\t" + statements[second] + "\n\t}"));
-		Assert.True(result.Success, result.Output);
-		Assert.DoesNotContain("ZS2003", result.Output);
+
+		foreach(var separated in new[] { false, true })
+		{
+			var body = statements[first] + (separated ? "\n\n" : "\n") + "\t\t" + statements[second];
+			var result = await AnalyzeAsync(Wrap("public void Run(int[] items, bool enabled)\n\t{\n\t\t" + body + "\n\t}"));
+			var expected = !separated && first != second ? 1 : 0;
+			Assert.True(result.Success == (expected == 0), result.Output);
+			var positions = System.Text.RegularExpressions.Regex.Matches(result.Output, @"Example\.cs\(\d+,\d+\): error ZS2003")
+				.Select(match => match.Value).Distinct().ToArray();
+			Assert.Equal(expected, positions.Length);
+		}
 	}
 
 	[Theory]

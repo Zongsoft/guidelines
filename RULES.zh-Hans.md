@@ -148,7 +148,7 @@ Visual Studio 自定义工具不由普通 `dotnet build` 执行；修改资源�
 1. 连续超过两条赋值或初始化语句，后面紧接 `if`、`switch`、`for`、`foreach`、`while` 或 `do`。
 2. 同一层级相邻的独立控制结构或显式语句块。控制结构包括上述条件和循环，以及 `try`、`using`、`lock`、`checked`／`unchecked` 和 `unsafe` 块。
 
-连续的简单 `if`、`for`、`foreach`、`while` 语句，无论同类还是混合排列，均可不留空行。每条语句须无花括号，语句体为单条非控制语句，且 `if` 不含 `else`。任一语句带块、含 `else` 或嵌套控制结构时，仍按上述规则分隔。
+连续的同类型简单控制语句（`if`、`for`、`foreach` 或 `while`）可以不留空行；不同类型之间必须留一个空行。每条语句须无花括号，语句体为单条非控制语句，且 `if` 不含 `else`。任一语句带块、含 `else` 或嵌套控制结构时，仍按上述规则分隔。
 
 **计数与例外：** 带初始化的局部变量、常量声明，普通、复合和解构赋值均按语句计数；一条多变量声明或解构赋值只计一次。空行或其他种类的语句结束当前计数；注释行不代替空行。只有一条或两条赋值，或后面接调用、返回等语句，不因此要求空行。`if/else`、`try/catch/finally`、`do/while` 的关联子句和嵌套语句体不拆分。覆盖语句块、switch 分支和顶层语句；生成代码不报告。
 
@@ -171,15 +171,28 @@ map?.Invoke(entity, state);
 return entity;
 ```
 
-连续的简单无花括号控制语句可以不留空行，以下合规片段沿用上述 `items`、`enabled` 和 `Process(int)`：
+以下合规方法体片段按控制语句类型分组：同类型组内可不留空行，不同类型组间必须留空行。
 
 ```csharp
-for(var index = 0; index < items.Length; index++)
-	items[index]++;
 if(enabled)
-	Array.Reverse(items);
+	;
+if(disabled)
+	;
+
+for(var i = 0; i < items.Length; i++)
+	;
+for(var j = 0; j < entries.Count; j++)
+	;
+
 foreach(var item in items)
-	Process(item);
+	;
+foreach(var entry in entries)
+	;
+
+while(enabled)
+	;
+while(disabled)
+	;
 ```
 
 **修复：** `Ctrl+.` → “插入空行”，支持文档、项目、解决方案范围的全部修复。只修改诊断边界，保留缩进、CRLF/LF、注释及条件编译，不格式化其他代码。配置项为 `dotnet_diagnostic.ZS2003.severity`。

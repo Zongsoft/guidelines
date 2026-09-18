@@ -176,6 +176,10 @@ public sealed class AnalyzerTest
 	[Theory]
 	[InlineData("if(enabled)\n\t\t{\n\t\t\tArray.Reverse(items);\n\t\t}\n\t\twhile(enabled)\n\t\t\tenabled = false;", "ZS2003", 1)]
 	[InlineData("if(enabled)\n\t\t{\n\t\t\tArray.Reverse(items);\n\t\t}\n\t\t//Next independent statement.\n\t\tforeach(var item in items)\n\t\t\tGC.KeepAlive(item);", "ZS2003", 1)]
+	[InlineData("for(var index = 0; index < items.Length; index++)\n\t\t\t;\n\t\tif(enabled)\n\t\t\t;\n\t\tforeach(var item in items)\n\t\t\t;", "ZS2003", 2)]
+	[InlineData("for(var index = 0; index < items.Length; index++)\n\t\t\titems[index]++;\n\t\tif(enabled)\n\t\t\tArray.Reverse(items);\n\t\tforeach(var item in items)\n\t\t\tGC.KeepAlive(item);", "ZS2003", 2)]
+	[InlineData("if(enabled)\n\t\t\twhile(enabled)\n\t\t\t\tenabled = false;\n\t\tif(enabled)\n\t\t\tGC.KeepAlive(items);", "ZS2003", 1)]
+	[InlineData("if(enabled)\n\t\t\tGC.KeepAlive(items);\n\t\t//A comment does not separate kinds.\n\t\twhile(enabled)\n\t\t\tenabled = false;", "ZS2003", 1)]
 	public async Task ReportsAdjacentControlStatements(string body, string diagnostic, int count)
 	{
 		var result = await AnalyzeAsync(WrapBody(body));
@@ -192,8 +196,7 @@ public sealed class AnalyzerTest
 	[InlineData("if(enabled)\n\t\t\tforeach(var item in items)\n\t\t\t\tGC.KeepAlive(item);\n\t\telse\n\t\t\tArray.Reverse(items);")]
 	[InlineData("do\n\t\t{\n\t\t\tenabled = false;\n\t\t}\n\t\twhile(enabled);")]
 	[InlineData("if(enabled)\n\t\t\tArray.Reverse(items);\n\n\t\t//Next independent statement.\n\t\tforeach(var item in items)\n\t\t\tGC.KeepAlive(item);")]
-	[InlineData("for(var index = 0; index < items.Length; index++)\n\t\t\t;\n\t\tif(enabled)\n\t\t\t;\n\t\tforeach(var item in items)\n\t\t\t;")]
-	[InlineData("for(var index = 0; index < items.Length; index++)\n\t\t\titems[index]++;\n\t\tif(enabled)\n\t\t\tArray.Reverse(items);\n\t\tforeach(var item in items)\n\t\t\tGC.KeepAlive(item);")]
+	[InlineData("foreach(var item in Array.Empty<(int, int)>())\n\t\t\tGC.KeepAlive(item);\n\t\tforeach(var (first, second) in Array.Empty<(int, int)>())\n\t\t\tGC.KeepAlive(first + second);")]
 	public async Task AllowsSeparatedAndRelatedStatements(string body)
 	{
 		var result = await AnalyzeAsync(WrapBody(body));
@@ -398,6 +401,14 @@ public sealed class AnalyzerTest
 	public async Task AllowsCohesiveStatementGroups(string body)
 	{
 		var result = await AnalyzeAsync(WrapBody(body));
+		Assert.True(result.Success, result.Output);
+		Assert.DoesNotContain("ZS2003", result.Output);
+	}
+
+	[Fact]
+	public async Task AllowsDocumentedControlGroups()
+	{
+		var result = await AnalyzeAsync("using System;\nusing System.Collections.Generic;\n\nnamespace Samples;\n\npublic static class Sample\n{\n\tpublic static void Run(int[] items, IList<int> entries, bool enabled, bool disabled)\n\t{\n\t\tif(enabled)\n\t\t\tArray.Reverse(items);\n\t\tif(disabled)\n\t\t\tArray.Reverse(items);\n\n\t\tfor(var i = 0; i < items.Length; i++)\n\t\t\titems[i]++;\n\t\tfor(var j = 0; j < entries.Count; j++)\n\t\t\tentries[j] = 100;\n\n\t\tforeach(var item in items)\n\t\t\tProcess(item);\n\t\tforeach(var entry in entries)\n\t\t\tProcess(entry);\n\n\t\twhile(enabled)\n\t\t\t;\n\t\twhile(disabled)\n\t\t\t;\n\t}\n\n\tprivate static void Process(int value) => GC.KeepAlive(value);\n}\n");
 		Assert.True(result.Success, result.Output);
 		Assert.DoesNotContain("ZS2003", result.Output);
 	}
