@@ -27,7 +27,14 @@ public sealed class MemberRegionAnalyzer : DiagnosticAnalyzer
 	{
 		context.ConfigureGeneratedCodeAnalysis(GeneratedCodeAnalysisFlags.None);
 		context.EnableConcurrentExecution();
-		context.RegisterSyntaxTreeAction(Analyze);
+		context.RegisterCompilationStartAction(compilation =>
+		{
+			if(compilation.Options.AnalyzerConfigOptionsProvider.GlobalOptions.TryGetValue("build_property.IsTestProject", out var value) &&
+				bool.TryParse(value, out var testProject) && testProject)
+				return;
+
+			compilation.RegisterSyntaxTreeAction(Analyze);
+		});
 	}
 
 	private static void Analyze(SyntaxTreeAnalysisContext context)

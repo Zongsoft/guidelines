@@ -23,7 +23,7 @@ Severities below come from the packaged [Global AnalyzerConfig](https://github.c
 | [ZS1302](#zs1302) | Localize non-ASCII text | Warning / error | Manual migration |
 | [ZS1304](#zs1304) | Access fixed resource entries through generated properties | Warning / error | Manual resource-access migration |
 | [ZS2003](#zs2003) | Separate specified statement groups | Warning / error | ✅ Insert blank line |
-| [ZS2004](#zs2004) | Require regions in files with more than 9 methods and properties | Warning / error | Group by responsibility manually |
+| [ZS2004](#zs2004) | Require regions for files with more than 9 methods and properties in non-test projects | Warning / error | Group by responsibility manually |
 | [ZS3001](#zs3001) | Document every method parameter | Warning / error | Describe the contract manually |
 | [ZS3002](#zs3002) | Document non-void method returns | Warning / error | Describe the contract manually |
 | [ZS3003](#zs3003) | Keep single-line XML content and tags on one line | Warning / error | ✅ Join XML documentation lines |
@@ -205,6 +205,7 @@ while(disabled)
 
 ### ZS2004 · Method and property regions
 
+- **Test project exception:** No checks are registered when `IsTestProject=true`, in both the IDE and builds, including strict mode. Missing, false or invalid Boolean values keep checks enabled. Project names, directories and test frameworks are not used to infer this setting. The exception does not propagate to production projects under test.
 - **Trigger:** A code file with more than 9 methods and properties combined must enclose those members in matched `#region` / `#endregion` pairs. Reports once per file at the first uncovered member's name.
 - **Counting:** Includes methods, properties and indexers in all types and nested types in the current file, one per declaration, including interface, abstract and explicit interface members. Excludes constructors, operators, accessors, local functions, fields and events. Does not combine partial declarations across files or count inactive conditional code.
 - **Boundaries:** Files with 9 or fewer members do not require regions. Empty, unmatched or method-body regions cannot cover members. Generated code is excluded. Chinese region names, responsibility grouping, ordering and empty regions themselves still need manual review.

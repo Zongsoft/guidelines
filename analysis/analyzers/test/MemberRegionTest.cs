@@ -119,6 +119,40 @@ public sealed class MemberRegionTest
 		Assert.True(result.Success, result.Output);
 		Assert.Empty(Diagnostics(result));
 	}
+
+	[Theory]
+	[InlineData("true", true)]
+	[InlineData("True", true)]
+	[InlineData("false", false)]
+	[InlineData(null, false)]
+	[InlineData("invalid", false)]
+	public async Task HonorsTestProjectProperty(string testProject, bool exempt)
+	{
+		foreach(var strict in new[] { false, true })
+		{
+			var result = await AnalyzerRunner.AnalyzeAsync(Wrap(Members(10)), true, strict, null, false, false, null, testProject);
+			Assert.Equal(exempt || !strict, result.Success);
+			if(exempt)
+				Assert.Empty(result.Output);
+			else
+				Assert.Contains("Example.cs(5,13): " + (strict ? "error" : "warning") + " ZS2004", Assert.Single(Diagnostics(result)));
+
+			Assert.DoesNotContain("error CS", result.Output);
+		}
+	}
+
+	[Fact]
+	public async Task KeepsDocumentationAndSpacingRulesInTestProjects()
+	{
+		var source = Wrap(Members(9) + "\t/// <summary>\n\t/// Reads a value.\n\t/// </summary>\n\tpublic int Read(int value)\n\t{\n\t\tif(value < 0)\n\t\t{\n\t\t\treturn 0;\n\t\t}\n\t\twhile(value > 0)\n\t\t\tvalue--;\n\t\treturn value;\n\t}\n");
+		var result = await AnalyzerRunner.AnalyzeAsync(source, true, true, null, false, false, null, "true");
+		Assert.Empty(Diagnostics(result));
+		Assert.False(result.Success, result.Output);
+		foreach(var id in new[] { "ZS2003", "ZS3001", "ZS3002", "ZS3003" })
+			Assert.Single(result.Output.Split('\n'), line => line.Contains("error " + id + ":", StringComparison.Ordinal));
+
+		Assert.DoesNotContain("error CS", result.Output);
+	}
 	#endregion
 
 	#region 辅助方法

@@ -43,17 +43,17 @@ public sealed class PackageIntegrationTest : EditorConfigFixture
 		foreach(var id in new[] { "ZS0005", "ZS2003", "ZS2004", "ZS3001", "ZS3002", "ZS3003", "IDE0055", "ZS1301", "ZS1302", "ZS1304" })
 			Assert.Contains("error " + id, strict.Output);
 
-		//以项目属性识别测试项目，严格模式仍豁免三条本地化规则，其他规则继续执行。
+		//以项目属性识别测试项目，豁免本地化和成员分段规则，文档与语句间隔规则继续执行。
 		project.Root.Element("PropertyGroup").Add(new XElement("IsTestProject", "true"));
 		project.Save(consumer.Project);
 		var test = await RunAsync(consumer, "build", consumer.Project, "--no-restore", "--no-incremental", "-p:ZongsoftCodeStyleStrict=true");
 		Assert.NotEqual(0, test.ExitCode);
-		foreach(var id in new[] { "ZS1301", "ZS1302", "ZS1304" })
+		foreach(var id in new[] { "ZS1301", "ZS1302", "ZS1304", "ZS2004" })
 			Assert.DoesNotContain(id, test.Output);
 
 		foreach(var framework in new[] { "net8.0", "net9.0", "net10.0" })
 		{
-			foreach(var id in new[] { "ZS0005", "ZS2003", "ZS2004", "ZS3001", "ZS3002", "ZS3003", "IDE0055" })
+			foreach(var id in new[] { "ZS0005", "ZS2003", "ZS3001", "ZS3002", "ZS3003", "IDE0055" })
 				Assert.Contains("error " + id, string.Join('\n', test.Output.Split('\n').Where(line => line.Contains(framework))));
 		}
 
