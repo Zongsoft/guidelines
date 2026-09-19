@@ -10,7 +10,7 @@ Add a package reference to an SDK-style C# project:
 
 ```xml
 <ItemGroup>
-	<PackageReference Include="Zongsoft.CodeAnalysis" Version="1.1.0" PrivateAssets="all" />
+	<PackageReference Include="Zongsoft.CodeAnalysis" Version="1.2.0" PrivateAssets="all" />
 </ItemGroup>
 ```
 
@@ -22,7 +22,7 @@ Normal builds report configured style violations as warnings. Set `ZongsoftCodeS
 
 ## Rules and exceptions
 
-The [📋 rule catalog](https://github.com/Zongsoft/Guidelines/blob/main/RULES.md#index) centralizes severity, triggers, exceptions, examples and fixes for imports, statement spacing, localization, naming and formatting exceptions.
+The [📋 rule catalog](https://github.com/Zongsoft/Guidelines/blob/main/RULES.md#index) centralizes severity, triggers, exceptions, examples and fixes for imports, statement spacing, member regions, XML documentation, localization, naming and formatting exceptions.
 
 In VS2026, follow a custom ZS diagnostic's help link, or select its Error List entry and press F1, to open its online rule anchor. SDK diagnostics retain Microsoft links. Custom links open the Chinese catalog with an English language switch; both RULES.md and RULES.zh-Hans.md are included in the package.
 
@@ -30,15 +30,15 @@ Localization checks: ZS1301 checks direct exception messages, ZS1302 checks non-
 
 ## Code fixes
 
-In Visual Studio 2026, place the caret on a ZS0005 or ZS2003 diagnostic and press `Ctrl+.` to select **Remove unused using** or **Insert blank line**. Preview and apply an individual fix, or use Fix All for the same rule in a document, project or solution. The providers load from this package; no separate VSIX is required.
+In Visual Studio 2026, place the caret on a ZS0005, ZS2003 or ZS3003 diagnostic and press `Ctrl+.` to select **Remove unused using**, **Insert blank line** or **Join XML documentation lines**. Preview and apply an individual fix, or use Fix All for the same rule in a document, project or solution. The providers load from this package; no separate VSIX is required.
 
-See [ZS0005](https://github.com/Zongsoft/Guidelines/blob/main/RULES.md#zs0005) and [ZS2003](https://github.com/Zongsoft/Guidelines/blob/main/RULES.md#zs2003) for fix scope and preservation guarantees. Opening rule help does not change source code.
+See [ZS0005](https://github.com/Zongsoft/Guidelines/blob/main/RULES.md#zs0005), [ZS2003](https://github.com/Zongsoft/Guidelines/blob/main/RULES.md#zs2003) and [ZS3003](https://github.com/Zongsoft/Guidelines/blob/main/RULES.md#zs3003) for fix scope and preservation guarantees. Opening rule help does not change source code.
 
 From the project directory, restrict CLI fixes to specific files and diagnostics:
 
 ```powershell
-dotnet format analyzers ./Example.csproj --diagnostics ZS0005 ZS2003 --include ./Example.cs
-dotnet format analyzers ./Example.csproj --diagnostics ZS0005 ZS2003 --include ./Example.cs --verify-no-changes
+dotnet format analyzers ./Example.csproj --diagnostics ZS0005 ZS2003 ZS3003 --include ./Example.cs
+dotnet format analyzers ./Example.csproj --diagnostics ZS0005 ZS2003 ZS3003 --include ./Example.cs --verify-no-changes
 ```
 
 The first command changes the selected file; the second only checks it. See the rule catalog for other rules and their fixes.

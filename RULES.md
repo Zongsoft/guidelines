@@ -6,7 +6,7 @@ This page documents diagnostic severity, triggers, exceptions and fixes in `Zong
 
 [Index](#index) · [Custom rules](#custom-rules) · [SDK rules](#sdk-rules) · [Exceptions](#suppressions) · [Configuration](#configuration) · [Review](#review) · [References](#references)
 
-> 💡 **Open a rule from VS:** Custom diagnostics `ZS0005`, `ZS1301`, `ZS1302`, `ZS1304` and `ZS2003` carry help links to stable anchors in the Chinese catalog. Use the diagnostic help link or the rule code in the Error List; selecting an entry and pressing `F1` also opens help. SDK IDE/CA and compiler diagnostics retain their official links. Opening help and applying a `Ctrl+.` code fix are separate actions.
+> 💡 **Open a rule from VS:** Custom `ZS` diagnostics carry help links to stable anchors in the Chinese catalog. Use the diagnostic help link or the rule code in the Error List; selecting an entry and pressing `F1` also opens help. SDK IDE/CA and compiler diagnostics retain their official links. Opening help and applying a `Ctrl+.` code fix are separate actions.
 
 This catalog describes the current main branch; actual behavior depends on the installed package and SDK versions. Merge new documentation to GitHub's `main` branch, publish the updated package and upgrade consuming projects for both online links and new behavior to become available. Help links open the Chinese page by default; its language switch opens this English version. Both versions retain identical rule anchors.
 
@@ -23,6 +23,10 @@ Severities below come from the packaged [Global AnalyzerConfig](https://github.c
 | [ZS1302](#zs1302) | Localize non-ASCII text | Warning / error | Manual migration |
 | [ZS1304](#zs1304) | Access fixed resource entries through generated properties | Warning / error | Manual resource-access migration |
 | [ZS2003](#zs2003) | Separate specified statement groups | Warning / error | ✅ Insert blank line |
+| [ZS2004](#zs2004) | Require regions in files with more than 9 methods and properties | Warning / error | Group by responsibility manually |
+| [ZS3001](#zs3001) | Document every method parameter | Warning / error | Describe the contract manually |
+| [ZS3002](#zs3002) | Document non-void method returns | Warning / error | Describe the contract manually |
+| [ZS3003](#zs3003) | Keep single-line XML content and tags on one line | Warning / error | ✅ Join XML documentation lines |
 | [IDE0009](#ide0009) | Qualify instance member access with `this.` | Warning / error | SDK |
 | [IDE0049](#ide0049) | Use C# type keywords | Warning / not run during builds | SDK |
 | [IDE0055](#ide0055) | Whitespace, indentation and line breaks | Warning / error | SDK; review exceptions |
@@ -197,6 +201,59 @@ while(disabled)
 
 **Fix:** `Ctrl+.` → **Insert blank line**, including Fix All in a document, project or solution. Only the reported boundary changes; indentation, CRLF/LF, comments and directives are preserved without formatting unrelated code. Configure `dotnet_diagnostic.ZS2003.severity`.
 
+<a id="zs2004"></a>
+
+### ZS2004 · Method and property regions
+
+- **Trigger:** A code file with more than 9 methods and properties combined must enclose those members in matched `#region` / `#endregion` pairs. Reports once per file at the first uncovered member's name.
+- **Counting:** Includes methods, properties and indexers in all types and nested types in the current file, one per declaration, including interface, abstract and explicit interface members. Excludes constructors, operators, accessors, local functions, fields and events. Does not combine partial declarations across files or count inactive conditional code.
+- **Boundaries:** Files with 9 or fewer members do not require regions. Empty, unmatched or method-body regions cannot cover members. Generated code is excluded. Chinese region names, responsibility grouping, ordering and empty regions themselves still need manual review.
+- **Configuration and fix:** `dotnet_diagnostic.ZS2004.severity`; warning by default, error in strict mode. Group manually by responsibility; the analyzer does not invent names.
+
+<a id="zs3001"></a>
+
+### ZS3001 · Method parameter documentation
+
+A method with XML documentation must have a top-level `<param name="parameterName">...</param>` for every parameter. Names match case-sensitively using the actual identifier name, excluding a C# `@` escape. Each missing element is reported at its parameter identifier. A summary, a `<paramref>` reference or a mismatched name does not satisfy this requirement.
+
+Applies to methods of any accessibility, including interface, abstract and explicit interface methods; excludes constructors, local functions, delegates and operators. Undocumented methods are not required to add documentation by this rule. `<inheritdoc />` and `<include />` do not replace explicit parameter elements. A self-closing `<param name="..." />` counts as present; content quality still requires review.
+
+Configure `dotnet_diagnostic.ZS3001.severity`; warning by default, error in strict mode. Describe the parameter contract manually.
+
+<a id="zs3002"></a>
+
+### ZS3002 · Method return documentation
+
+A method with XML documentation and a return type other than `void` must have a top-level `<returns>` element. Missing documentation is reported at the return type. Includes `Task`, `ValueTask`, generic and `ref` returns; `void` / `async void` do not require it. Method scope and inherited documentation follow [ZS3001](#zs3001). A self-closing `<returns />` counts as present.
+
+Configure `dotnet_diagnostic.ZS3002.severity`; warning by default, error in strict mode. Describe the return contract manually rather than generating empty descriptions.
+
+<a id="zs3003"></a>
+
+### ZS3003 · Single-line XML elements
+
+When a paired XML element has only one line of content, its opening tag, content and closing tag must share one line. Documentation prefixes and blank lines are ignored; inline nested elements such as `<see />` and `<paramref />` are allowed. Checks `///` and `/** */` documentation on all declarations, not just methods or summaries. Actual multiline text or XML structure retains its layout. Empty content and syntactically incomplete XML are excluded.
+
+Before and after, shown as method declaration fragments:
+
+```csharp
+/// <summary>
+/// One line of content.
+/// </summary>
+void Foo() { }
+```
+
+```csharp
+/// <summary>One line of content.</summary>
+void Foo() { }
+```
+
+Reports at the opening tag. Configure `dotnet_diagnostic.ZS3003.severity`; warning by default, error in strict mode.
+
+**Fix:** `Ctrl+.` → “Join XML documentation lines”, with Fix All for documents, projects and solutions. Joins only lines within the element, removing documentation prefixes and surrounding layout whitespace from its content. Preserves original text, XML entities, inline nested elements, surrounding comments and code, and remaining CRLF / LF endings. Supports `///` and `/** */`. No fix is offered for multiline tags, malformed XML, or an explicit `xml:space="preserve"` on the element or an ancestor. Actual multiline content, empty content, already joined elements and stale diagnostics are not rewritten.
+
+ZS3001 / ZS3002 / ZS3003 skip generated code and require parsed XML documentation (`DocumentationMode.Parse` or `Diagnose`), without requiring an XML output file. `DocumentationMode.None` is not checked. Element presence does not prove contract accuracy or content completeness, nor replace compiler checks for invalid parameter names and other XML errors.
+
 <a id="sdk-rules"></a>
 
 ## SDK and compiler rules
@@ -220,6 +277,16 @@ Use `int`, `string` and other keywords in declarations and static member access,
 ### IDE0055 · Formatting
 
 Use Tab indentation and Allman braces for multiline blocks, no space between control keywords and parentheses, and spaces around binary operators. Root `.editorconfig` supplies file endings and file-type exceptions. See [diagnostic exceptions](#suppressions) for directives, local alignment and compact layouts.
+
+An expression-bodied method may immediately precede another method without a blank line, whether its expression follows `=>` on the same line or the next line. The following method may have a block body; [ZS2003](#zs2003) does not require a blank line between these methods.
+
+Structs, classes and records with no declared members may also be adjacent without blank lines, including empty types with primary constructors and `record struct`. These type declaration fragments are valid:
+
+```csharp
+struct MyStruct { }
+class MyClass { }
+record MyRecord(int Value) { }
+```
 
 `dotnet format whitespace` compares formatted text directly without applying diagnostic suppressors and can report permitted layouts. Use analyzer-enabled build diagnostics for these exceptions. Limit formatting to changed files and review the diff. [Official formatting rule](https://learn.microsoft.com/en-us/dotnet/fundamentals/code-analysis/style-rules/ide0055)
 

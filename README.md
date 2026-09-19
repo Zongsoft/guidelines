@@ -35,14 +35,14 @@ For projects without Central Package Management, add:
 
 ```xml
 <ItemGroup>
-	<PackageReference Include="Zongsoft.CodeAnalysis" Version="1.1.0" PrivateAssets="all" />
+	<PackageReference Include="Zongsoft.CodeAnalysis" Version="1.2.0" PrivateAssets="all" />
 </ItemGroup>
 ```
 
 With Central Package Management, declare the version in `Directory.Packages.props`:
 
 ```xml
-<PackageVersion Include="Zongsoft.CodeAnalysis" Version="1.1.0" />
+<PackageVersion Include="Zongsoft.CodeAnalysis" Version="1.2.0" />
 ```
 
 Add the versionless reference to the C# project or shared `Directory.Build.props`:
@@ -93,7 +93,7 @@ Maintain, validate and publish new versions in guidelines. Consumers update Pack
 
 Localization checks: ZS1301 checks direct exception messages, ZS1302 checks non-ASCII text in handwritten strings, and ZS1304 checks resource-property access. All three are disabled when `IsTestProject=true`. CA1303 is disabled by default. Variables, exception factories and constructor chains are not traced; absence of diagnostics does not prove localization. See the rule catalog for precise boundaries.
 
-ZS0005 (unused imports) and ZS2003 (statement-group blank lines) provide code-fix providers distributed with the NuGet package. Press `Ctrl+.` at a diagnostic in VS2026 to preview an individual fix or apply Fix All for the same rule across a document, project or solution. See [usage](analysis/README.md#code-fixes). Localization migration requires manual changes.
+ZS0005 (unused imports), ZS2003 (statement-group blank lines) and ZS3003 (joining XML documentation lines) provide code-fix providers distributed with the NuGet package. Press `Ctrl+.` at a diagnostic in VS2026 to preview an individual fix or apply Fix All for the same rule across a document, project or solution. See [usage](analysis/README.md#code-fixes). Localization migration requires manual changes.
 
 ### Check commands
 

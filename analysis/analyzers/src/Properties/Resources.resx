@@ -60,4 +60,28 @@
 	<data name="LocalizedTextDiagnostic" xml:space="preserve">
 		<value>Move non-ASCII text into resources; redesign contexts that require constants</value>
 	</data>
+	<data name="MemberRegionTitle" xml:space="preserve">
+		<value>Group methods and properties into regions</value>
+	</data>
+	<data name="MemberRegionMessage" xml:space="preserve">
+		<value>This file contains {0} methods and properties; enclose them in regions</value>
+	</data>
+	<data name="DocumentationParameterTitle" xml:space="preserve">
+		<value>Document every method parameter</value>
+	</data>
+	<data name="DocumentationParameterMessage" xml:space="preserve">
+		<value>Add a param element for parameter &apos;{0}&apos;</value>
+	</data>
+	<data name="DocumentationReturnsTitle" xml:space="preserve">
+		<value>Document the method return value</value>
+	</data>
+	<data name="DocumentationReturnsMessage" xml:space="preserve">
+		<value>Add a returns element for this non-void method</value>
+	</data>
+	<data name="DocumentationLayoutTitle" xml:space="preserve">
+		<value>Keep single-line XML content on one line</value>
+	</data>
+	<data name="DocumentationLayoutMessage" xml:space="preserve">
+		<value>Keep the &apos;{0}&apos; tags and their single-line content on the same line</value>
+	</data>
 </root>

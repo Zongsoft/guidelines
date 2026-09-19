@@ -60,4 +60,28 @@
 	<data name="LocalizedTextDiagnostic" xml:space="preserve">
 		<value>将字符串中的非 ASCII 文字移入资源；常量位置需要调整设计</value>
 	</data>
+	<data name="MemberRegionTitle" xml:space="preserve">
+		<value>为方法和属性添加分段</value>
+	</data>
+	<data name="MemberRegionMessage" xml:space="preserve">
+		<value>此文件包含 {0} 个方法和属性，必须使用分段组织这些成员</value>
+	</data>
+	<data name="DocumentationParameterTitle" xml:space="preserve">
+		<value>补齐方法参数文档</value>
+	</data>
+	<data name="DocumentationParameterMessage" xml:space="preserve">
+		<value>为参数“{0}”添加 param 元素</value>
+	</data>
+	<data name="DocumentationReturnsTitle" xml:space="preserve">
+		<value>补齐方法返回值文档</value>
+	</data>
+	<data name="DocumentationReturnsMessage" xml:space="preserve">
+		<value>为此非 void 方法添加 returns 元素</value>
+	</data>
+	<data name="DocumentationLayoutTitle" xml:space="preserve">
+		<value>单行 XML 内容不要拆成多行</value>
+	</data>
+	<data name="DocumentationLayoutMessage" xml:space="preserve">
+		<value>将“{0}”标签及其单行内容写在同一行</value>
+	</data>
 </root>

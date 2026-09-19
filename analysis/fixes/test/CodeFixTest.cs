@@ -34,6 +34,7 @@ public class CodeFixTest
 	[InlineData("ZS1302", "class Sample { string Text => \"你好\"; }")]
 	[InlineData("ZS1304", "class Sample { string Read() => new System.Resources.ResourceManager(typeof(Sample)).GetString(\"Name\"); }")]
 	[InlineData("ZS2003", "class Sample { void Run() { if(true) { } if(false) { } } }")]
+	[InlineData("ZS3003", "/// <summary>\n/// One line.\n/// </summary>\nclass Sample { }")]
 	public async Task DiagnosticsLinkToRuleAnchors(string id, string source)
 	{
 		using var workspace = new AdhocWorkspace();
@@ -67,7 +68,7 @@ public class CodeFixTest
 		var analyzers = _package.Value.Analyzer.GetTypes().Where(type => !type.IsAbstract && typeof(DiagnosticAnalyzer).IsAssignableFrom(type))
 			.Select(type => (DiagnosticAnalyzer)Activator.CreateInstance(type)).ToArray();
 		var descriptors = analyzers.SelectMany(analyzer => analyzer.SupportedDiagnostics).ToArray();
-		Assert.Equal(new[] { "ZS0005", "ZS1301", "ZS1302", "ZS1304", "ZS2003" }, descriptors.Select(rule => rule.Id).OrderBy(id => id).ToArray());
+		Assert.Equal(new[] { "ZS0005", "ZS1301", "ZS1302", "ZS1304", "ZS2003", "ZS2004", "ZS3001", "ZS3002", "ZS3003" }, descriptors.Select(rule => rule.Id).OrderBy(id => id).ToArray());
 		Assert.All(descriptors, rule => Assert.Equal("https://github.com/Zongsoft/Guidelines/blob/main/RULES.zh-Hans.md#" + rule.Id.ToLowerInvariant(), rule.HelpLinkUri));
 		Assert.All(analyzers.OfType<DiagnosticSuppressor>().SelectMany(analyzer => analyzer.SupportedSuppressions),
 			rule => Assert.Contains(rule.Id.ToLowerInvariant(), englishAnchors));
@@ -133,6 +134,65 @@ public class CodeFixTest
 	}
 
 	[Theory]
+	[InlineData("/// <summary>\n\t/// One line.\n\t/// </summary>", "/// <summary>One line.</summary>")]
+	[InlineData("/// <summary>One line.\n\t/// </summary>", "/// <summary>One line.</summary>")]
+	[InlineData("/// <summary>\n\t/// One line.</summary>", "/// <summary>One line.</summary>")]
+	[InlineData("/// <summary>\n\t///\n\t///  One  line.  \n\t///\n\t/// </summary>", "/// <summary>One  line.</summary>")]
+	[InlineData("/// <summary>\n\t/// Calls <see cref=\"Run\"/> &amp; keeps &#32; entities.\n\t/// </summary>", "/// <summary>Calls <see cref=\"Run\"/> &amp; keeps &#32; entities.</summary>")]
+	[InlineData("/// <summary>\n\t/// <![CDATA[a < b && b > c]]>\n\t/// </summary>", "/// <summary><![CDATA[a < b && b > c]]></summary>")]
+	[InlineData("/// <summary>\n\t/// Before <!-- keep --> after.\n\t/// </summary>", "/// <summary>Before <!-- keep --> after.</summary>")]
+	[InlineData("/// <summary>\n\t/// <para>One line.</para>\n\t/// </summary>", "/// <summary><para>One line.</para></summary>")]
+	[InlineData("/// <remarks xml:space=\"default\">\n\t/// One line.\n\t/// </remarks>", "/// <remarks xml:space=\"default\">One line.</remarks>")]
+	[InlineData("/** <summary>\n\t * One line.\n\t * </summary> */", "/** <summary>One line.</summary> */")]
+	[InlineData("/** <summary>\n\tOne line.\n\t</summary> */", "/** <summary>One line.</summary> */")]
+	[InlineData("/**\n\t * <summary>\n\t * Calls <see cref=\"Run\"/>.\n\t * </summary>\n\t */", "/**\n\t * <summary>Calls <see cref=\"Run\"/>.</summary>\n\t */")]
+	public async Task FixesSingleLineXmlContentWithoutFormatting(string before, string after)
+	{
+		foreach(var newline in new[] { "\r\n", "\n" })
+		{
+			using var workspace = new AdhocWorkspace();
+			var source = "class Sample\n{\n\t// keep heading\n\t" + before + "\n\tvoid Run() { } // keep trailing\n}\n";
+			var expected = "class Sample\n{\n\t// keep heading\n\t" + after + "\n\tvoid Run() { } // keep trailing\n}\n";
+			var document = AddDocument(workspace.CurrentSolution, source.Replace("\n", newline));
+			var diagnostic = Assert.Single(await GetDiagnosticsAsync(document, "ZS3003"));
+			var action = Assert.Single(await GetActionsAsync(document, diagnostic));
+			Assert.Equal("ZS3003.JoinXmlDocumentation", action.EquivalenceKey);
+			var result = await ApplyAsync(action, document.Id);
+
+			Assert.Equal(expected.Replace("\n", newline), (await result.GetTextAsync(TestContext.Current.CancellationToken)).ToString());
+			await AssertCleanAsync(result, "ZS3003");
+		}
+	}
+
+	[Theory]
+	[InlineData("/// <summary>One line.</summary>", "<summary>", 0)]
+	[InlineData("/// <summary>\n/// </summary>", "<summary>", 0)]
+	[InlineData("/// <summary>\n/// First line.\n/// Second line.\n/// </summary>", "<summary>", 0)]
+	[InlineData("/// <summary>\n/// One line.\n/// </summary>", "One line.", 1)]
+	[InlineData("/// <summary>\n/// One line.\n/// </remarks>", "<summary>", 0)]
+	[InlineData("/// <summary\n/// >One line.\n/// </summary>", "<summary", 1)]
+	[InlineData("/// <summary>\n/// One line.\n/// </summary\n/// >", "<summary>", 1)]
+	[InlineData("/// <summary xml:space=\"preserve\">\n/// One line.\n/// </summary>", "<summary", 1)]
+	[InlineData("/// <remarks xml:space=\"preserve\">\n/// <summary>\n/// One line.\n/// </summary>\n/// </remarks>", "<summary>", 1)]
+	public async Task DoesNotOfferUnsafeXmlLayoutFix(string documentation, string token, int expected)
+	{
+		using var workspace = new AdhocWorkspace();
+		var source = documentation + "\nclass Sample { }\n";
+		var document = AddDocument(workspace.CurrentSolution, source);
+		var tree = await document.GetSyntaxTreeAsync(TestContext.Current.CancellationToken);
+		var descriptor = GetAnalyzer("ZS3003").SupportedDiagnostics.Single(rule => rule.Id == "ZS3003");
+		var diagnostic = Diagnostic.Create(descriptor, Location.Create(tree, new TextSpan(source.IndexOf(token, StringComparison.Ordinal), token.Length)));
+
+		var diagnostics = await GetDiagnosticsAsync(document, "ZS3003");
+		Assert.Equal(expected, diagnostics.Length);
+		if(expected > 0 && token != "One line.")
+			diagnostic = Assert.Single(diagnostics);
+
+		Assert.Empty(await GetActionsAsync(document, diagnostic));
+		Assert.Equal(source, (await document.GetTextAsync(TestContext.Current.CancellationToken)).ToString());
+	}
+
+	[Theory]
 	[InlineData(true)]
 	[InlineData(false)]
 	public async Task FixesSpacingInSwitchAndTopLevelStatements(bool topLevel)
@@ -179,12 +239,17 @@ public class CodeFixTest
 	[InlineData("ZS2003", FixAllScope.Document)]
 	[InlineData("ZS2003", FixAllScope.Project)]
 	[InlineData("ZS2003", FixAllScope.Solution)]
+	[InlineData("ZS3003", FixAllScope.Document)]
+	[InlineData("ZS3003", FixAllScope.Project)]
+	[InlineData("ZS3003", FixAllScope.Solution)]
 	public async Task FixAllRespectsScope(string id, FixAllScope scope)
 	{
 		using var workspace = new AdhocWorkspace();
 		var before = id == "ZS0005" ? "using System;\r\nusing Binder = Microsoft.CSharp.RuntimeBinder;\r\nusing CSharp = Microsoft.CSharp;\r\n" :
+			id == "ZS3003" ? "/// <summary>\r\n/// Summary.\r\n/// </summary>\r\n/// <remarks>\r\n/// Remarks.\r\n/// </remarks>\r\nclass Sample { }\r\n" :
 			Wrap("if(true) { }\n\t\tif(false) { }\n\t\tif(true) { }").Replace("\n", "\r\n");
 		var after = id == "ZS0005" ? "using System;\r\n" :
+			id == "ZS3003" ? "/// <summary>Summary.</summary>\r\n/// <remarks>Remarks.</remarks>\r\nclass Sample { }\r\n" :
 			Wrap("if(true) { }\n\n\t\tif(false) { }\n\n\t\tif(true) { }").Replace("\n", "\r\n");
 		var first = AddDocument(workspace.CurrentSolution, before);
 		var second = AddDocument(first.Project.Solution, before.Replace("Sample", "Second"), first.Project.Id);
@@ -241,7 +306,7 @@ public class CodeFixTest
 		using var workspace = new AdhocWorkspace();
 		var document = AddDocument(workspace.CurrentSolution, source);
 		var tree = await document.GetSyntaxTreeAsync(TestContext.Current.CancellationToken);
-		var descriptor = GetAnalyzer(id).SupportedDiagnostics.Single();
+		var descriptor = GetAnalyzer(id).SupportedDiagnostics.Single(rule => rule.Id == id);
 		var diagnostic = Diagnostic.Create(descriptor, Location.Create(tree, new TextSpan(source.IndexOf(token, StringComparison.Ordinal), token.Length)));
 
 		Assert.Empty(await GetDiagnosticsAsync(document, id));
@@ -249,9 +314,9 @@ public class CodeFixTest
 	}
 
 	[Theory]
-	[InlineData("en-US", "Remove unused using", "Insert blank line")]
-	[InlineData("zh-Hans", "移除未使用的引用", "插入空行")]
-	public async Task ExportsLocalizedFixesFromPackage(string language, string usingTitle, string spacingTitle)
+	[InlineData("en-US", "Remove unused using", "Insert blank line", "Join XML documentation lines")]
+	[InlineData("zh-Hans", "移除未使用的引用", "插入空行", "合并 XML 文档行")]
+	public async Task ExportsLocalizedFixesFromPackage(string language, string usingTitle, string spacingTitle, string documentationTitle)
 	{
 		var culture = CultureInfo.CurrentUICulture;
 
@@ -263,6 +328,8 @@ public class CodeFixTest
 
 			Assert.Equal(usingTitle, Assert.Single(await GetActionsAsync(document, Assert.Single(await GetDiagnosticsAsync(document, "ZS0005")))).Title);
 			Assert.Equal(spacingTitle, Assert.Single(await GetActionsAsync(document, Assert.Single(await GetDiagnosticsAsync(document, "ZS2003")))).Title);
+			var documentation = AddDocument(document.Project.Solution, "/// <summary>\n/// One line.\n/// </summary>\nclass Documented { }\n", document.Project.Id);
+			Assert.Equal(documentationTitle, Assert.Single(await GetActionsAsync(documentation, Assert.Single(await GetDiagnosticsAsync(documentation, "ZS3003")))).Title);
 			Assert.DoesNotContain(_package.Value.Entries, entry => entry.StartsWith("lib/") || entry.StartsWith("ref/") ||
 				entry.Contains("Microsoft.CodeAnalysis.") || entry.Contains("System.Composition."));
 			Assert.Contains("analyzers/dotnet/cs/zh-Hans/Zongsoft.CodeAnalysis.Fixes.resources.dll", _package.Value.Entries);
@@ -328,6 +395,7 @@ public class CodeFixTest
 			"ZS1301" or "ZS1302" => "LocalizationAnalyzer",
 			"ZS1304" => "ResourceAccessAnalyzer",
 			"ZS2003" => "StatementSpacingAnalyzer",
+			"ZS3001" or "ZS3002" or "ZS3003" => "DocumentationAnalyzer",
 			_ => throw new ArgumentOutOfRangeException(nameof(id)),
 		}), true));
 

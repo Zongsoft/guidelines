@@ -8,6 +8,25 @@ namespace Zongsoft.CodeAnalysis.Analyzers.Tests;
 public sealed class LayoutTest
 {
 	[Theory]
+	[InlineData("public void Foo() => GC.KeepAlive(1);")]
+	[InlineData("public void Foo() =>\n\t\tGC.KeepAlive(1);")]
+	public async Task AllowsAdjacentExpressionBodiedMethods(string method) =>
+		await AssertCleanAsync(Wrap(method + "\n\tpublic void Bar()\n\t{\n\t}\n"));
+
+	[Theory]
+	[InlineData("public struct First { }\npublic class Second { }\npublic record Third(int Value) { }")]
+	[InlineData("public record First { }\npublic record struct Second(int Value) { }\npublic struct Third { }")]
+	[InlineData("public class First(int value) { }\npublic struct Second(int value) { }\npublic record Third(int Value) { }\npublic record struct Fourth(int Value) { }")]
+	public async Task AllowsAdjacentEmptyTypeDeclarations(string declarations)
+	{
+		var result = await AnalyzeAsync("namespace Samples;\n\n" + declarations + "\n");
+		Assert.True(result.Success, result.Output);
+		Assert.DoesNotContain("IDE0055", result.Output);
+		Assert.DoesNotContain("ZS2003", result.Output);
+		Assert.DoesNotContain("error CS", result.Output);
+	}
+
+	[Theory]
 	[InlineData("private readonly TimeSpan       _sliding = TimeSpan.Zero;\n\tpublic TimeSpan Sliding => _sliding;")]
 	[InlineData("private const byte DELETABLE_VALUE  = 0x01;\n\tprivate const byte UPDATABLE_VALUE  = 0x02;\n\tpublic byte Value => DELETABLE_VALUE | UPDATABLE_VALUE;")]
 	[InlineData("public int Read()\n\t{\n\t\tint    value  = 1;\n\t\treturn value;\n\t}")]

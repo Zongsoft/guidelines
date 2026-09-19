@@ -18,4 +18,7 @@
 	<data name="InsertBlankLine" xml:space="preserve">
 		<value>插入空行</value>
 	</data>
+	<data name="JoinXmlDocumentation" xml:space="preserve">
+		<value>合并 XML 文档行</value>
+	</data>
 </root>

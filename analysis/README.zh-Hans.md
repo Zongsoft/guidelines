@@ -10,7 +10,7 @@
 
 ```xml
 <ItemGroup>
-	<PackageReference Include="Zongsoft.CodeAnalysis" Version="1.1.0" PrivateAssets="all" />
+	<PackageReference Include="Zongsoft.CodeAnalysis" Version="1.2.0" PrivateAssets="all" />
 </ItemGroup>
 ```
 
@@ -22,7 +22,7 @@ NuGet 自动加载分析器 DLL、SDK 构建风格检查和共享 Global Analyze
 
 ## 规则与例外
 
-[📋 规则列表](https://github.com/Zongsoft/Guidelines/blob/main/RULES.zh-Hans.md#index) 集中说明各诊断的级别、触发条件、例外、示例及修复能力，包括未使用引用、语句空行、本地化、命名及格式豁免。
+[📋 规则列表](https://github.com/Zongsoft/Guidelines/blob/main/RULES.zh-Hans.md#index) 集中说明各诊断的级别、触发条件、例外、示例及修复能力，包括未使用引用、语句空行、成员分段、XML 文档、本地化、命名及格式豁免。
 
 在 VS2026 中点击自定义 ZS 诊断的帮助链接，或在错误列表中选择规则后按 F1，可打开规则对应的在线锚点。SDK 诊断保留微软链接。规则列表同时提供英文版，并以 RULES.md / RULES.zh-Hans.md 随包分发。
 
@@ -30,15 +30,15 @@ NuGet 自动加载分析器 DLL、SDK 构建风格检查和共享 Global Analyze
 
 ## 代码修复
 
-在 Visual Studio 2026 中将光标放在 ZS0005 或 ZS2003 的警告位置，按 `Ctrl+.` 打开快速操作，选择“移除未使用的引用”或“插入空行”。可先预览，再修复单处或同一规则在文档、项目、解决方案内的所有位置。修复器随本包加载，无需另外安装 VSIX。
+在 Visual Studio 2026 中将光标放在 ZS0005、ZS2003 或 ZS3003 的警告位置，按 `Ctrl+.` 打开快速操作，选择“移除未使用的引用”、“插入空行”或“合并 XML 文档行”。可先预览，再修复单处或同一规则在文档、项目、解决方案内的所有位置。修复器随本包加载，无需另外安装 VSIX。
 
-修复范围与保留行为分别见 [ZS0005](https://github.com/Zongsoft/Guidelines/blob/main/RULES.zh-Hans.md#zs0005) 和 [ZS2003](https://github.com/Zongsoft/Guidelines/blob/main/RULES.zh-Hans.md#zs2003)。打开规则帮助不会自动修改源码。
+修复范围与保留行为分别见 [ZS0005](https://github.com/Zongsoft/Guidelines/blob/main/RULES.zh-Hans.md#zs0005)、[ZS2003](https://github.com/Zongsoft/Guidelines/blob/main/RULES.zh-Hans.md#zs2003) 和 [ZS3003](https://github.com/Zongsoft/Guidelines/blob/main/RULES.zh-Hans.md#zs3003)。打开规则帮助不会自动修改源码。
 
 也可在项目目录中限定文件和诊断执行：
 
 ```powershell
-dotnet format analyzers ./Example.csproj --diagnostics ZS0005 ZS2003 --include ./Example.cs
-dotnet format analyzers ./Example.csproj --diagnostics ZS0005 ZS2003 --include ./Example.cs --verify-no-changes
+dotnet format analyzers ./Example.csproj --diagnostics ZS0005 ZS2003 ZS3003 --include ./Example.cs
+dotnet format analyzers ./Example.csproj --diagnostics ZS0005 ZS2003 ZS3003 --include ./Example.cs --verify-no-changes
 ```
 
 第一条修改指定文件，第二条仅验证。其他规则的修复方式见规则列表。

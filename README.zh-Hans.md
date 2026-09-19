@@ -35,14 +35,14 @@
 
 ```xml
 <ItemGroup>
-	<PackageReference Include="Zongsoft.CodeAnalysis" Version="1.1.0" PrivateAssets="all" />
+	<PackageReference Include="Zongsoft.CodeAnalysis" Version="1.2.0" PrivateAssets="all" />
 </ItemGroup>
 ```
 
 使用中央包版本管理时，在 `Directory.Packages.props` 添加版本：
 
 ```xml
-<PackageVersion Include="Zongsoft.CodeAnalysis" Version="1.1.0" />
+<PackageVersion Include="Zongsoft.CodeAnalysis" Version="1.2.0" />
 ```
 
 在 C# 项目或公共 `Directory.Build.props` 中添加不带版本的引用：
@@ -93,7 +93,7 @@ dotnet build ./Zongsoft.Core/src/Zongsoft.Core.csproj --no-restore -p:GeneratePa
 
 本地化检查：ZS1301 检查直接异常消息，ZS1302 检查手写字符串中的非 ASCII 文字，ZS1304 检查资源属性访问；三者均在 `IsTestProject=true` 时停用。CA1303 默认关闭。不追踪变量、异常工厂或构造链，未告警不等于已经本地化；详细边界见规则列表。
 
-ZS0005（未使用引用）与 ZS2003（语句组空行）提供随 NuGet 分发的代码修复器。在 VS2026 的警告位置按 `Ctrl+.`，可以预览单处修复，或修复文档、项目、解决方案内同一规则的所有位置。详见 [修复用法](analysis/README.zh-Hans.md#代码修复)。本地化资源迁移需人工处理。
+ZS0005（未使用引用）、ZS2003（语句组空行）与 ZS3003（XML 文档行合并）提供随 NuGet 分发的代码修复器。在 VS2026 的警告位置按 `Ctrl+.`，可以预览单处修复，或修复文档、项目、解决方案内同一规则的所有位置。详见 [修复用法](analysis/README.zh-Hans.md#代码修复)。本地化资源迁移需人工处理。
 
 ### 检查命令
 

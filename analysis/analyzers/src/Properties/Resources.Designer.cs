@@ -88,6 +88,60 @@ namespace Zongsoft.CodeAnalysis.Analyzers.Properties {
         }
 
         /// <summary>
+        ///   查找类似 Keep the &apos;{0}&apos; tags and their single-line content on the same line 的本地化字符串。
+        /// </summary>
+        internal static string DocumentationLayoutMessage {
+            get {
+                return ResourceManager.GetString("DocumentationLayoutMessage", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   查找类似 Keep single-line XML content on one line 的本地化字符串。
+        /// </summary>
+        internal static string DocumentationLayoutTitle {
+            get {
+                return ResourceManager.GetString("DocumentationLayoutTitle", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   查找类似 Add a param element for parameter &apos;{0}&apos; 的本地化字符串。
+        /// </summary>
+        internal static string DocumentationParameterMessage {
+            get {
+                return ResourceManager.GetString("DocumentationParameterMessage", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   查找类似 Document every method parameter 的本地化字符串。
+        /// </summary>
+        internal static string DocumentationParameterTitle {
+            get {
+                return ResourceManager.GetString("DocumentationParameterTitle", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   查找类似 Add a returns element for this non-void method 的本地化字符串。
+        /// </summary>
+        internal static string DocumentationReturnsMessage {
+            get {
+                return ResourceManager.GetString("DocumentationReturnsMessage", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   查找类似 Document the method return value 的本地化字符串。
+        /// </summary>
+        internal static string DocumentationReturnsTitle {
+            get {
+                return ResourceManager.GetString("DocumentationReturnsTitle", resourceCulture);
+            }
+        }
+
+        /// <summary>
         ///   查找类似 An empty while body may follow its condition on the same line. 的本地化字符串。
         /// </summary>
         internal static string EmptyLoopSuppression {
@@ -147,6 +201,24 @@ namespace Zongsoft.CodeAnalysis.Analyzers.Properties {
         internal static string LocalizedTextTitle {
             get {
                 return ResourceManager.GetString("LocalizedTextTitle", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   查找类似 This file contains {0} methods and properties; enclose them in regions 的本地化字符串。
+        /// </summary>
+        internal static string MemberRegionMessage {
+            get {
+                return ResourceManager.GetString("MemberRegionMessage", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   查找类似 Group methods and properties into regions 的本地化字符串。
+        /// </summary>
+        internal static string MemberRegionTitle {
+            get {
+                return ResourceManager.GetString("MemberRegionTitle", resourceCulture);
             }
         }
 

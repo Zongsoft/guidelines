@@ -108,7 +108,7 @@ internal static class AnalyzerRunner
 
 		Assert.Contains(analyzers, analyzer => analyzer is DiagnosticSuppressor);
 
-		foreach(var id in new[] { "ZS0005", "ZS1301", "ZS1302", "ZS1304", "ZS2003", "IDE0055", "IDE1006", "IDE2001", "CA1303" })
+		foreach(var id in new[] { "ZS0005", "ZS1301", "ZS1302", "ZS1304", "ZS2003", "ZS2004", "ZS3001", "ZS3002", "ZS3003", "IDE0055", "IDE1006", "IDE2001", "CA1303" })
 			Assert.Contains(analyzers, analyzer => analyzer.SupportedDiagnostics.Any(rule => rule.Id == id));
 
 		var configuration = configurationText +

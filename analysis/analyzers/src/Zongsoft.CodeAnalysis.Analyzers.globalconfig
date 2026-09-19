@@ -109,6 +109,10 @@ csharp_prefer_simple_using_statement = false:silent
 dotnet_diagnostic.IDE0005.severity = none
 dotnet_diagnostic.ZS0005.severity = warning
 dotnet_diagnostic.ZS2003.severity = warning
+dotnet_diagnostic.ZS2004.severity = warning
+dotnet_diagnostic.ZS3001.severity = warning
+dotnet_diagnostic.ZS3002.severity = warning
+dotnet_diagnostic.ZS3003.severity = warning
 dotnet_diagnostic.ZS1304.severity = warning
 # 本地化由确定性的自定义规则检查；消费项目可自行启用原生 CA1303。
 dotnet_diagnostic.ZS1301.severity = warning
