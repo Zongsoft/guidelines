@@ -7,20 +7,24 @@
 		<IncludeBuildOutput>false</IncludeBuildOutput>
 		<NoDefaultExcludes>true</NoDefaultExcludes>
 		<EnforceExtendedAnalyzerRules>true</EnforceExtendedAnalyzerRules>
-		<!-- 不维护诊断发布历史。 -->
-		<NoWarn>$(NoWarn);RS2008</NoWarn>
 		<SuppressDependenciesWhenPacking>true</SuppressDependenciesWhenPacking>
 		<DevelopmentDependency>true</DevelopmentDependency>
-		<PackageId>Zongsoft.CodeAnalysis</PackageId>
-		<PackageOutputPath>../..</PackageOutputPath>
 		<Authors>Zongsoft Studio</Authors>
 		<Description>C# coding rules and precise diagnostic exceptions for Zongsoft projects.</Description>
 		<PackageLicenseExpression>MIT</PackageLicenseExpression>
 		<PackageReadmeFile>README.md</PackageReadmeFile>
+		<PackageIcon>zongsoft-logo.png</PackageIcon>
+		<PackageOutputPath>../..</PackageOutputPath>
 		<RepositoryType>git</RepositoryType>
 		<RepositoryUrl>https://github.com/Zongsoft/guidelines</RepositoryUrl>
 		<PackageProjectUrl>https://github.com/Zongsoft/guidelines</PackageProjectUrl>
+		<PackageIconUrl>https://github.com/Zongsoft/guidelines/raw/main/zongsoft-logo(48x48).png</PackageIconUrl>
 		<PackageTags>Zongsoft;Roslyn;Analyzer;CSharp;CodeStyle</PackageTags>
+	</PropertyGroup>
+
+	<PropertyGroup>
+		<!-- 不维护诊断发布历史。 -->
+		<NoWarn>$(NoWarn);RS2008</NoWarn>
 	</PropertyGroup>
 
 	<ItemGroup>
@@ -33,6 +37,7 @@
 		<None Include="../../fixes/src/bin/$(Configuration)/netstandard2.0/zh-Hans/Zongsoft.CodeAnalysis.Fixes.resources.dll" Pack="true" PackagePath="analyzers/dotnet/cs/zh-Hans" Visible="false" />
 		<None Include="$(OutputPath)zh-Hans/$(AssemblyName).resources.dll" Pack="true" PackagePath="analyzers/dotnet/cs/zh-Hans" Visible="false" />
 		<None Include="$(OutputPath)$(AssemblyName).dll" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false" />
+		<None Include="../../../zongsoft-logo(48x48).png" Pack="true" PackagePath="zongsoft-logo.png" Visible="false" />
 		<None Include="../../Zongsoft.CodeAnalysis.props" Pack="true" PackagePath="buildTransitive" />
 		<None Include="../../Zongsoft.CodeAnalysis.targets" Pack="true" PackagePath="buildTransitive" />
 		<None Update="Unicode.LICENSE.txt" Pack="true" PackagePath="licenses/Unicode.LICENSE.txt" />
