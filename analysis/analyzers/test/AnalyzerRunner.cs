@@ -4,8 +4,8 @@ using System.Linq;
 using System.Text;
 using System.Reflection;
 using System.Globalization;
-using System.Threading.Tasks;
 using System.IO.Compression;
+using System.Threading.Tasks;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 
@@ -25,7 +25,7 @@ internal static class AnalyzerRunner
 		((string)AppContext.GetData("TRUSTED_PLATFORM_ASSEMBLIES")).Split(Path.PathSeparator)
 			.Select(path => MetadataReference.CreateFromFile(path)).ToImmutableArray<MetadataReference>());
 
-	public static async Task<AnalysisResult> AnalyzeAsync(string source, bool documentation, bool strict, string editorConfig, bool resources, bool executable, string language, string testProject = null)
+	public static async Task<AnalysisResult> AnalyzeAsync(string source, bool documentation, bool strict, string editorConfig, bool resources, bool executable, string language, string testProject = null, bool unsafeCode = false)
 	{
 		var environment = _environment.Value;
 		var path = Path.Combine(environment.Directory, "Example.cs");
@@ -54,7 +54,7 @@ internal static class AnalyzerRunner
 		var tree = CSharpSyntaxTree.ParseText(SourceText.From(source, Encoding.UTF8), parseOptions, path);
 		var compilation = CSharpCompilation.Create("Example", new[] { tree }, _references.Value,
 			new CSharpCompilationOptions(executable ? OutputKind.ConsoleApplication : OutputKind.DynamicallyLinkedLibrary)
-				.WithSpecificDiagnosticOptions(diagnosticOptions));
+				.WithSpecificDiagnosticOptions(diagnosticOptions).WithAllowUnsafe(unsafeCode));
 
 		if(resources)
 		{
@@ -63,9 +63,13 @@ internal static class AnalyzerRunner
 				File.ReadAllText(resourcePath), parseOptions, Path.Combine(environment.Directory, "Resources.Designer.cs")));
 		}
 
-		var diagnostics = await compilation.WithAnalyzers(environment.Analyzers,
+		//仅运行本次配置中启用的规则，避免执行只有已禁用诊断的 SDK 分析器。
+		var analyzers = environment.Analyzers.Where(analyzer => analyzer is DiagnosticSuppressor || analyzer.SupportedDiagnostics.Any(rule =>
+			diagnosticOptions.TryGetValue(rule.Id, out var severity) && severity != ReportDiagnostic.Suppress)).ToImmutableArray();
+		var diagnostics = await compilation.WithAnalyzers(analyzers,
 			new AnalyzerOptions(ImmutableArray<AdditionalText>.Empty, options))
 			.GetAllDiagnosticsAsync(TestContext.Current.CancellationToken);
+
 		var culture = CultureInfo.GetCultureInfo(language ?? "en-US");
 		var output = string.Join("\n", diagnostics.Where(diagnostic => !diagnostic.IsSuppressed && diagnostic.Severity >= DiagnosticSeverity.Warning)
 			.Select(diagnostic =>
@@ -108,11 +112,12 @@ internal static class AnalyzerRunner
 
 		Assert.Contains(analyzers, analyzer => analyzer is DiagnosticSuppressor);
 
-		foreach(var id in new[] { "ZS0005", "ZS1301", "ZS1302", "ZS1304", "ZS2003", "ZS2004", "ZS3001", "ZS3002", "ZS3003", "IDE0055", "IDE1006", "IDE2001", "CA1303" })
+		foreach(var id in new[] { "ZS0005", "ZS1301", "ZS1302", "ZS1304", "ZS2003", "ZS2004", "ZS2005", "ZS2006", "ZS3001", "ZS3002", "ZS3003", "IDE0055", "IDE1006", "IDE2001", "CA1303" })
 			Assert.Contains(analyzers, analyzer => analyzer.SupportedDiagnostics.Any(rule => rule.Id == id));
 
 		var configuration = configurationText +
 			"\nbuild_property.TargetFramework = net10.0\nbuild_property.EffectiveAnalysisLevelStyle = 10.0\n";
+
 		var targets = System.Xml.Linq.XDocument.Load(Path.Combine(directory, "buildTransitive", "Zongsoft.CodeAnalysis.targets"));
 		var errors = targets.Descendants("WarningsAsErrors").Where(element => !element.Parent.Attribute("Condition").Value.Contains("ZongsoftCodeStyleStrict")).SelectMany(element => element.Value.Split(';'))
 			.Where(value => !value.StartsWith("$", StringComparison.Ordinal)).ToArray();

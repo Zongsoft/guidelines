@@ -49,6 +49,7 @@ internal static partial class UnicodeText
 		while(lower <= upper)
 		{
 			var middle = lower + (upper - lower) / 2;
+
 			if(value < ranges[middle * 2])
 				upper = middle - 1;
 			else if(value > ranges[middle * 2 + 1])

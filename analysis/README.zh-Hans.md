@@ -30,15 +30,15 @@ NuGet 自动加载分析器 DLL、SDK 构建风格检查和共享 Global Analyze
 
 ## 代码修复
 
-在 Visual Studio 2026 中将光标放在 ZS0005、ZS2003 或 ZS3003 的警告位置，按 `Ctrl+.` 打开快速操作，选择“移除未使用的引用”、“插入空行”或“合并 XML 文档行”。可先预览，再修复单处或同一规则在文档、项目、解决方案内的所有位置。修复器随本包加载，无需另外安装 VSIX。
+在 Visual Studio 2026 中将光标放在 ZS0005、ZS2003、ZS2005、ZS2006 或 ZS3003 的警告位置，按 `Ctrl+.` 打开快速操作，选择“移除未使用的引用”、“插入空行”、“添加花括号”、“整理局部函数”或“合并 XML 文档行”。可先预览，再修复单处或同一规则在文档、项目、解决方案内的所有位置。修复器随本包加载，无需另外安装 VSIX。
 
-修复范围与保留行为分别见 [ZS0005](https://github.com/Zongsoft/Guidelines/blob/main/RULES.zh-Hans.md#zs0005)、[ZS2003](https://github.com/Zongsoft/Guidelines/blob/main/RULES.zh-Hans.md#zs2003) 和 [ZS3003](https://github.com/Zongsoft/Guidelines/blob/main/RULES.zh-Hans.md#zs3003)。打开规则帮助不会自动修改源码。
+修复范围与保留行为分别见 [ZS0005](https://github.com/Zongsoft/Guidelines/blob/main/RULES.zh-Hans.md#zs0005)、[ZS2003](https://github.com/Zongsoft/Guidelines/blob/main/RULES.zh-Hans.md#zs2003)、[ZS2005](https://github.com/Zongsoft/Guidelines/blob/main/RULES.zh-Hans.md#zs2005)、[ZS2006](https://github.com/Zongsoft/Guidelines/blob/main/RULES.zh-Hans.md#zs2006) 和 [ZS3003](https://github.com/Zongsoft/Guidelines/blob/main/RULES.zh-Hans.md#zs3003)。打开规则帮助不会自动修改源码。
 
 也可在项目目录中限定文件和诊断执行：
 
 ```powershell
-dotnet format analyzers ./Example.csproj --diagnostics ZS0005 ZS2003 ZS3003 --include ./Example.cs
-dotnet format analyzers ./Example.csproj --diagnostics ZS0005 ZS2003 ZS3003 --include ./Example.cs --verify-no-changes
+dotnet format analyzers ./Example.csproj --diagnostics ZS0005 ZS2003 ZS2005 ZS2006 ZS3003 --include ./Example.cs
+dotnet format analyzers ./Example.csproj --diagnostics ZS0005 ZS2003 ZS2005 ZS2006 ZS3003 --include ./Example.cs --verify-no-changes
 ```
 
 第一条修改指定文件，第二条仅验证。其他规则的修复方式见规则列表。
@@ -116,6 +116,8 @@ dotnet cake build.cake --target=pack
 完成配置且工作流进入默认分支后，手动入口为 **Actions → Publish Analyzer to NuGet → Run workflow**，选择 `main`。发布版本取自 `analysis/analyzers/src/Zongsoft.CodeAnalysis.Analyzers.csproj`，发布变更前应先递增版本。选择其他分支时作业会跳过；构建或测试失败时不会登录和发布。
 
 ## 构建与验证
+
+分析器与修复器项目通过链接编译 [.shared](.shared) 中的 C# 源码。共享内容包括规则判定、XML 文档内容定位、引用分类及源文本工具，各项目将其编译到自己的程序集。两个项目文件统一包含 `.shared/*.cs`，新增共享文件无需逐项添加编译配置。
 
 两套测试各自在项目文件中定义包准备和版本读取目标，可分别独立构建和运行测试。
 

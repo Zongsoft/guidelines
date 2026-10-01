@@ -5,17 +5,17 @@ var projectFile = "analyzers/src/Zongsoft.CodeAnalysis.Analyzers.csproj";
 var solutionFile = "Zongsoft.CodeAnalysis.slnx";
 
 if(edition != "Debug" && edition != "Release")
-	throw new ArgumentException("The edition must be Debug or Release.");
+	throw new ArgumentOutOfRangeException(nameof(edition), edition, null);
 
 if(!FileExists(projectFile) || !FileExists(solutionFile))
-	throw new Exception("Run this script from the analysis directory.");
+	throw new System.IO.FileNotFoundException(null, !FileExists(projectFile) ? projectFile : solutionFile);
 
 var version = XmlPeek(projectFile, "/Project/PropertyGroup/Version");
 var packageFile = $"Zongsoft.CodeAnalysis.{version}.nupkg";
 var packageDirectory = MakeAbsolute(Directory(".")).FullPath;
 
 Task("clean")
-	.Description("清理所选配置的编译输出")
+	.Description("Clean build outputs for the selected configuration")
 	.Does(() =>
 {
 	foreach(var project in new[] { "analyzers/src", "analyzers/test", "fixes/src", "fixes/test" })
@@ -28,7 +28,7 @@ Task("clean")
 });
 
 Task("restore")
-	.Description("还原分析器、修复器和两套测试依赖")
+	.Description("Restore analyzer, code-fix and test dependencies")
 	.Does(() =>
 {
 	DotNetRestore(solutionFile, new DotNetRestoreSettings
@@ -38,7 +38,7 @@ Task("restore")
 });
 
 Task("build")
-	.Description("编译两个库，在 analysis 目录生成统一包，再编译两套消费测试")
+	.Description("Build both libraries, create the package and build consumer tests")
 	.IsDependentOn("clean")
 	.IsDependentOn("restore")
 	.Does(() =>
@@ -67,7 +67,7 @@ Task("build")
 });
 
 Task("test")
-	.Description("用同一个 NuGet 包运行两套消费回归测试")
+	.Description("Run both consumer test suites against the same package")
 	.IsDependentOn("build")
 	.Does(() =>
 {
@@ -80,18 +80,18 @@ Task("test")
 });
 
 Task("pack")
-	.Description("将当前版本的统一包发布到 nuget.org")
+	.Description("Publish the current package to nuget.org")
 	.IsDependentOn("test")
 	.Does(() =>
 {
 	var apiKey = EnvironmentVariable("NUGET_API_KEY");
 
 	if(string.IsNullOrWhiteSpace(apiKey))
-		throw new Exception("Set NUGET_API_KEY before publishing.");
+		throw new ArgumentException(null, "NUGET_API_KEY");
 
 	//只发布项目版本号对应的包，允许当前目录保留其他历史版本。
 	if(!FileExists(packageFile))
-		throw new Exception($"Package not found: {packageFile}");
+		throw new System.IO.FileNotFoundException(null, packageFile);
 
 	DotNetNuGetPush(packageFile, new DotNetNuGetPushSettings
 	{
@@ -102,7 +102,7 @@ Task("pack")
 });
 
 Task("default")
-	.Description("编译、打包并运行全部测试")
+	.Description("Build, package and run all tests")
 	.IsDependentOn("test");
 
 RunTarget(target);

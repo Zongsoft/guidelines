@@ -49,6 +49,7 @@ public sealed class DocumentationAnalyzer : DiagnosticAnalyzer
 			return;
 
 		var elements = documentation.SelectMany(comment => comment.Content).ToArray();
+
 		foreach(var parameter in method.ParameterList.Parameters)
 		{
 			if(!elements.Any(element => HasParameter(element, parameter.Identifier.ValueText)))
@@ -82,6 +83,7 @@ public sealed class DocumentationAnalyzer : DiagnosticAnalyzer
 	{
 		var root = context.Tree.GetRoot(context.CancellationToken);
 		var text = context.Tree.GetText(context.CancellationToken);
+
 		foreach(var trivia in root.DescendantTrivia())
 		{
 			context.CancellationToken.ThrowIfCancellationRequested();
@@ -90,37 +92,10 @@ public sealed class DocumentationAnalyzer : DiagnosticAnalyzer
 
 			foreach(var element in documentation.DescendantNodes().OfType<XmlElementSyntax>())
 			{
-				if(text.Lines.GetLineFromPosition(element.SpanStart).LineNumber != text.Lines.GetLineFromPosition(element.Span.End).LineNumber && HasSingleContentLine(element, text))
+				if(!SourceTextUtility.IsSingleLine(text, element.Span) && DocumentationLayout.TryGetContentSpan(element, text, out _))
 					context.ReportDiagnostic(Diagnostic.Create(_layout, element.StartTag.GetLocation(), element.StartTag.Name.ToString()));
 			}
 		}
-	}
-
-	private static bool HasSingleContentLine(XmlElementSyntax element, SourceText text)
-	{
-		var line = -1;
-		foreach(var token in element.Content.SelectMany(content => content.DescendantTokens()))
-		{
-			//只计算内容 token，排除 ///、块注释前缀和空白行；保留真实多行文本及 XML 结构。
-			var value = token.Text;
-			var start = 0;
-			var end = value.Length;
-			while(start < end && char.IsWhiteSpace(value[start]))
-				start++;
-			while(end > start && char.IsWhiteSpace(value[end - 1]))
-				end--;
-
-			if(start == end)
-				continue;
-
-			var first = text.Lines.GetLineFromPosition(token.SpanStart + start).LineNumber;
-			var last = text.Lines.GetLineFromPosition(token.SpanStart + end - 1).LineNumber;
-			if(first != last || line >= 0 && first != line)
-				return false;
-
-			line = first;
-		}
-		return line >= 0;
 	}
 	#endregion
 }

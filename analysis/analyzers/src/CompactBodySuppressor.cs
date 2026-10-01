@@ -4,8 +4,8 @@ using System.Collections.Immutable;
 
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Text;
-using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Diagnostics;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 namespace Zongsoft.CodeAnalysis.Analyzers;
 
@@ -49,7 +49,7 @@ public sealed class CompactBodySuppressor : DiagnosticSuppressor
 			return false;
 
 		if(block.Statements.Count > 2 || block.ContainsDiagnostics || block.ContainsDirectives ||
-			text.Lines.GetLineFromPosition(block.OpenBraceToken.SpanStart).LineNumber != text.Lines.GetLineFromPosition(block.CloseBraceToken.SpanStart).LineNumber)
+			!SourceTextUtility.IsSingleLine(text, block.Span))
 			return false;
 
 		return block.Statements.All(statement =>
@@ -59,16 +59,14 @@ public sealed class CompactBodySuppressor : DiagnosticSuppressor
 
 	private static bool IsBoundary(BlockSyntax block, SourceText text, TextSpan span)
 	{
-		for(var position = span.Start; position < span.End; position++)
-		{
-			if(text[position] != ' ' && text[position] != '\t')
-				return false;
-		}
+		if(!SourceTextUtility.IsHorizontalWhitespace(text, span))
+			return false;
 
 		if(Contains(block.OpenBraceToken.GetPreviousToken().Span.End, block.OpenBraceToken.SpanStart, span))
 			return true;
 
 		var end = block.OpenBraceToken.Span.End;
+
 		foreach(var statement in block.Statements)
 		{
 			if(Contains(end, statement.SpanStart, span))

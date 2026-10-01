@@ -187,6 +187,24 @@ namespace Zongsoft.CodeAnalysis.Analyzers.Properties {
         }
 
         /// <summary>
+        ///   查找类似 Place this local function at the end of its statement list with the required spacing 的本地化字符串。
+        /// </summary>
+        internal static string LocalFunctionLayoutMessage {
+            get {
+                return ResourceManager.GetString("LocalFunctionLayoutMessage", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   查找类似 Arrange local functions at the end 的本地化字符串。
+        /// </summary>
+        internal static string LocalFunctionLayoutTitle {
+            get {
+                return ResourceManager.GetString("LocalFunctionLayoutTitle", resourceCulture);
+            }
+        }
+
+        /// <summary>
         ///   查找类似 Move non-ASCII text into resources; redesign contexts that require constants 的本地化字符串。
         /// </summary>
         internal static string LocalizedTextDiagnostic {
@@ -219,6 +237,24 @@ namespace Zongsoft.CodeAnalysis.Analyzers.Properties {
         internal static string MemberRegionTitle {
             get {
                 return ResourceManager.GetString("MemberRegionTitle", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   查找类似 Enclose the outer statement body of this nested control structure in braces 的本地化字符串。
+        /// </summary>
+        internal static string NestedControlBracesMessage {
+            get {
+                return ResourceManager.GetString("NestedControlBracesMessage", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   查找类似 Use braces for nested control structures 的本地化字符串。
+        /// </summary>
+        internal static string NestedControlBracesTitle {
+            get {
+                return ResourceManager.GetString("NestedControlBracesTitle", resourceCulture);
             }
         }
 

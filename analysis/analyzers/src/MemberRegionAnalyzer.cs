@@ -72,6 +72,7 @@ public sealed class MemberRegionAnalyzer : DiagnosticAnalyzer
 				IndexerDeclarationSyntax indexer => indexer.ThisKeyword,
 				_ => member.GetFirstToken(),
 			};
+
 			context.ReportDiagnostic(Diagnostic.Create(_rule, token.GetLocation(), members.Length));
 			return;
 		}

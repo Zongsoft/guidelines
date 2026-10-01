@@ -61,6 +61,24 @@ namespace Zongsoft.CodeAnalysis.Fixes.Properties {
         }
 
         /// <summary>
+        ///   查找类似 Add braces 的本地化字符串。
+        /// </summary>
+        internal static string AddBraces {
+            get {
+                return ResourceManager.GetString("AddBraces", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   查找类似 Arrange local functions 的本地化字符串。
+        /// </summary>
+        internal static string ArrangeLocalFunctions {
+            get {
+                return ResourceManager.GetString("ArrangeLocalFunctions", resourceCulture);
+            }
+        }
+
+        /// <summary>
         ///   查找类似 Insert blank line 的本地化字符串。
         /// </summary>
         internal static string InsertBlankLine {

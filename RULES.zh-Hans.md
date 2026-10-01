@@ -24,6 +24,8 @@
 | [ZS1304](#zs1304) | 通过生成属性访问固定资源项 | 警告 / 错误 | 手工迁移资源访问 |
 | [ZS2003](#zs2003) | 在指定语句组边界留空行 | 警告 / 错误 | ✅ 插入空行 |
 | [ZS2004](#zs2004) | 非测试项目中超过 9 个方法与属性的文件必须分段 | 警告 / 错误 | 手工按职责分段 |
+| [ZS2005](#zs2005) | 嵌套控制语句体使用花括号 | 警告 / 错误 | ✅ 添加花括号 |
+| [ZS2006](#zs2006) | 局部函数位于末尾并按规定分隔 | 警告 / 错误 | ✅ 整理局部函数 |
 | [ZS3001](#zs3001) | 补齐方法参数 XML 文档 | 警告 / 错误 | 手工补充契约 |
 | [ZS3002](#zs3002) | 补齐非 void 方法返回值 XML 文档 | 警告 / 错误 | 手工补充契约 |
 | [ZS3003](#zs3003) | 单行 XML 内容及标签写在同一行 | 警告 / 错误 | ✅ 合并 XML 文档行 |
@@ -147,16 +149,358 @@ Visual Studio 自定义工具不由普通 `dotnet build` 执行；修改资源�
 
 ### ZS2003 · 语句组之间留空行
 
-**仅在以下两类边界要求空行：**
+**在以下四类边界要求至少一个空行，下面列出的例外允许省略：**
 
-1. 连续超过两条赋值或初始化语句，后面紧接 `if`、`switch`、`for`、`foreach`、`while` 或 `do`。
-2. 同一层级相邻的独立控制结构或显式语句块。控制结构包括上述条件和循环，以及 `try`、`using`、`lock`、`checked`／`unchecked` 和 `unsafe` 块。
+1. 连续普通语句后紧接 `if`、`switch`、`for`、`foreach`、`while` 或 `do`：带块或复杂结构前至少两条、简单无花括号结构前至少三条即须分隔。低于相应门槛时，可紧接，也可保留空行。
+2. 同一层级相邻的独立控制结构或显式语句块。控制结构包括上述条件和循环，以及 `try`、`using`、`lock`、`checked`／`unchecked`、`unsafe` 和 `fixed`。
+3. `try`、`using(...)`、`lock`、`fixed`、`checked`／`unchecked`、`unsafe` 或显式语句块开始前，存在上一条同层级独立语句。即使前面只有一条声明、赋值或调用，也须分隔。资源组的前置边界见下表。
+4. 含有执行语句块的完整复合语句或显式语句块结束后，紧接同一层级的任意独立语句。后续的调用、断言、事件通知、赋值、局部声明、资源释放、`return`、`throw`、`yield` 和跳转语句均不因用途而豁免。
 
-连续的同类型简单控制语句（`if`、`for`、`foreach` 或 `while`）可以不留空行；不同类型之间必须留一个空行。每条语句须无花括号，语句体为单条非控制语句，且 `if` 不含 `else`。任一语句带块、含 `else` 或嵌套控制结构时，仍按上述规则分隔。
+这里的“同一层级”指同一语句块、同一 switch 分支或顶层语句列表的直接子语句。“含有执行语句块”包括控制结构本身的块，以及沿其嵌套语句体包含的块；例如外层 `if` 无花括号、内层 `while` 有块，完整 `if` 后仍需空行。`await using`、`await foreach` 和附有标签的语句块同样适用。
 
-**计数与例外：** 带初始化的局部变量、常量声明，普通、复合和解构赋值均按语句计数；一条多变量声明或解构赋值只计一次。空行或其他种类的语句结束当前计数；注释行不代替空行。只有一条或两条赋值，或后面接调用、返回等语句，不因此要求空行。`if/else`、`try/catch/finally`、`do/while` 的关联子句和嵌套语句体不拆分。覆盖语句块、switch 分支和顶层语句；生成代码不报告。
+**条件与循环的前置门槛：** 以下只判定第 1 项；第 2、3、4 项及各自例外独立适用，不因计数放宽而取消。
 
-以下为方法体片段，假定 `items` 为整数数组，已有 `Process(int)` 方法。三条初始化后接条件判断，应分隔：
+| 后续条件或循环 | 连续 1 条普通语句 | 连续 2 条普通语句 | 连续 3 条及以上普通语句 |
+| --- | --- | --- | --- |
+| 带块或复杂结构 | 可紧接 | 必须空行 | 必须空行 |
+| 简单无花括号结构 | 可紧接 | 可紧接 | 必须空行 |
+
+**简单与复杂的定义：** 简单无花括号结构仅限 `if`、`for`、`foreach`、`while`，语句体为下表定义的单条简单语句，`if` 无 `else`。其他条件和循环均按复杂结构判定，包括 `switch`、`do`、带 `else`／`else if` 的分支、空块、单语句块和嵌套控制语句体；完整结构只有一行也不改变门槛。带标签时按标签所附的完整语句判定。断言、日志、取消检查或资源获取等调用按普通语句计数，不根据调用名称、用途或与后续结构的数据依赖决定门槛。
+
+**完整结构边界：** 不拆开 `if/else if/else`、`try/catch/finally` 和 `do/while` 的关联子句，也不拆开控制语句与嵌套语句体。第 1、3 项的空行位于完整结构开始前；没有上一条同层级语句时，不要求额外前置空行。第 4 项的空行位于最终分支或子句之后；`do` 位于最终 `while(...);` 之后。即使最后一个 `else` 无花括号，只要任一分支含有执行语句块，也按完整结构检查后置分隔。相邻的外层结束花括号、不同 switch 分支的标签不是本规则要求分隔的独立语句。
+
+**允许省略的布局：** 以下例外不删除已有空行，也不豁免结构内部的其他语句边界。
+
+| 布局 | 精确条件 |
+| --- | --- |
+| 连续同类型的简单控制语句 | 仅限 `if`、`for`、`foreach`、`while`；各语句体均无花括号，且为单条表达式语句（如调用、赋值或自增／自减）、`return`、`throw`、空语句、`break`、`continue` 或 `yield`；`if` 不含 `else`。不同类型、带块或嵌套控制结构仍须分隔。 |
+| 连续紧凑异常处理语句 | 每个完整 `try/catch/finally` 各占一个不同的物理行，所有关联子句均在该行；各子句的直接语句不超过两条，且完整结构内部无预处理指令。只有各子句单行而整个结构跨行的写法不属于此例外。组前存在独立语句或组后接普通语句时，仍须空行。 |
+| 资源声明与嵌套 `using` 链 | 同一语句列表中，无分隔空行的连续 `using var`、`using Type` 或对应 `await using` 资源声明，可与其后紧接的一个 `using(...)`／`await using(...)` 完整结构组成资源组。组内声明及直接嵌套的 `using` 链不要求空行；第 3 项的前置分隔在首条资源声明前检查。普通语句或已有分隔空行打断该组。只有资源声明时，不因第 3 项要求组前空行；普通变量声明不属于资源组，两个已经结束的独立 `using` 块也不能合并为组。 |
+| switch 分支末尾的 `break` | `break` 必须是该 switch 分支列表的最后一条直接语句，用于退出该 switch。嵌套块或循环中的 `break`、分支内非末尾的 `break`，以及 `return`、`throw`、`continue`、`goto case/default` 均不属于此例外。 |
+
+**计数与空行：** 普通语句按语法包括局部变量或常量声明（有无初始化均计入，包含资源声明）和表达式语句（调用、`await` 调用、普通／复合／解构赋值、自增、自减等）；混合出现也累计。一条多变量声明、解构赋值或跨多行的声明／表达式语句只计一次。已有空行或其他种类的语句结束连续计数；资源组的组首分隔仍按第 3 项判断。普通语句之间，以及普通语句后接返回等非条件、非循环语句，不因第 1 项逐条要求空行；职责和阶段分组仍须人工审查。空行须仅含空白字符，并位于注释之外；注释行、预处理指令行、块注释内部或未激活条件编译文本中的空白行不能代替分隔空行。低于计数门槛时不强制删除已有空行。
+
+**检查范围：** 生产代码和测试代码使用同一规则，生成代码不报告；AI 编写且由人工维护的源码不因来源而豁免。方法、类型、属性和访问器声明之间的排版由其他规范约束；局部函数声明本身不是第 3 项的复杂控制结构，其结束块也不触发第 4 项。对象／集合初始化器、属性模式、switch 表达式、lambda 和匿名方法的花括号属于表达式，不据此要求外围语句之间插入空行；这些函数体内部仍检查语句分隔。
+
+以下均为独立的方法体片段，假定 `items` 为整数数组，`enabled`、`disabled` 为布尔值，已有 `Process(int)`、`Complete()`、`NotifyChanged()` 方法，并已导入 `System` 命名空间；`Assert.True(bool)` 来自项目使用的测试框架。标有 `//ZS2003` 的语句应报告，其余片段符合本规则。
+
+单条普通语句后接带块条件，紧凑写法合规。
+
+```csharp
+var count = items.Length;
+if(count > 0)
+{
+	Process(count);
+}
+```
+
+同一处主动保留空行也合规，修复器不删除它。
+
+```csharp
+var count = items.Length;
+
+if(count > 0)
+{
+	Process(count);
+}
+```
+
+两条声明后接带块条件，缺少空行时报告。
+
+```csharp
+var count = items.Length;
+var index = 0;
+if(count > 0) //ZS2003
+{
+	Process(items[index]);
+}
+```
+
+对应的合规分隔如下。
+
+```csharp
+var count = items.Length;
+var index = 0;
+
+if(count > 0)
+{
+	Process(items[index]);
+}
+```
+
+声明与调用混合累计，不因语句种类改变而重新计数。
+
+```csharp
+var count = items.Length;
+Complete();
+if(count > 0) //ZS2003
+{
+	Process(count);
+}
+```
+
+两条普通语句后接简单无花括号条件，可以紧接。
+
+```csharp
+var count = items.Length;
+var index = 0;
+if(count > 0)
+	Process(items[index]);
+```
+
+三条普通语句后接简单无花括号条件，必须分隔；调用也计入。
+
+```csharp
+var count = items.Length;
+var index = 0;
+Complete();
+if(count > 0) //ZS2003
+	Process(items[index]);
+```
+
+跨多行的初始化仍只是一条普通语句，可以紧接带块条件。
+
+```csharp
+var values = new int[]
+{
+	1, 2, 3,
+};
+if(enabled)
+{
+	Process(values[0]);
+}
+```
+
+一条初始化后接 `try`：即使只有一条普通语句，仍须前置分隔。
+
+```csharp
+var x = 100;
+try //ZS2003
+{
+	Process(x);
+}
+catch { }
+```
+
+单条断言后接带块循环：未达到两条普通语句的门槛，可以紧接；测试与生产代码使用同一计数规则。
+
+```csharp
+Assert.True(items.Length > 0);
+foreach(var item in items)
+{
+	Process(item);
+}
+```
+
+无花括号多分支仍是复杂结构，但单条普通语句后可以紧接；`else` 与 `if` 之间不拆开。
+
+```csharp
+Complete();
+if(enabled)
+	Process(items[0]);
+else
+	NotifyChanged();
+```
+
+下面只有一条初始化，后接没有 `else` 的简单无花括号 `if`，不要求前置空行。
+
+```csharp
+var count = items.Length;
+if(count == 0)
+	return;
+```
+
+资源组：准备调用与第一条资源声明分隔，组内资源声明及嵌套 `using` 紧接。
+
+```csharp
+Complete();
+
+using var buffer = new global::System.IO.MemoryStream();
+using(var stream = new global::System.IO.MemoryStream())
+using(var writer = new global::System.IO.StreamWriter(stream))
+{
+	writer.Write(items.Length);
+}
+```
+
+资源组前缺少空行时，在首条资源声明处报告，修复不拆开该组。
+
+```csharp
+Complete();
+using var buffer = new global::System.IO.MemoryStream(); //ZS2003
+using(var stream = new global::System.IO.MemoryStream())
+{
+	GC.KeepAlive(stream);
+}
+```
+
+普通调用打断资源组，后续 `using(...)` 前仍须分隔。
+
+```csharp
+using var buffer = new global::System.IO.MemoryStream();
+GC.KeepAlive(buffer);
+using(var stream = new global::System.IO.MemoryStream()) //ZS2003
+{
+	GC.KeepAlive(stream);
+}
+```
+
+两个已经结束的独立 `using` 块，不能套用嵌套资源链的例外。
+
+```csharp
+using(var first = new global::System.IO.MemoryStream())
+{
+	GC.KeepAlive(first);
+}
+using(var second = new global::System.IO.MemoryStream()) //ZS2003
+{
+	GC.KeepAlive(second);
+}
+```
+
+块后接返回或断言：返回不豁免；测试中的断言应与前一个循环分隔。
+
+```csharp
+foreach(var item in items)
+{
+	Process(item);
+}
+return; //ZS2003
+```
+
+以下断言与循环之间已有空行，循环前后均符合规则。
+
+```csharp
+Assert.True(items.Length > 0);
+
+foreach(var item in items)
+{
+	Process(item);
+}
+
+Assert.True(items.Length > 0);
+```
+
+完整分支后接通知：else 紧接关联的 if，通知前留空行；最后一个分支无花括号也不改变此边界。
+
+```csharp
+if(enabled)
+{
+	Process(items[0]);
+}
+else
+	Complete();
+
+NotifyChanged();
+```
+
+do/while：关联的 while 前不插入分隔空行，后续语句在分号之后分隔。
+
+```csharp
+do
+{
+	Complete();
+}
+while(enabled);
+
+NotifyChanged();
+```
+
+紧凑异常处理组：两个完整单行 try 可紧接，组后的调用必须分隔。
+
+```csharp
+Complete();
+
+try { Process(items[0]); } catch { }
+try { Complete(); } catch { }
+
+NotifyChanged();
+```
+
+下面虽然每个子句都是单行，但第一个完整 try 跨行，第二个 try 前仍须空行。
+
+```csharp
+try { Process(items[0]); }
+catch { }
+try { Complete(); } catch { } //ZS2003
+```
+
+switch 分支末尾：紧接块的分支末尾 break 可以不留空行，switch 之后的调用仍须分隔。
+
+```csharp
+switch(items.Length)
+{
+	case 0:
+		if(enabled)
+		{
+			Complete();
+		}
+		break;
+}
+
+NotifyChanged();
+```
+
+循环中的 break 没有上述例外。
+
+```csharp
+while(enabled)
+{
+	if(items.Length == 0)
+	{
+		Complete();
+	}
+	break; //ZS2003
+}
+```
+
+switch 分支中的 return 也没有上述例外。
+
+```csharp
+switch(items.Length)
+{
+	case 0:
+		if(enabled)
+		{
+			Complete();
+		}
+		return; //ZS2003
+}
+```
+
+下条语句的注释应与前一个结构一起隔开。
+
+```csharp
+if(enabled)
+{
+	Complete();
+}
+
+//Notify observers.
+NotifyChanged();
+```
+
+初始化器的结束花括号不会触发外围语句分隔。
+
+```csharp
+var values = new int[]
+{
+	1, 2, 3,
+};
+GC.KeepAlive(values);
+```
+
+lambda 的结束花括号也不会触发外围语句分隔。
+
+```csharp
+Action action = () =>
+{
+	Complete();
+};
+action();
+```
+
+普通语句组：三条初始化后接简单无花括号条件判断时必须分隔。此片段不使用前述 enabled 变量，而是自行声明。
 
 ```csharp
 var index = 0;
@@ -167,7 +511,7 @@ if(enabled)
 	Process(items[index]);
 ```
 
-以下片段完全合规。假定 `GetCreator(type)` 返回创建委托，`map` 为可选映射委托，`state` 为映射参数：
+下面仅有一条初始化，后接调用和返回，符合本规则。此片段所在方法返回对象，GetCreator(type) 返回创建委托，map 为可选映射委托，state 为映射参数。
 
 ```csharp
 var entity = GetCreator(type)();
@@ -175,7 +519,7 @@ map?.Invoke(entity, state);
 return entity;
 ```
 
-以下合规方法体片段按控制语句类型分组：同类型组内可不留空行，不同类型组间必须留空行。
+简单无花括号控制组：同类型组内可不留空行，不同类型组间必须留空行。
 
 ```csharp
 if(enabled)
@@ -185,12 +529,12 @@ if(disabled)
 
 for(var i = 0; i < items.Length; i++)
 	;
-for(var j = 0; j < entries.Count; j++)
+for(var j = 0; j < items.Length; j++)
 	;
 
 foreach(var item in items)
 	;
-foreach(var entry in entries)
+foreach(var entry in items)
 	;
 
 while(enabled)
@@ -199,7 +543,7 @@ while(disabled)
 	;
 ```
 
-**修复：** `Ctrl+.` → “插入空行”，支持文档、项目、解决方案范围的全部修复。只修改诊断边界，保留缩进、CRLF/LF、注释及条件编译，不格式化其他代码。配置项为 `dotnet_diagnostic.ZS2003.severity`。
+**修复：** `Ctrl+.` → “插入空行”，支持文档、项目、解决方案范围的全部修复。在后一个语句或资源组首条资源声明的首个标记处报告；修复重新核对边界及例外，只插入缺少的分隔，保留缩进、CRLF/LF、注释及条件编译，不格式化其他代码。配置项为 `dotnet_diagnostic.ZS2003.severity`，默认警告、严格模式错误。
 
 <a id="zs2004"></a>
 
@@ -210,6 +554,226 @@ while(disabled)
 - **计数：** 包含当前文件中所有类型和嵌套类型的方法、属性及索引器，每个声明计一次；接口、抽象及显式实现成员同样计入。不计构造函数、运算符、访问器、局部函数、字段和事件；不跨文件合并 `partial` 成员，不统计未启用的条件编译代码。
 - **边界：** 9 个或更少不强制分段；空分段、未配对分段或方法体内部的分段不能覆盖成员。生成代码不报告。中文分段名称、职责划分、成员顺序及空分段本身继续人工审查。
 - **配置与修复：** `dotnet_diagnostic.ZS2004.severity`；默认警告，严格模式错误。手工按职责组织，工具不猜测分段名称。
+
+<a id="zs2005"></a>
+
+### ZS2005 · 嵌套控制语句使用花括号
+
+- **触发条件：** `if` 的 then 分支、`else` 分支、`for`、`foreach`、`while`、`do`、`using`、`lock` 或 `fixed` 的直接语句体没有花括号，且语句体本身又是控制结构时，要求给外层语句体加块。内层已有自己的块也仍须报告。`foreach` 包括解构和 `await foreach`，`using` 包括 `await using`。
+- **内层结构：** 条件、循环、`using`、`lock`、`fixed`、`switch`、`try`、`checked`／`unchecked` 和 `unsafe` 语句均计作控制结构；表达式中的同名关键字不计。外层语句体已经是显式块时符合要求。
+- **逐层检查：** 只看直接语句体，不按缩进或物理行数计数。两个直接嵌套的控制结构已经触发；方法体和最终普通语句不计层数。更深的嵌套逐条直接关系检查。
+- **报告位置：** 在需要加块的外层头部首个标记处报告，`else` 分支报告在 `else`，`await using`／`await foreach` 报告在 `await`。
+- **关联分支：** 标准 `else if` 链不要求在 `else` 与其 `if` 之间加块；`if` 的 then 分支又是 `if`，以及 `else` 分支直接包含循环等其他结构，仍须加块。
+- **纯链例外：** 直接连续的 `using`／`await using` 链、纯 `fixed` 链、纯 `lock` 链可以共享最终语句体。最终只有一条简单普通语句时可无块，多条语句使用共同块。混合类型不属于例外；最终又是其他控制结构时，最后一个链头必须加块。普通语句的表达式复杂度继续按开发规范审查。
+- **范围与配置：** 生产代码和测试代码一致，生成代码不报告。配置项为 `dotnet_diagnostic.ZS2005.severity`，默认警告、严格模式错误。本规则不要求所有简单单语句控制体一律加块，不负责逻辑空行或嵌入语句另起一行。
+
+以下为独立的方法体片段，假定 `items` 为整数数组，`enabled` 为布尔变量，`Process(int)` 与 `Complete()` 已定义；资源片段使用 BCL 的完整类型名。注释 `//ZS2005` 标记应加块的外层头；片段只展示本规则，控制结构前后的空行仍遵循 [ZS2003](#zs2003)。
+
+不符合：两个控制结构已触发，最终调用不计第三层。
+
+```csharp
+foreach(var item in items) //ZS2005
+	if(item > 0)
+		Process(item);
+```
+
+修复后：外层使用块，内层简单单语句仍可无块。
+
+```csharp
+foreach(var item in items)
+{
+	if(item > 0)
+		Process(item);
+}
+```
+
+内层已有块仍不豁免外层；此片段中的 `if` 应加块。
+
+```csharp
+if(enabled) //ZS2005
+	foreach(var item in items)
+	{
+		Process(item);
+	}
+```
+
+更深的嵌套分别检查：`for` 与它的直接 `if` 都需要块。
+
+```csharp
+for(var index = 0; index < items.Length; index++) //ZS2005
+	if(enabled) //ZS2005
+		while(items[index] > 0)
+			items[index]--;
+```
+
+纯资源链允许最终单条调用无块。
+
+```csharp
+using(var stream = new global::System.IO.MemoryStream())
+using(var writer = new global::System.IO.StreamWriter(stream))
+	writer.Flush();
+```
+
+纯锁链也允许最终单条调用无块，假定两个同步对象已定义。
+
+```csharp
+lock(firstSync)
+lock(secondSync)
+	Complete();
+```
+
+纯固定链采用相同例外，以下片段位于启用不安全代码的 `unsafe` 方法中。
+
+```csharp
+fixed(int* first = items)
+fixed(int* second = items)
+	global::System.GC.KeepAlive(items);
+```
+
+混合链必须在类型变化的外层语句体加块；这里保留块内纯资源链，假定 `sync` 已定义。
+
+```csharp
+lock(sync)
+{
+	using(var first = new global::System.IO.MemoryStream())
+	using(var second = new global::System.IO.MemoryStream())
+		global::System.GC.KeepAlive(second);
+}
+```
+
+反向混合也不能套用纯链例外；下面最后一个 `using` 必须加块。
+
+```csharp
+using(var first = new global::System.IO.MemoryStream())
+using(var second = new global::System.IO.MemoryStream()) //ZS2005
+	lock(sync)
+	{
+		global::System.GC.KeepAlive(second);
+	}
+```
+
+标准 `else if` 属于关联分支，符合本规则。
+
+```csharp
+if(enabled)
+	Complete();
+else if(items.Length > 0)
+	Process(items[0]);
+else
+	Complete();
+```
+
+**修复：** `Ctrl+.` → “添加花括号”，支持文档、项目、解决方案范围的全部修复。重新核对嵌套关系和例外后，给对应语句体加块并调整其缩进，保留注释、CRLF/LF 和原有 `else` 归属，不格式化无关代码。目标控制结构存在语法错误，或从外层头部末标记至直接语句体末尾含有预处理指令、未激活源码或损坏语法时，不提供自动修复；结构之前的正常指令不影响修复。跨行尾注释结束后与语句体同处一行、无法安全插块时，也需人工处理。逻辑分组与 `return` 前空行的人工判定见 [人工审查](#review)。
+
+<a id="zs2006"></a>
+
+### ZS2006 · 局部函数位于末尾并按规定分隔
+
+- **位置：** 局部函数必须集中在所在语句块、switch 分支或顶级语句列表的末尾，后面不得再有同列表的普通语句。保留原作用域，不提升到外层方法。所有允许局部函数的宿主均适用，包括构造函数、访问器、运算符、lambda／匿名方法及其他局部函数。
+- **主体分隔：** 主体代码与第一个局部函数之间必须恰好一个真实空行。函数的说明注释与函数组成整体，空行位于说明注释之前；注释与声明之间不留分隔空行。没有前置主体代码时，不额外要求开花括号后的空行。
+- **单行例外：** 所在列表的全部主体代码仅占一个物理行、组首局部函数使用表达式体（`=>`、无 `{}` 函数体），且前置区域没有独立注释行或指令时，允许零个或一个空行。主体语句的行尾注释不影响例外；一条跨行语句不属于单行主体。
+- **相邻函数：** 连续两个表达式体局部函数之间必须零个空行；表达式体后接块体函数允许零个或一个空行；块体函数之后必须恰好一个空行。无表达式体的 `extern` 局部函数按非表达式体处理。函数间的说明注释仍与后一个函数相邻。
+- **空行判定：** 只计仅含空白字符、位于注释和未激活源码之外的真实空行；注释行不代替空行，不删除块注释内部的空白行。局部函数前的分隔统一由本规则检查，避免与 [ZS2003](#zs2003) 重复报告；函数体内部的普通语句仍遵循 ZS2003。
+- **报告与配置：** 在违规局部函数的首个标记处报告；位置违规时不再重复报告同一函数的空行问题。生产代码与测试代码一致，生成代码不报告。配置为 `dotnet_diagnostic.ZS2006.severity`，默认警告、严格模式错误。
+- **修复：** `Ctrl+.` → “整理局部函数”，支持文档、项目、解决方案范围的全部修复。在原列表内保持普通语句及函数各自的顺序，说明和行尾注释按原归属保留，正文按原文本片段搬运，保留 CRLF/LF，不格式化其他代码。
+- **移动边界：** 移位后核对项目编译。项目原本无法编译、目标列表有语法错误或指令／未激活源码、需要跨越 `using`／`await using` 声明、注释归属不清，或存在隐式 `CallerLineNumber` 实参时，不提供自动移动。空行修复也不跨越指令或未激活源码。
+
+以下均为相互独立的方法声明，放在已导入 `System` 的类型中；`//ZS2006` 标记违规声明，其余片段合规。
+
+主体代码在前，局部函数集中在末尾：
+
+```csharp
+static void Foo()
+{
+	Console.Write("before");
+	Console.Write(GetMessage());
+
+	static string GetMessage() => "This is a message.";
+}
+```
+
+不符合：局部函数插在主体代码中间。
+
+```csharp
+static void Foo()
+{
+	Console.Write("before");
+
+	static string GetMessage() => "This is a message."; //ZS2006
+
+	Console.Write(GetMessage());
+}
+```
+
+单行主体可省略分隔空行；连续表达式体函数必须紧凑：
+
+```csharp
+static void Foo()
+{
+	Console.Write(GetMessage());
+	static string GetMessage() => Format("message");
+	static string Format(string value) => value;
+}
+```
+
+不符合：两个表达式体函数之间存在空行。
+
+```csharp
+static void Foo()
+{
+	Console.Write(GetMessage());
+
+	static string GetMessage() => Format("message");
+
+	static string Format(string value) => value; //ZS2006
+}
+```
+
+独立说明注释取消紧凑例外，分隔放在注释之前：
+
+```csharp
+static void Foo()
+{
+	Console.Write(GetMessage());
+
+	// Function documentation.
+	static string GetMessage() => "This is a message.";
+}
+```
+
+块体函数之后必须一个空行：
+
+```csharp
+static void Foo()
+{
+	Console.Write(GetMessage());
+
+	static string GetMessage()
+	{
+		return Format("message");
+	}
+
+	static string Format(string value) => value;
+}
+```
+
+内部块末尾的局部函数保留作用域，外层方法仍可继续执行：
+
+```csharp
+static void Foo(bool enabled)
+{
+	if(enabled)
+	{
+		var message = "This is a message.";
+		Console.Write(GetMessage());
+
+		string GetMessage() => message;
+	}
+
+	Console.Write("after");
+}
+```
+
 
 <a id="zs3001"></a>
 
@@ -384,6 +948,7 @@ public int Count
 	get
 	{
 		_lock.EnterReadLock();
+
 		try { return _list.Count; }
 		finally { _lock.ExitReadLock(); }
 	}
@@ -450,6 +1015,10 @@ public int Next(int value) { value++; return value; }
 ## 仍需人工审查
 
 分析器通过不代表符合全部开发规范。以下要求继续结合设计、契约和测试核对：
+
+- [逻辑分组](zongsoft.csharp.guidelines.md#statement-groups)：按职责、执行阶段和验证对象划分，组间留空行；没有连续物理行数的硬上限。相同语句种类、接收对象或数据依赖不自动构成紧凑组。同质映射、注册、初始化和断言表等例外必须满足规范条件。测试中的简单输入构造可与紧接着的执行同组；准备阶段的前置断言可紧接其直接对应的环境或数据获取操作；共同验证同一次操作结果的状态、内容等断言，以及辅助取值与对应断言，也可以同组；独立准备阶段与执行、执行与验证、不同验证对象及每个字段的多步验证仍须分组。
+- [返回布局](zongsoft.csharp.guidelines.md#return-spacing)：紧凑的获取／包装／状态结果等单元可以紧接返回；独立回退、多步报文填充和创建／获取／发布阶段结束后的返回须分隔。条件表达式跨行本身不强制空行，最终配置回调与返回可以成组。不要统一给所有 return 加空行。
+- ZS2003 只检查已列出的确定语法边界，不根据调用名称、对象身份或业务阶段猜测上述空行，也不自动修复这些人工判定项；人工紧凑组不得豁免已有 ZS2003 边界。
 
 - using 别名限制、生产项目 global using 的适用范围、测试 Global.cs、依赖分组与长度排序。
 - 中文职责分段、成员顺序、重载相邻、领域命名、外部接口名称与公共 API 兼容性。

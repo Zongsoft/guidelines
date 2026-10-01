@@ -84,4 +84,16 @@
 	<data name="DocumentationLayoutMessage" xml:space="preserve">
 		<value>将“{0}”标签及其单行内容写在同一行</value>
 	</data>
+	<data name="LocalFunctionLayoutTitle" xml:space="preserve">
+		<value>将局部函数集中放在末尾</value>
+	</data>
+	<data name="LocalFunctionLayoutMessage" xml:space="preserve">
+		<value>将此局部函数放在所在语句列表末尾并使用规定的空行分隔</value>
+	</data>
+	<data name="NestedControlBracesTitle" xml:space="preserve">
+		<value>为嵌套控制结构添加花括号</value>
+	</data>
+	<data name="NestedControlBracesMessage" xml:space="preserve">
+		<value>使用花括号包裹此嵌套控制结构的外层语句体</value>
+	</data>
 </root>

@@ -37,7 +37,7 @@ public sealed class LayoutSuppressor : DiagnosticSuppressor
 				context.ReportSuppression(Suppression.Create(_name, diagnostic));
 			else if(diagnostic.Id == "IDE2001" && IsEmptyLoop(token, text))
 				context.ReportSuppression(Suppression.Create(_loop, diagnostic));
-			else if(diagnostic.Id == "IDE0055" && IsWhitespace(text, span.Start, span.End))
+			else if(diagnostic.Id == "IDE0055" && SourceTextUtility.IsHorizontalWhitespace(text, span))
 			{
 				//格式诊断可能落在前一个 token 的尾随空白，也可能是后一个 token 前的零宽位置。
 				var next = token.SpanStart >= span.End ? token : token.GetNextToken();
@@ -54,14 +54,14 @@ public sealed class LayoutSuppressor : DiagnosticSuppressor
 
 	private static bool IsBoundary(SyntaxToken previous, SyntaxToken next, SourceText text)
 	{
-		if(!IsWhitespace(text, previous.Span.End, next.SpanStart))
+		if(!SourceTextUtility.IsHorizontalWhitespace(text, TextSpan.FromBounds(previous.Span.End, next.SpanStart)))
 			return false;
 
 		//初始化器跨行时，仍允许空构造函数的花括号紧接 this/base 调用；Tab 不属于此例外。
 		if(next.IsKind(SyntaxKind.OpenBraceToken) && next.Parent is BlockSyntax body && body.Statements.Count == 0 &&
 			body.Parent is ConstructorDeclarationSyntax constructor && constructor.Initializer?.GetLastToken() == previous &&
 			next.SpanStart == previous.Span.End + 1 && text[previous.Span.End] == ' ' &&
-			text.Lines.GetLineFromPosition(next.SpanStart).LineNumber == text.Lines.GetLineFromPosition(body.CloseBraceToken.SpanStart).LineNumber)
+			SourceTextUtility.IsSingleLine(text, body.Span))
 			return true;
 
 		if(previous.IsKind(SyntaxKind.DelegateKeyword) && previous.Parent is AnonymousMethodExpressionSyntax &&
@@ -86,7 +86,7 @@ public sealed class LayoutSuppressor : DiagnosticSuppressor
 				return true;
 
 			if(next.SpanStart == previous.Span.End && next.Parent is ConditionalExpressionSyntax)
-				return IsWhitespace(text, next.Span.End, text.Lines.GetLineFromPosition(next.Span.End).End);
+				return SourceTextUtility.IsHorizontalWhitespace(text, TextSpan.FromBounds(next.Span.End, text.Lines.GetLineFromPosition(next.Span.End).End));
 		}
 
 		return next.IsKind(SyntaxKind.SemicolonToken) && next.Parent is EmptyStatementSyntax && IsEmptyLoop(next, text);
@@ -95,10 +95,11 @@ public sealed class LayoutSuppressor : DiagnosticSuppressor
 	private static bool IsContinuation(SyntaxToken token, SourceText text, int tabWidth)
 	{
 		var line = text.Lines.GetLineFromPosition(token.SpanStart);
-		if(!IsWhitespace(text, line.Start, token.SpanStart))
+		if(!SourceTextUtility.IsHorizontalWhitespace(text, TextSpan.FromBounds(line.Start, token.SpanStart)))
 			return false;
 
 		var isOperand = false;
+
 		foreach(var node in token.Parent.AncestorsAndSelf())
 		{
 			if(node is BinaryExpressionSyntax binary && (binary.Right.GetFirstToken() == token || binary.Left.GetFirstToken() == token))
@@ -144,6 +145,7 @@ public sealed class LayoutSuppressor : DiagnosticSuppressor
 	private static int GetColumn(SourceText text, int position, int tabWidth)
 	{
 		var column = 0;
+
 		for(var index = text.Lines.GetLineFromPosition(position).Start; index < position; index++)
 			column += text[index] == '\t' ? tabWidth - column % tabWidth : 1;
 
@@ -155,7 +157,7 @@ public sealed class LayoutSuppressor : DiagnosticSuppressor
 		var loop = token.Parent?.AncestorsAndSelf().OfType<WhileStatementSyntax>().FirstOrDefault();
 		return loop?.Statement is EmptyStatementSyntax empty &&
 			(token == empty.SemicolonToken || token == loop.WhileKeyword) &&
-			text.Lines.GetLineFromPosition(loop.CloseParenToken.Span.End).LineNumber == text.Lines.GetLineFromPosition(empty.SpanStart).LineNumber;
+			SourceTextUtility.IsSingleLine(text, TextSpan.FromBounds(loop.CloseParenToken.Span.End, empty.SpanStart));
 	}
 
 	private static bool IsSpecialField(SyntaxToken token, SemanticModel model)
@@ -169,6 +171,7 @@ public sealed class LayoutSuppressor : DiagnosticSuppressor
 			return true;
 
 		var hasLetter = false;
+
 		foreach(var character in name)
 		{
 			if(char.IsUpper(character))
@@ -178,16 +181,5 @@ public sealed class LayoutSuppressor : DiagnosticSuppressor
 		}
 
 		return hasLetter;
-	}
-
-	private static bool IsWhitespace(SourceText text, int start, int end)
-	{
-		for(var index = start; index < end; index++)
-		{
-			if(text[index] != ' ' && text[index] != '\t')
-				return false;
-		}
-
-		return true;
 	}
 }

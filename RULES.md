@@ -24,6 +24,8 @@ Severities below come from the packaged [Global AnalyzerConfig](https://github.c
 | [ZS1304](#zs1304) | Access fixed resource entries through generated properties | Warning / error | Manual resource-access migration |
 | [ZS2003](#zs2003) | Separate specified statement groups | Warning / error | ✅ Insert blank line |
 | [ZS2004](#zs2004) | Require regions for files with more than 9 methods and properties in non-test projects | Warning / error | Group by responsibility manually |
+| [ZS2005](#zs2005) | Add braces to nested control bodies | Warning / error | ✅ Add braces |
+| [ZS2006](#zs2006) | Place local functions at the end with required spacing | Warning / error | ✅ Arrange local functions |
 | [ZS3001](#zs3001) | Document every method parameter | Warning / error | Describe the contract manually |
 | [ZS3002](#zs3002) | Document non-void method returns | Warning / error | Describe the contract manually |
 | [ZS3003](#zs3003) | Keep single-line XML content and tags on one line | Warning / error | ✅ Join XML documentation lines |
@@ -147,16 +149,358 @@ Ordinary `dotnet build` does not run Visual Studio custom tools. Regenerate and 
 
 ### ZS2003 · Separate statement groups
 
-**A blank line is required at only these two kinds of boundaries:**
+**At least one blank line is required at these four kinds of boundaries, subject to the exceptions below:**
 
-1. More than two consecutive assignment or initialization statements immediately followed by `if`, `switch`, `for`, `foreach`, `while` or `do`.
-2. Adjacent independent control structures or explicit blocks at the same level. Control structures include those conditions and loops, plus `try`, `using`, `lock`, `checked`/`unchecked` and `unsafe` blocks.
+1. Consecutive ordinary statements immediately followed by `if`, `switch`, `for`, `foreach`, `while` or `do`: at least two statements before a block or complex structure, or at least three before a simple braceless structure, require separation. Below the applicable threshold, either adjacency or a blank line is allowed.
+2. Adjacent independent control structures or explicit blocks at the same level. Control structures include those conditions and loops, plus `try`, `using`, `lock`, `checked`/`unchecked`, `unsafe` and `fixed`.
+3. Before `try`, `using(...)`, `lock`, `fixed`, `checked`/`unchecked`, `unsafe` or an explicit block when another independent statement precedes it at the same level. Even a single declaration, assignment or call requires separation. See the table below for resource-group boundaries.
+4. A complete compound statement containing an executable statement block, or an explicit block, immediately followed by any independent statement at the same level. Calls, assertions, event notifications, assignments, local declarations, disposal, `return`, `throw`, `yield` and jumps are not exempt because of their purpose.
 
-Consecutive simple control statements of the same kind (`if`, `for`, `foreach` or `while`) may omit blank lines; different kinds must be separated by a blank line. Each body must be a single non-control statement without braces, and an `if` must have no `else`. A block, an `else`, or a nested control structure still requires separation.
+“Same level” means direct statements in the same block, switch section or top-level statement list. An executable block can belong to the control structure itself or occur along its nested statement bodies. For example, a braceless outer `if` wrapping a `while` block still requires a blank line after the complete `if`. This also applies to `await using`, `await foreach` and labeled statement blocks.
 
-**Counting and exceptions:** Initialized local or constant declarations and ordinary, compound and deconstruction assignments count by statement. A multi-variable declaration or deconstruction counts once. A blank line or another statement kind ends the run; comments do not replace blank lines. One or two assignments, or assignments followed by a call or return, do not require separation on that basis. Related `if/else`, `try/catch/finally` and `do/while` clauses and nested bodies remain together. Applies to blocks, switch sections and top-level statements; generated code is excluded.
+**Thresholds before conditions and loops:** This table only determines item 1; items 2, 3 and 4 and their exceptions apply independently and are not canceled by the relaxed counts.
 
-Method-body fragment, assuming `items` is an integer array and `Process(int)` exists. Separate three initializations from the following condition:
+| Following condition or loop | 1 consecutive ordinary statement | 2 consecutive ordinary statements | 3 or more consecutive ordinary statements |
+| --- | --- | --- | --- |
+| Block or complex structure | Adjacency allowed | Blank line required | Blank line required |
+| Simple braceless structure | Adjacency allowed | Adjacency allowed | Blank line required |
+
+**Simple and complex structures:** Simple braceless structures are limited to `if`, `for`, `foreach` and `while`, with a single simple statement body as defined in the exceptions table below and no `else` on an `if`. All other conditions and loops are complex, including `switch`, `do`, branches with `else`/`else if`, empty blocks, single-statement blocks and nested control bodies. A complete single-line structure has the same threshold. A labeled statement is classified by its attached complete statement. Calls used for assertions, logging, cancellation checks or resource acquisition count as ordinary statements; names, purpose and data dependencies do not determine the threshold.
+
+**Complete structures:** Keep related `if/else if/else`, `try/catch/finally` and `do/while` clauses together, as well as a control statement and its nested body. For items 1 and 3, place the separator before the complete structure; no extra leading blank line is required when there is no preceding statement at the same level. For item 4, place it after the final branch or clause; for `do`, after the final `while(...);`. A braceless final `else` does not change the following boundary if any branch contains an executable block. Successive outer closing braces and labels of different switch sections are not independent statements requiring separation under this rule.
+
+**Optional separation:** These exceptions preserve existing blank lines and do not exempt other boundaries inside the structures.
+
+| Layout | Exact conditions |
+| --- | --- |
+| Consecutive simple controls of the same kind | Only `if`, `for`, `foreach` and `while`; each body has no braces and is a single expression statement (such as a call, assignment, increment or decrement), `return`, `throw`, empty statement, `break`, `continue` or `yield`. An `if` has no `else`. Different kinds, blocks and nested controls still require separation. |
+| Consecutive compact exception-handling statements | Each complete `try/catch/finally` occupies a different single physical line, with all its clauses on that line. Each clause contains at most two direct statements, and the complete structure contains no preprocessor directives. Individually single-line clauses forming a multiline structure do not qualify. A preceding independent statement or following ordinary statement still requires separation from the group. |
+| Resource declarations and a nested `using` chain | In the same statement list, consecutive `using var`, `using Type` or corresponding `await using` declarations without separator blank lines may join the immediately following complete `using(...)`/`await using(...)` structure as a resource group. Declarations and directly nested `using` statements inside the group need no blank lines. Check item 3 before the first resource declaration. An ordinary statement or existing separator blank line ends the group. Declarations alone do not require preceding separation under item 3. Ordinary variable declarations and two already completed independent `using` blocks do not form such a group. |
+| Terminal switch-section `break` | The `break` is the last direct statement in that switch section and exits that switch. A `break` inside a nested block or loop, a nonterminal section `break`, and `return`, `throw`, `continue` or `goto case/default` do not qualify. |
+
+**Counting and blank lines:** Ordinary statements are local variable or constant declarations (with or without initialization, including resource declarations) and expression statements (calls, awaited calls, ordinary/compound/deconstruction assignments, increments, decrements and similar expressions). Mixed kinds accumulate. A multi-variable declaration, deconstruction assignment or multiline declaration/expression statement counts once. An existing blank line or another statement kind ends the run; item 3 still determines separation before a resource group. Item 1 does not require blank lines between individual ordinary statements or before a following return or other statement that is neither a condition nor a loop. Responsibility and stage grouping still requires manual review. A separator line contains only whitespace and is outside comments. Comment lines, preprocessor directive lines, and blank lines inside block comments or inactive conditional-compilation text do not count. Existing blank lines below the threshold need not be removed.
+
+**Scope:** Production and test code follow the same rule; generated code is excluded. AI-written, manually maintained source is not exempt because of its origin. Spacing between method, type, property and accessor declarations follows other guidelines. A local function declaration is not a complex control structure under item 3, and its closing block does not trigger item 4. Braces in object/collection initializers, property patterns, switch expressions, lambdas and anonymous methods belong to expressions and do not require separation of the enclosing statements. Statement boundaries inside those function bodies are still checked.
+
+The following are independent method-body fragments. Assume `items` is an integer array, `enabled` and `disabled` are booleans, `Process(int)`, `Complete()` and `NotifyChanged()` exist, and the `System` namespace is imported. `Assert.True(bool)` comes from the project's test framework. Statements marked `//ZS2003` are reported; the other fragments comply with this rule.
+
+One ordinary statement before a condition block may remain adjacent.
+
+```csharp
+var count = items.Length;
+if(count > 0)
+{
+	Process(count);
+}
+```
+
+A blank line at the same boundary also complies; the fixer does not remove it.
+
+```csharp
+var count = items.Length;
+
+if(count > 0)
+{
+	Process(count);
+}
+```
+
+Two declarations before a condition block require a blank line.
+
+```csharp
+var count = items.Length;
+var index = 0;
+if(count > 0) //ZS2003
+{
+	Process(items[index]);
+}
+```
+
+The compliant separation is:
+
+```csharp
+var count = items.Length;
+var index = 0;
+
+if(count > 0)
+{
+	Process(items[index]);
+}
+```
+
+A declaration and a call accumulate; changing statement kinds does not reset the count.
+
+```csharp
+var count = items.Length;
+Complete();
+if(count > 0) //ZS2003
+{
+	Process(count);
+}
+```
+
+Two ordinary statements may directly precede a simple braceless condition.
+
+```csharp
+var count = items.Length;
+var index = 0;
+if(count > 0)
+	Process(items[index]);
+```
+
+Three ordinary statements before a simple braceless condition require separation; calls count too.
+
+```csharp
+var count = items.Length;
+var index = 0;
+Complete();
+if(count > 0) //ZS2003
+	Process(items[index]);
+```
+
+A multiline initialization is still one ordinary statement and may directly precede a condition block.
+
+```csharp
+var values = new int[]
+{
+	1, 2, 3,
+};
+if(enabled)
+{
+	Process(values[0]);
+}
+```
+
+One initialization followed by `try`: preceding separation is required even for one ordinary statement.
+
+```csharp
+var x = 100;
+try //ZS2003
+{
+	Process(x);
+}
+catch { }
+```
+
+One assertion followed by a loop block is below the two-statement threshold and may remain adjacent; tests and production code use the same counting rule.
+
+```csharp
+Assert.True(items.Length > 0);
+foreach(var item in items)
+{
+	Process(item);
+}
+```
+
+A braceless multi-branch statement is still complex, but may follow one ordinary statement directly; keep `else` together with its `if`.
+
+```csharp
+Complete();
+if(enabled)
+	Process(items[0]);
+else
+	NotifyChanged();
+```
+
+One initialization followed by a simple braceless `if` without `else` does not require preceding separation.
+
+```csharp
+var count = items.Length;
+if(count == 0)
+	return;
+```
+
+A resource group: separate the preparation call from the first resource declaration, keeping the declarations and nested `using` statements together.
+
+```csharp
+Complete();
+
+using var buffer = new global::System.IO.MemoryStream();
+using(var stream = new global::System.IO.MemoryStream())
+using(var writer = new global::System.IO.StreamWriter(stream))
+{
+	writer.Write(items.Length);
+}
+```
+
+Report missing separation before a resource group at its first declaration; the fix keeps the group together.
+
+```csharp
+Complete();
+using var buffer = new global::System.IO.MemoryStream(); //ZS2003
+using(var stream = new global::System.IO.MemoryStream())
+{
+	GC.KeepAlive(stream);
+}
+```
+
+An ordinary call interrupts the resource group; the following `using(...)` still requires preceding separation.
+
+```csharp
+using var buffer = new global::System.IO.MemoryStream();
+GC.KeepAlive(buffer);
+using(var stream = new global::System.IO.MemoryStream()) //ZS2003
+{
+	GC.KeepAlive(stream);
+}
+```
+
+Two completed independent `using` blocks do not qualify for the nested resource-chain exception.
+
+```csharp
+using(var first = new global::System.IO.MemoryStream())
+{
+	GC.KeepAlive(first);
+}
+using(var second = new global::System.IO.MemoryStream()) //ZS2003
+{
+	GC.KeepAlive(second);
+}
+```
+
+A block followed by return or an assertion: returns are not exempt. In tests, separate an assertion from the preceding loop.
+
+```csharp
+foreach(var item in items)
+{
+	Process(item);
+}
+return; //ZS2003
+```
+
+These assertions are separated from the loop; both preceding and following boundaries comply.
+
+```csharp
+Assert.True(items.Length > 0);
+
+foreach(var item in items)
+{
+	Process(item);
+}
+
+Assert.True(items.Length > 0);
+```
+
+A complete branch followed by a notification: keep the related else with its if and separate the notification. A braceless final branch does not change the boundary.
+
+```csharp
+if(enabled)
+{
+	Process(items[0]);
+}
+else
+	Complete();
+
+NotifyChanged();
+```
+
+do/while: keep the related while with the body, then separate the following statement after the semicolon.
+
+```csharp
+do
+{
+	Complete();
+}
+while(enabled);
+
+NotifyChanged();
+```
+
+A compact exception-handling group: two complete single-line try statements may remain adjacent; separate the following call.
+
+```csharp
+Complete();
+
+try { Process(items[0]); } catch { }
+try { Complete(); } catch { }
+
+NotifyChanged();
+```
+
+Here each clause is single-line, but the first complete try spans lines, so the second try requires separation.
+
+```csharp
+try { Process(items[0]); }
+catch { }
+try { Complete(); } catch { } //ZS2003
+```
+
+The end of a switch section: a terminal section break may directly follow a block. The call after the switch still requires separation.
+
+```csharp
+switch(items.Length)
+{
+	case 0:
+		if(enabled)
+		{
+			Complete();
+		}
+		break;
+}
+
+NotifyChanged();
+```
+
+A loop's break has no such exception.
+
+```csharp
+while(enabled)
+{
+	if(items.Length == 0)
+	{
+		Complete();
+	}
+	break; //ZS2003
+}
+```
+
+A switch section's return has no such exception.
+
+```csharp
+switch(items.Length)
+{
+	case 0:
+		if(enabled)
+		{
+			Complete();
+		}
+		return; //ZS2003
+}
+```
+
+Separate a following statement's comment from the preceding structure.
+
+```csharp
+if(enabled)
+{
+	Complete();
+}
+
+//Notify observers.
+NotifyChanged();
+```
+
+Closing initializer braces do not trigger separation of enclosing statements.
+
+```csharp
+var values = new int[]
+{
+	1, 2, 3,
+};
+GC.KeepAlive(values);
+```
+
+Closing lambda braces do not trigger separation of enclosing statements.
+
+```csharp
+Action action = () =>
+{
+	Complete();
+};
+action();
+```
+
+Ordinary statement groups: three initializations before a simple braceless condition require separation. This fragment declares its own enabled variable instead of using the one assumed above.
 
 ```csharp
 var index = 0;
@@ -167,7 +511,7 @@ if(enabled)
 	Process(items[index]);
 ```
 
-This fragment is compliant. Assume `GetCreator(type)` returns a creation delegate, `map` is an optional mapping delegate and `state` is its state argument:
+The following has only one initialization followed by a call and a return, so it complies. Its containing method returns an object; GetCreator(type) returns a creation delegate, map is an optional mapping delegate and state is its state argument.
 
 ```csharp
 var entity = GetCreator(type)();
@@ -175,7 +519,7 @@ map?.Invoke(entity, state);
 return entity;
 ```
 
-This compliant method-body fragment groups controls by kind: blank lines are optional within a same-kind group and required between different kinds.
+Simple braceless control groups: blank lines are optional within a same-kind group and required between different kinds.
 
 ```csharp
 if(enabled)
@@ -185,12 +529,12 @@ if(disabled)
 
 for(var i = 0; i < items.Length; i++)
 	;
-for(var j = 0; j < entries.Count; j++)
+for(var j = 0; j < items.Length; j++)
 	;
 
 foreach(var item in items)
 	;
-foreach(var entry in entries)
+foreach(var entry in items)
 	;
 
 while(enabled)
@@ -199,7 +543,7 @@ while(disabled)
 	;
 ```
 
-**Fix:** `Ctrl+.` → **Insert blank line**, including Fix All in a document, project or solution. Only the reported boundary changes; indentation, CRLF/LF, comments and directives are preserved without formatting unrelated code. Configure `dotnet_diagnostic.ZS2003.severity`.
+**Fix:** `Ctrl+.` → **Insert blank line**, including Fix All in a document, project or solution. Reports the first token of the following statement or the first resource declaration of a group. The fix rechecks the boundary and exceptions and inserts only missing separation, preserving indentation, CRLF/LF, comments and conditional compilation without formatting other code. Configure `dotnet_diagnostic.ZS2003.severity`; warning by default and error in strict mode.
 
 <a id="zs2004"></a>
 
@@ -210,6 +554,226 @@ while(disabled)
 - **Counting:** Includes methods, properties and indexers in all types and nested types in the current file, one per declaration, including interface, abstract and explicit interface members. Excludes constructors, operators, accessors, local functions, fields and events. Does not combine partial declarations across files or count inactive conditional code.
 - **Boundaries:** Files with 9 or fewer members do not require regions. Empty, unmatched or method-body regions cannot cover members. Generated code is excluded. Chinese region names, responsibility grouping, ordering and empty regions themselves still need manual review.
 - **Configuration and fix:** `dotnet_diagnostic.ZS2004.severity`; warning by default, error in strict mode. Group manually by responsibility; the analyzer does not invent names.
+
+<a id="zs2005"></a>
+
+### ZS2005 · Add braces to nested control bodies
+
+- **Trigger:** The direct body of an `if` then branch, `else` branch, `for`, `foreach`, `while`, `do`, `using`, `lock` or `fixed` has no braces and is itself a control structure. Add a block around the outer body, even if the inner control already has its own block. `foreach` includes deconstruction and `await foreach`; `using` includes `await using`.
+- **Inner structures:** Conditions, loops, `using`, `lock`, `fixed`, `switch`, `try`, `checked`/`unchecked` and `unsafe` statements qualify. Keywords in expressions do not. An outer body that is already an explicit block complies.
+- **Each direct relationship:** Check direct bodies, rather than indentation or physical lines. Two nested controls already trigger the rule; the method body and terminal ordinary statement do not count as levels. Check each direct relationship in deeper nesting.
+- **Location:** Reports the first token of the outer head requiring a block: `else` for an else branch, and `await` for `await using`/`await foreach`.
+- **Related branches:** A standard `else if` chain does not require a block between `else` and its `if`. An `if` then body that is another `if`, or an `else` body that directly contains a loop or another control kind, still requires a block.
+- **Pure chains:** Directly consecutive `using`/`await using`, pure `fixed`, and pure `lock` heads may share their final body. A single simple ordinary statement may omit the final block; multiple statements use a shared block. Mixed kinds do not qualify. When the final body is another control kind, the last chain head requires a block. Expression complexity in ordinary statements remains a guideline review concern.
+- **Scope and configuration:** Production and test code follow the same rule; generated code is excluded. Configure `dotnet_diagnostic.ZS2005.severity`; warning by default and error in strict mode. This rule does not require braces around every simple body and does not check logical blank lines or embedded-statement line breaks.
+
+The following are independent method-body fragments. Assume `items` is an integer array, `enabled` is a boolean, and `Process(int)` and `Complete()` exist. Resource fragments use fully qualified BCL types. `//ZS2005` marks an outer head requiring a block. These fragments demonstrate this rule; surrounding spacing still follows [ZS2003](#zs2003).
+
+Noncompliant: two controls trigger the rule; the final call is not a third control level.
+
+```csharp
+foreach(var item in items) //ZS2005
+	if(item > 0)
+		Process(item);
+```
+
+Fixed: brace the outer body; the simple inner body may remain braceless.
+
+```csharp
+foreach(var item in items)
+{
+	if(item > 0)
+		Process(item);
+}
+```
+
+An inner block does not exempt the outer `if`.
+
+```csharp
+if(enabled) //ZS2005
+	foreach(var item in items)
+	{
+		Process(item);
+	}
+```
+
+Deeper nesting checks each relationship: both the `for` and its direct `if` need blocks.
+
+```csharp
+for(var index = 0; index < items.Length; index++) //ZS2005
+	if(enabled) //ZS2005
+		while(items[index] > 0)
+			items[index]--;
+```
+
+A pure resource chain may end in a single braceless call.
+
+```csharp
+using(var stream = new global::System.IO.MemoryStream())
+using(var writer = new global::System.IO.StreamWriter(stream))
+	writer.Flush();
+```
+
+A pure lock chain may also end in a single braceless call. Assume both synchronization objects exist.
+
+```csharp
+lock(firstSync)
+lock(secondSync)
+	Complete();
+```
+
+Pure fixed chains use the same exception. This fragment belongs to an `unsafe` method with unsafe compilation enabled.
+
+```csharp
+fixed(int* first = items)
+fixed(int* second = items)
+	global::System.GC.KeepAlive(items);
+```
+
+Mixed chains need a block at the change of kind. The pure resource chain remains inside the lock block; assume `sync` exists.
+
+```csharp
+lock(sync)
+{
+	using(var first = new global::System.IO.MemoryStream())
+	using(var second = new global::System.IO.MemoryStream())
+		global::System.GC.KeepAlive(second);
+}
+```
+
+The reverse mixture is not exempt: the last `using` below requires a block.
+
+```csharp
+using(var first = new global::System.IO.MemoryStream())
+using(var second = new global::System.IO.MemoryStream()) //ZS2005
+	lock(sync)
+	{
+		global::System.GC.KeepAlive(second);
+	}
+```
+
+A standard `else if` chain is a related branch structure and complies.
+
+```csharp
+if(enabled)
+	Complete();
+else if(items.Length > 0)
+	Process(items[0]);
+else
+	Complete();
+```
+
+**Fix:** `Ctrl+.` → **Add braces**, including Fix All in a document, project or solution. Rechecks nesting and exceptions, wraps the corresponding body, and adjusts its indentation while preserving comments, CRLF/LF and the existing `else` association without formatting unrelated code. No automatic fix is offered when the target control has syntax errors or the range from the outer header's last token to the end of its direct body contains directives, inactive source or damaged syntax. Ordinary directives preceding the structure do not prevent a fix. A multiline trailing header comment ending on the body's start line can also prevent safe insertion and needs manual handling. Logical grouping and return spacing require [manual review](#review).
+
+<a id="zs2006"></a>
+
+### ZS2006 · Place local functions at the end with required spacing
+
+- **Position:** Group local functions at the end of their containing block, switch section or top-level statement list. No ordinary statement in that list may follow them. Preserve their scope; do not lift them to an outer method. Covers every host permitting local functions, including constructors, accessors, operators, lambdas, anonymous methods and other local functions.
+- **Body separation:** Exactly one real blank line separates body code from the first local function. Documentation stays with its function: separation precedes the comments, with no separating blank lines between comments and declaration. No additional blank line after the opening brace is required when there is no preceding body code.
+- **Single-line exception:** Zero or one blank line is allowed when all body code in that list occupies one physical line, the first function has an expression body (`=>`, without a brace body), and the preceding area has no standalone comment lines or directives. A trailing comment on a body statement does not cancel the exception. One statement spanning multiple lines does not qualify.
+- **Adjacent functions:** Two consecutive expression-bodied local functions require zero blank lines. An expression body followed by a block body allows zero or one. A block-bodied function requires exactly one blank line afterward. An `extern` function without an expression body uses the non-expression-bodied rule. Documentation stays adjacent to the following function.
+- **Blank lines:** Count whitespace-only lines outside comments and inactive source. Comment lines do not replace blank lines, and internal block-comment blank lines are preserved. Separation before local functions belongs to this rule, avoiding duplicate [ZS2003](#zs2003) reports. Ordinary statements within function bodies still follow ZS2003.
+- **Reporting and configuration:** Report at the offending function's first token. A misplaced function does not receive a second spacing report. Production and test code follow the same rule; generated code is excluded. Configure `dotnet_diagnostic.ZS2006.severity`; warning by default and error in strict mode.
+- **Fix:** `Ctrl+.` → **Arrange local functions**, with document, project and solution Fix All. Preserve the relative order of ordinary statements and of functions in their original list. Keep documentation and trailing comments with their original owners. Move bodies as source fragments, preserve CRLF/LF, and do not format unrelated code.
+- **Move boundaries:** Check project compilation after moving. No move is offered when the project already has compiler errors, the target list has syntax errors, directives or inactive source, moving would cross a `using`/`await using` declaration, comment ownership is ambiguous, or an implicit `CallerLineNumber` argument is present. Spacing fixes also do not cross directives or inactive source.
+
+Each fragment is an independent method declaration inside a type with `System` imported. `//ZS2006` marks an offending declaration; other fragments comply.
+
+Body code precedes the trailing local functions:
+
+```csharp
+static void Foo()
+{
+	Console.Write("before");
+	Console.Write(GetMessage());
+
+	static string GetMessage() => "This is a message.";
+}
+```
+
+Invalid: the local function interrupts the body code.
+
+```csharp
+static void Foo()
+{
+	Console.Write("before");
+
+	static string GetMessage() => "This is a message."; //ZS2006
+
+	Console.Write(GetMessage());
+}
+```
+
+A single-line body may omit separation; consecutive expression bodies must remain compact:
+
+```csharp
+static void Foo()
+{
+	Console.Write(GetMessage());
+	static string GetMessage() => Format("message");
+	static string Format(string value) => value;
+}
+```
+
+Invalid: a blank line separates two expression-bodied functions.
+
+```csharp
+static void Foo()
+{
+	Console.Write(GetMessage());
+
+	static string GetMessage() => Format("message");
+
+	static string Format(string value) => value; //ZS2006
+}
+```
+
+Standalone documentation cancels the compact exception; separation precedes the comment:
+
+```csharp
+static void Foo()
+{
+	Console.Write(GetMessage());
+
+	// Function documentation.
+	static string GetMessage() => "This is a message.";
+}
+```
+
+A block-bodied function requires one blank line afterward:
+
+```csharp
+static void Foo()
+{
+	Console.Write(GetMessage());
+
+	static string GetMessage()
+	{
+		return Format("message");
+	}
+
+	static string Format(string value) => value;
+}
+```
+
+The inner block preserves the local function's scope while the outer method continues:
+
+```csharp
+static void Foo(bool enabled)
+{
+	if(enabled)
+	{
+		var message = "This is a message.";
+		Console.Write(GetMessage());
+
+		string GetMessage() => message;
+	}
+
+	Console.Write("after");
+}
+```
+
 
 <a id="zs3001"></a>
 
@@ -384,6 +948,7 @@ public int Count
 	get
 	{
 		_lock.EnterReadLock();
+
 		try { return _list.Count; }
 		finally { _lock.ExitReadLock(); }
 	}
@@ -450,6 +1015,10 @@ Set `ZongsoftGuidelinesSynchronization` to a destination directory for automatic
 ## Manual review
 
 Passing analysis does not establish full compliance. Continue reviewing design, contracts and tests for:
+
+- [Statement groups](zongsoft.csharp.guidelines.md#statement-groups): separate responsibilities, execution stages and verification targets with blank lines, without a hard physical-line limit. Statement kind, receiver identity or data dependency alone does not establish a compact group. Homogeneous mapping, registration, initialization and assertion tables must meet the guideline conditions. In tests, simple input construction may stay with the execution that immediately uses it. Setup precondition assertions may immediately follow the environment or data acquisition they directly check, including asynchronous acquisition. Assertions that jointly verify one operation result, such as its status and content, may stay together, as may auxiliary value extraction and its assertions. Separate independent setup stages from execution, execution from verification, different verification targets and each field requiring multiple checks.
+- [Return spacing](zongsoft.csharp.guidelines.md#return-spacing): compact acquisition, wrapping and status-result units may precede a return directly. Separate independent fallback returns and returns after completed multi-step packet filling or creation/acquisition/publication stages. A multiline conditional expression alone does not force separation; a final configuration callback may stay with its return. Do not add blank lines before every return.
+- ZS2003 checks only its listed deterministic syntax boundaries. It does not infer these logical separators from method names, receiver identity or business phases and does not fix manually judged boundaries. Compact logical groups cannot override existing ZS2003 boundaries.
 
 - Alias restrictions, production global imports, test Global.cs, dependency groups and namespace-length ordering.
 - Chinese responsibility regions, member ordering, adjacent overloads, domain names, external interface names and public compatibility.

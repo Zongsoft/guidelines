@@ -63,10 +63,7 @@ public sealed class StyleSuppressor : DiagnosticSuppressor
 	private static bool IsDirectiveIndentation(SyntaxNode root, SourceText text, TextSpan span)
 	{
 		var line = text.Lines.GetLineFromPosition(span.Start);
-		var position = line.Start;
-
-		while(position < line.End && (text[position] == ' ' || text[position] == '\t'))
-			position++;
+		var position = line.Start + SourceTextUtility.GetIndentation(text, span.Start).Length;
 
 		if(position == line.End || text[position] != '#' || span.End > position)
 			return false;
@@ -76,8 +73,7 @@ public sealed class StyleSuppressor : DiagnosticSuppressor
 
 	private static bool IsCompact(BlockSyntax block, SourceText text) =>
 		block.Statements.Count <= 2 && !block.ContainsDiagnostics && !block.ContainsDirectives &&
-		text.Lines.GetLineFromPosition(block.Parent.GetFirstToken().SpanStart).LineNumber ==
-		text.Lines.GetLineFromPosition(block.CloseBraceToken.Span.End).LineNumber;
+		SourceTextUtility.IsSingleLine(text, TextSpan.FromBounds(block.Parent.GetFirstToken().SpanStart, block.CloseBraceToken.Span.End));
 
 	private static ImmutableArray<BlockSyntax> GetBlocks(TryStatementSyntax statement)
 	{
@@ -97,11 +93,8 @@ public sealed class StyleSuppressor : DiagnosticSuppressor
 	private static bool IsBlockBoundary(BlockSyntax block, SourceText text, TextSpan span)
 	{
 		//不抑制语句内部的运算符空格、缩进等其他格式诊断。
-		for(var position = span.Start; position < span.End; position++)
-		{
-			if(text[position] != ' ' && text[position] != '\t')
-				return false;
-		}
+		if(!SourceTextUtility.IsHorizontalWhitespace(text, span))
+			return false;
 
 		var previous = block.OpenBraceToken.GetPreviousToken();
 		var keyword = block.Parent.GetFirstToken();

@@ -84,4 +84,16 @@
 	<data name="DocumentationLayoutMessage" xml:space="preserve">
 		<value>Keep the &apos;{0}&apos; tags and their single-line content on the same line</value>
 	</data>
+	<data name="LocalFunctionLayoutTitle" xml:space="preserve">
+		<value>Arrange local functions at the end</value>
+	</data>
+	<data name="LocalFunctionLayoutMessage" xml:space="preserve">
+		<value>Place this local function at the end of its statement list with the required spacing</value>
+	</data>
+	<data name="NestedControlBracesTitle" xml:space="preserve">
+		<value>Use braces for nested control structures</value>
+	</data>
+	<data name="NestedControlBracesMessage" xml:space="preserve">
+		<value>Enclose the outer statement body of this nested control structure in braces</value>
+	</data>
 </root>

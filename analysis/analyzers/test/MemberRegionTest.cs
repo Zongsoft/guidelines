@@ -13,12 +13,14 @@ public sealed class MemberRegionTest
 	[InlineData(9, 0)]
 	[InlineData(10, 1)]
 	[InlineData(11, 1)]
-	public async Task ChecksCombinedMemberThreshold(int count, int expected)
+	public async Task ChecksCombinedMemberThresholdAsync(int count, int expected)
 	{
 		var result = await AnalyzeAsync(Wrap(Members(count)));
+
 		Assert.Equal(expected, Diagnostics(result).Length);
 		Assert.Equal(expected == 0, result.Success);
 		Assert.DoesNotContain("error CS", result.Output);
+
 		if(expected > 0)
 			Assert.Contains("Example.cs(5,13): error ZS2004", result.Output);
 	}
@@ -26,29 +28,32 @@ public sealed class MemberRegionTest
 	[Theory]
 	[InlineData("\tpublic int this[int index] => index;\n")]
 	[InlineData("\tprivate class Nested\n\t{\n\t\tpublic int Value => 0;\n\t}\n")]
-	public async Task CountsIndexersAndNestedMembers(string extra)
+	public async Task CountsIndexersAndNestedMembersAsync(string extra)
 	{
 		var result = await AnalyzeAsync(Wrap(Members(9) + extra));
+
 		Assert.Single(Diagnostics(result));
 		Assert.Contains("Example.cs(5,13): error ZS2004", result.Output);
 		Assert.DoesNotContain("error CS", result.Output);
 	}
 
 	[Fact]
-	public async Task CountsAllTypesInFile()
+	public async Task CountsAllTypesInFileAsync()
 	{
 		var source = Wrap(Members(5)) + "\npublic class Other\n{\n" + Members(5) + "}\n";
 		var result = await AnalyzeAsync(source);
+
 		Assert.Single(Diagnostics(result));
 		Assert.Contains("Example.cs(5,13): error ZS2004", result.Output);
 		Assert.DoesNotContain("error CS", result.Output);
 	}
 
 	[Fact]
-	public async Task ExcludesConstructorsAccessorsAndLocalFunctions()
+	public async Task ExcludesConstructorsAccessorsAndLocalFunctionsAsync()
 	{
-		var source = Wrap(Members(7) + "\tpublic Sample() { }\n\tpublic Sample(int value) { }\n\tpublic int Value { get; set; }\n\tpublic int Read()\n\t{\n\t\tint Local() => 0;\n\t\treturn Local();\n\t}\n");
+		var source = Wrap(Members(7) + "\tpublic Sample() { }\n\tpublic Sample(int value) { }\n\tpublic int Value { get; set; }\n\tpublic int Read()\n\t{\n\t\treturn Local();\n\t\tint Local() => 0;\n\t}\n");
 		var result = await AnalyzeAsync(source);
+
 		Assert.True(result.Success, result.Output);
 		Assert.Empty(Diagnostics(result));
 	}
@@ -56,12 +61,14 @@ public sealed class MemberRegionTest
 	[Theory]
 	[InlineData(false)]
 	[InlineData(true)]
-	public async Task AllowsBalancedRegionsCoveringMembers(bool nested)
+	public async Task AllowsBalancedRegionsCoveringMembersAsync(bool nested)
 	{
 		var members = "\t#region First\n" + Members(5) + "\t#endregion\n\n\t#region Second\n" + Members(5, 5) + "\t#endregion\n";
 		if(nested)
 			members = "\t#region Outer\n" + members + "\t#endregion\n";
+
 		var result = await AnalyzeAsync(Wrap(members));
+
 		Assert.True(result.Success, result.Output);
 		Assert.Empty(result.Output);
 	}
@@ -70,28 +77,31 @@ public sealed class MemberRegionTest
 	[InlineData("\t#region Empty\n\t#endregion\n")]
 	[InlineData("\t// #region Comment\n\t// #endregion\n")]
 	[InlineData("\t#if NEVER\n\t#region Inactive\n\t#endregion\n\t#endif\n")]
-	public async Task RejectsRegionsWithoutMemberCoverage(string region)
+	public async Task RejectsRegionsWithoutMemberCoverageAsync(string region)
 	{
 		var result = await AnalyzeAsync(Wrap(region + Members(10)));
+
 		Assert.Single(Diagnostics(result));
 		Assert.False(result.Success, result.Output);
 		Assert.DoesNotContain("error CS", result.Output);
 	}
 
 	[Fact]
-	public async Task ReportsFirstUncoveredMemberAfterRegion()
+	public async Task ReportsFirstUncoveredMemberAfterRegionAsync()
 	{
 		var result = await AnalyzeAsync(Wrap("\t#region Covered\n" + Members(9) + "\t#endregion\n\tpublic int Uncovered => 0;\n"));
+
 		Assert.Single(Diagnostics(result));
 		Assert.Contains("Example.cs(16,13): error ZS2004", result.Output);
 		Assert.DoesNotContain("error CS", result.Output);
 	}
 
 	[Fact]
-	public async Task RejectsRegionsInsideMethodBodies()
+	public async Task RejectsRegionsInsideMethodBodiesAsync()
 	{
 		var members = "\tpublic int Read()\n\t{\n\t\t#region Body\n\t\treturn 0;\n\t\t#endregion\n\t}\n\n" + Members(9);
 		var result = await AnalyzeAsync(Wrap(members));
+
 		Assert.Single(Diagnostics(result));
 		Assert.Contains("Example.cs(5,13): error ZS2004", result.Output);
 		Assert.DoesNotContain("error CS", result.Output);
@@ -101,11 +111,13 @@ public sealed class MemberRegionTest
 	[InlineData(false, null, "warning")]
 	[InlineData(true, null, "error")]
 	[InlineData(true, "none", null)]
-	public async Task HonorsConfiguredSeverity(bool strict, string severity, string expected)
+	public async Task HonorsConfiguredSeverityAsync(bool strict, string severity, string expected)
 	{
 		var configuration = severity == null ? null : "root = true\n[*.cs]\nindent_style = tab\nindent_size = 4\ntab_width = 4\nend_of_line = crlf\ndotnet_diagnostic.ZS2004.severity = " + severity + "\n";
 		var result = await AnalyzerRunner.AnalyzeAsync(Wrap(Members(10)), true, strict, configuration, false, false, null);
+
 		Assert.Equal(expected == "error", !result.Success);
+
 		if(expected == null)
 			Assert.Empty(Diagnostics(result));
 		else
@@ -113,9 +125,10 @@ public sealed class MemberRegionTest
 	}
 
 	[Fact]
-	public async Task SkipsGeneratedCode()
+	public async Task SkipsGeneratedCodeAsync()
 	{
 		var result = await AnalyzeAsync("// <auto-generated/>\n" + Wrap(Members(10)));
+
 		Assert.True(result.Success, result.Output);
 		Assert.Empty(Diagnostics(result));
 	}
@@ -126,12 +139,14 @@ public sealed class MemberRegionTest
 	[InlineData("false", false)]
 	[InlineData(null, false)]
 	[InlineData("invalid", false)]
-	public async Task HonorsTestProjectProperty(string testProject, bool exempt)
+	public async Task HonorsTestProjectPropertyAsync(string testProject, bool exempt)
 	{
 		foreach(var strict in new[] { false, true })
 		{
 			var result = await AnalyzerRunner.AnalyzeAsync(Wrap(Members(10)), true, strict, null, false, false, null, testProject);
+
 			Assert.Equal(exempt || !strict, result.Success);
+
 			if(exempt)
 				Assert.Empty(result.Output);
 			else
@@ -142,12 +157,14 @@ public sealed class MemberRegionTest
 	}
 
 	[Fact]
-	public async Task KeepsDocumentationAndSpacingRulesInTestProjects()
+	public async Task KeepsDocumentationAndSpacingRulesInTestProjectsAsync()
 	{
 		var source = Wrap(Members(9) + "\t/// <summary>\n\t/// Reads a value.\n\t/// </summary>\n\tpublic int Read(int value)\n\t{\n\t\tif(value < 0)\n\t\t{\n\t\t\treturn 0;\n\t\t}\n\t\twhile(value > 0)\n\t\t\tvalue--;\n\t\treturn value;\n\t}\n");
 		var result = await AnalyzerRunner.AnalyzeAsync(source, true, true, null, false, false, null, "true");
+
 		Assert.Empty(Diagnostics(result));
 		Assert.False(result.Success, result.Output);
+
 		foreach(var id in new[] { "ZS2003", "ZS3001", "ZS3002", "ZS3003" })
 			Assert.Single(result.Output.Split('\n'), line => line.Contains("error " + id + ":", StringComparison.Ordinal));
 

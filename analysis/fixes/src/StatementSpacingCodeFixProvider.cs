@@ -33,21 +33,16 @@ public sealed class StatementSpacingCodeFixProvider : CodeFixProvider
 				continue;
 
 			var container = current.Parent is GlobalStatementSyntax global ? global.Parent : current.Parent;
-			var previous = container?.ChildNodes()
-				.Select(node => node is GlobalStatementSyntax statement ? statement.Statement : node as StatementSyntax)
-				.LastOrDefault(statement => statement != null && statement.Span.End <= current.SpanStart);
+			var previous = container == null ? null : StatementSpacing.GetMissingBlankLines(container, text)
+				.FirstOrDefault(boundary => boundary.Current == current).Previous;
 
-			if(previous == null || IsSimpleIf(previous) && IsSimpleIf(current))
+			if(previous == null)
 				continue;
 
 			var first = text.Lines.GetLineFromPosition(previous.Span.End);
 			var last = text.Lines.GetLineFromPosition(current.SpanStart);
 
-			if(Enumerable.Range(first.LineNumber + 1, Math.Max(0, last.LineNumber - first.LineNumber - 1))
-				.Any(index => string.IsNullOrWhiteSpace(text.Lines[index].ToString())))
-				continue;
-
-			var newline = GetNewLine(text, first.LineNumber);
+			var newline = SourceTextUtility.GetNewLine(text, previous.Span.End);
 			var boundary = first.EndIncludingLineBreak;
 
 			//跨行尾注释属于上一条语句，空行必须插在注释之外。
@@ -64,13 +59,7 @@ public sealed class StatementSpacingCodeFixProvider : CodeFixProvider
 				change = new TextChange(new TextSpan(boundary, 0), newline);
 			else
 			{
-				var line = text.Lines.GetLineFromPosition(previous.SpanStart);
-				var indentEnd = line.Start;
-
-				while(indentEnd < line.End && (text[indentEnd] == ' ' || text[indentEnd] == '\t'))
-					indentEnd++;
-
-				var indent = text.ToString(TextSpan.FromBounds(line.Start, indentEnd));
+				var indent = SourceTextUtility.GetIndentation(text, previous.SpanStart);
 				var start = current.SpanStart;
 
 				while(start > previous.Span.End && (text[start - 1] == ' ' || text[start - 1] == '\t'))
@@ -82,23 +71,5 @@ public sealed class StatementSpacingCodeFixProvider : CodeFixProvider
 			context.RegisterCodeFix(CodeAction.Create(Properties.Resources.InsertBlankLine,
 				cancellation => Task.FromResult(context.Document.WithText(text.WithChanges(change))), "ZS2003.InsertBlankLine"), diagnostic);
 		}
-	}
-
-	private static bool IsSimpleIf(StatementSyntax statement) => statement is IfStatementSyntax condition &&
-		condition.Else == null && (condition.Statement is ExpressionStatementSyntax || condition.Statement is ReturnStatementSyntax ||
-		condition.Statement is ThrowStatementSyntax || condition.Statement is EmptyStatementSyntax || condition.Statement is BreakStatementSyntax || condition.Statement is ContinueStatementSyntax);
-
-	private static string GetNewLine(SourceText text, int start)
-	{
-		//使用诊断附近已有的换行符；没有换行的文件采用仓库约定的 CRLF。
-		for(var index = start; index >= 0; index--)
-		{
-			var line = text.Lines[index];
-
-			if(line.EndIncludingLineBreak > line.End)
-				return text.ToString(TextSpan.FromBounds(line.End, line.EndIncludingLineBreak));
-		}
-
-		return "\r\n";
 	}
 }

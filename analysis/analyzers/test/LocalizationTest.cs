@@ -32,9 +32,10 @@ public sealed class LocalizationTest
 	[InlineData("public void Run() => throw new ArgumentException(paramName: \"value\", message: \"Failed.\");")]
 	[InlineData("public void Run() => throw new Exception(Resources.Message + \"!\"); public static class Resources { public static string Message => \"Failed.\"; }")]
 	[InlineData("public void Run() => throw new Exception(string.Format(Resources.Message, \"CSV\") + \"!\"); public static class Resources { public static string Message => \"{0}\"; }")]
-	public async Task ExceptionMessages(string members)
+	public async Task ExceptionMessagesAsync(string members)
 	{
 		var result = await AnalyzeAsync(members);
+
 		Assert.DoesNotContain("error CS", result.Output);
 		Assert.Equal(new[] { "ZS1301" }, Diagnostics(result));
 	}
@@ -66,9 +67,10 @@ public sealed class LocalizationTest
 	[InlineData("public void Run() => throw new Exception(new string('x', 4));")]
 	[InlineData("public void Run() => throw new Exception(new Text() + \"resource-key\"); public class Text { public static string operator +(Text left, string right) => right; }")]
 	[InlineData("public void Run() => throw new Exception((string)(Text)\"resource-key\"); public class Text { public static explicit operator Text(string value) => new Text(); public static explicit operator string(Text value) => \"\"; }")]
-	public async Task UntrackedExpressions(string members)
+	public async Task UntrackedExpressionsAsync(string members)
 	{
 		var result = await AnalyzeAsync(members);
+
 		Assert.DoesNotContain("error CS", result.Output);
 		Assert.Equal(new string[0], Diagnostics(result));
 	}
@@ -89,9 +91,10 @@ public sealed class LocalizationTest
 	[InlineData("public string Text => \"\\U00031350\";")]
 	[InlineData("public string Text => \"👩🏽‍💻你好\";")]
 	[InlineData("public string Text => \"ℹ️你好\";")]
-	public async Task UnicodeText(string members)
+	public async Task UnicodeTextAsync(string members)
 	{
 		var result = await AnalyzeAsync(members);
+
 		Assert.DoesNotContain("error CS", result.Output);
 		Assert.Equal(new[] { "ZS1302" }, Diagnostics(result));
 	}
@@ -114,9 +117,10 @@ public sealed class LocalizationTest
 	[InlineData("public string Text => \"\\u0301\";")]
 	[InlineData("public string Text => \"e\\uFE0F\";")]
 	[InlineData("public string Text => \"\\uD800\";")]
-	public async Task Symbols(string members)
+	public async Task SymbolsAsync(string members)
 	{
 		var result = await AnalyzeAsync(members);
+
 		Assert.DoesNotContain("error CS", result.Output);
 		Assert.Equal(new string[0], Diagnostics(result));
 	}
@@ -140,9 +144,10 @@ public sealed class LocalizationTest
 	[InlineData("public void Run() => throw new Failure(\"你好\"); public class Failure(string reason) : Exception(reason) { }")]
 	[InlineData("public void Run() => throw new Exception(Read(\"你好\")); private static string Read(string key) => key;")]
 	[InlineData("public void Run() => throw new Exception(string.Format(Resources.Message, \"你好\")); public static class Resources { public static string Message => \"{0}\"; }")]
-	public async Task SourcePositions(string members)
+	public async Task SourcePositionsAsync(string members)
 	{
 		var result = await AnalyzeAsync(members);
+
 		Assert.DoesNotContain("error CS", result.Output);
 		Assert.Equal(new[] { "ZS1302" }, Diagnostics(result));
 	}
@@ -152,9 +157,10 @@ public sealed class LocalizationTest
 	[InlineData("public void Run() => throw new Exception(message: \"失败\");")]
 	[InlineData("public void Run(int value) => throw new Exception($\"失败{value}\");")]
 	[InlineData("public void Run(int value) => throw new Exception(string.Format(\"失败{0}\", value));")]
-	public async Task ExceptionPriority(string members)
+	public async Task ExceptionPriorityAsync(string members)
 	{
 		var result = await AnalyzeAsync(members);
+
 		Assert.DoesNotContain("error CS", result.Output);
 		Assert.Equal(new[] { "ZS1301" }, Diagnostics(result));
 	}
@@ -162,9 +168,10 @@ public sealed class LocalizationTest
 	[Theory]
 	[InlineData("// 中文注释\npublic char 字符 => '中';")]
 	[InlineData("public string Read() => nameof(中文); public int 中文 => 1;")]
-	public async Task AllowsNonTextSyntax(string members)
+	public async Task AllowsNonTextSyntaxAsync(string members)
 	{
 		var result = await AnalyzeAsync(members);
+
 		Assert.DoesNotContain("error CS", result.Output);
 		Assert.Equal(new string[0], Diagnostics(result));
 	}
@@ -175,11 +182,13 @@ public sealed class LocalizationTest
 	[InlineData("true", false)]
 	[InlineData("TRUE", true)]
 	[InlineData("false", true)]
-	public async Task TestProjects(string testProject, bool strict)
+	public async Task TestProjectsAsync(string testProject, bool strict)
 	{
 		var result = await AnalyzeAsync("public void Run() { Console.WriteLine(\"你好\"); GC.KeepAlive(new Exception(\"Failed.\")); GC.KeepAlive(new global::System.Resources.ResourceManager(typeof(Sample)).GetString(\"Name\")); }", strict: strict, testProject: testProject);
+
 		Assert.DoesNotContain("error CS", result.Output);
 		Assert.Equal(string.Equals(testProject, "true", global::System.StringComparison.OrdinalIgnoreCase) ? new string[0] : new[] { "ZS1301", "ZS1302", "ZS1304" }, Diagnostics(result));
+
 		if(!string.Equals(testProject, "true", global::System.StringComparison.OrdinalIgnoreCase))
 			Assert.Contains((strict ? "error" : "warning") + " ZS1301", result.Output);
 	}
@@ -188,29 +197,34 @@ public sealed class LocalizationTest
 	[InlineData("ZS1301", "public void Run() => throw new Exception(\"失败\");", "ZS1302")]
 	[InlineData("ZS1302", "public string Text => \"你好\";", null)]
 	[InlineData("ZS1304", "public object Read() => new global::System.Resources.ResourceManager(typeof(Sample)).GetString(\"Name\");", null)]
-	public async Task SeverityOverrides(string disabled, string members, string remaining)
+	public async Task SeverityOverridesAsync(string disabled, string members, string remaining)
 	{
 		var result = await AnalyzeAsync(members, config: "root = true\n[*.cs]\ndotnet_diagnostic." + disabled + ".severity = none\n");
+
 		Assert.DoesNotContain("error CS", result.Output);
 		Assert.Equal(remaining == null ? new string[0] : new[] { remaining }, Diagnostics(result));
 	}
 
 	[Fact]
-	public async Task GeneratedCode()
+	public async Task GeneratedCodeAsync()
 	{
 		var result = await AnalyzeAsync("public void Run() => throw new Exception(\"失败\");", generated: true);
+
 		Assert.Empty(Diagnostics(result));
 		Assert.DoesNotContain("error CS", result.Output);
+
 		result = await AnalyzeAsync("[global::System.CodeDom.Compiler.GeneratedCode(\"generator\", \"1\")] public void Run() => throw new Exception(\"失败\");");
+
 		Assert.Empty(Diagnostics(result));
 	}
 
 	[Theory]
 	[InlineData("en-US", "Provide fixed exception message text")]
 	[InlineData("zh-Hans", "通过生成的资源属性提供异常消息")]
-	public async Task LocalizedDiagnostics(string language, string message)
+	public async Task LocalizedDiagnosticsAsync(string language, string message)
 	{
 		var result = await AnalyzerRunner.AnalyzeAsync("class Sample { void Run() => throw new System.Exception(\"Failed.\"); }", true, false, null, false, false, language);
+
 		Assert.Equal(new[] { "ZS1301" }, Diagnostics(result));
 		Assert.Contains(message, result.Output);
 	}

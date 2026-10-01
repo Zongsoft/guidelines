@@ -40,10 +40,7 @@ public sealed class UnusedUsingCodeFixProvider : CodeFixProvider
 				.Any(item => item.Id == "CS8019" && item.Location.SourceTree == model.SyntaxTree && item.Location.SourceSpan == directive.Span))
 				continue;
 
-			if(directive.Alias == null && directive.StaticKeyword.IsKind(SyntaxKind.None) &&
-				directive.GetFirstToken().IsKind(SyntaxKind.UsingKeyword) &&
-				directive.Name != null &&
-				model.GetSymbolInfo(directive.Name, context.CancellationToken).Symbol is INamespaceSymbol)
+			if(UsingDirectives.IsOrdinaryNamespace(directive, model, context.CancellationToken))
 				continue;
 
 			var changes = GetChanges(directive, text);

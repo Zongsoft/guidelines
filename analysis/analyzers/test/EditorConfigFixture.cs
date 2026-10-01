@@ -28,6 +28,7 @@ public abstract class EditorConfigFixture
 		var root = Path.Combine(Path.GetTempPath(), "zongsoft-editorconfig-test-" + Guid.NewGuid().ToString("N"), "仓库 with spaces");
 		var project = Path.Combine(root, "src", "Example", "Example.csproj");
 		var packages = _packages;
+
 		Directory.CreateDirectory(Path.GetDirectoryName(project));
 
 		new XElement("Project", new XElement("PropertyGroup", directory == null ? null : new XElement("ZongsoftGuidelinesSynchronization", directory)))
@@ -43,6 +44,7 @@ public abstract class EditorConfigFixture
 			.Save(project);
 
 		byte[] template;
+
 		using(var archive = ZipFile.OpenRead(Path.Combine(packageDirectory, "Zongsoft.CodeAnalysis." + version + ".nupkg")))
 		using(var stream = archive.GetEntry(".editorconfig").Open())
 		using(var buffer = new MemoryStream())
@@ -54,8 +56,10 @@ public abstract class EditorConfigFixture
 		var consumer = new Consumer(root, project, Path.Combine(root, ".editorconfig"),
 			Path.Combine(packages, "zongsoft.codeanalysis", version, ".editorconfig"), template);
 		var restore = await RunAsync(consumer, "restore", project);
+
 		Assert.True(restore.ExitCode == 0, restore.Output);
 		Assert.Equal(template, File.ReadAllBytes(consumer.PackageTemplate));
+
 		return consumer;
 	}
 
@@ -77,6 +81,7 @@ public abstract class EditorConfigFixture
 		process.StartInfo.ArgumentList.Add(_msbuild);
 		process.StartInfo.ArgumentList.Add("-nologo");
 		process.StartInfo.ArgumentList.Add("-verbosity:minimal");
+
 		if(arguments[0] != "msbuild")
 			process.StartInfo.ArgumentList.Add("-t:" + (arguments.Contains("--no-incremental") ? "Rebuild" : arguments[0]));
 
@@ -88,10 +93,12 @@ public abstract class EditorConfigFixture
 
 		//多目标构建的复用节点可能继续持有输出管道，测试进程不保留这些节点。
 		process.StartInfo.Environment["MSBUILDDISABLENODEREUSE"] = "1";
+
 		process.Start();
 		var output = process.StandardOutput.ReadToEndAsync();
 		var error = process.StandardError.ReadToEndAsync();
 		using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(90));
+
 		try
 		{
 			await process.WaitForExitAsync(timeout.Token);
@@ -107,6 +114,7 @@ public abstract class EditorConfigFixture
 
 		var result = new Result(process.ExitCode, await output + await error);
 		File.WriteAllText(Path.Combine(consumer.Root, "commands." + process.Id + ".log"), string.Join(' ', arguments) + Environment.NewLine + result.Output, new UTF8Encoding(false));
+
 		return result;
 	}
 

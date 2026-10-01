@@ -93,7 +93,7 @@ Maintain, validate and publish new versions in guidelines. Consumers update Pack
 
 Localization checks: ZS1301 checks direct exception messages, ZS1302 checks non-ASCII text in handwritten strings, and ZS1304 checks resource-property access. All three are disabled when `IsTestProject=true`. CA1303 is disabled by default. Variables, exception factories and constructor chains are not traced; absence of diagnostics does not prove localization. See the rule catalog for precise boundaries.
 
-ZS0005 (unused imports), ZS2003 (statement-group blank lines) and ZS3003 (joining XML documentation lines) provide code-fix providers distributed with the NuGet package. Press `Ctrl+.` at a diagnostic in VS2026 to preview an individual fix or apply Fix All for the same rule across a document, project or solution. See [usage](analysis/README.md#code-fixes). Localization migration requires manual changes.
+ZS0005 (unused imports), ZS2003 (statement-group blank lines), ZS2005 (nested control-body braces), ZS2006 (local-function layout) and ZS3003 (joining XML documentation lines) provide code-fix providers distributed with the NuGet package. Press `Ctrl+.` at a diagnostic in VS2026 to preview an individual fix or apply Fix All for the same rule across a document, project or solution. See [usage](analysis/README.md#code-fixes). Localization migration requires manual changes.
 
 ### Check commands
 

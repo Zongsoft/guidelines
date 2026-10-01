@@ -21,4 +21,10 @@
 	<data name="JoinXmlDocumentation" xml:space="preserve">
 		<value>Join XML documentation lines</value>
 	</data>
+	<data name="ArrangeLocalFunctions" xml:space="preserve">
+		<value>Arrange local functions</value>
+	</data>
+	<data name="AddBraces" xml:space="preserve">
+		<value>Add braces</value>
+	</data>
 </root>

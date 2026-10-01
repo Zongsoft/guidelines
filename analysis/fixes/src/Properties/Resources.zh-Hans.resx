@@ -21,4 +21,10 @@
 	<data name="JoinXmlDocumentation" xml:space="preserve">
 		<value>合并 XML 文档行</value>
 	</data>
+	<data name="ArrangeLocalFunctions" xml:space="preserve">
+		<value>整理局部函数</value>
+	</data>
+	<data name="AddBraces" xml:space="preserve">
+		<value>添加花括号</value>
+	</data>
 </root>

@@ -30,15 +30,15 @@ Localization checks: ZS1301 checks direct exception messages, ZS1302 checks non-
 
 ## Code fixes
 
-In Visual Studio 2026, place the caret on a ZS0005, ZS2003 or ZS3003 diagnostic and press `Ctrl+.` to select **Remove unused using**, **Insert blank line** or **Join XML documentation lines**. Preview and apply an individual fix, or use Fix All for the same rule in a document, project or solution. The providers load from this package; no separate VSIX is required.
+In Visual Studio 2026, place the caret on a ZS0005, ZS2003, ZS2005, ZS2006 or ZS3003 diagnostic and press `Ctrl+.` to select **Remove unused using**, **Insert blank line**, **Add braces**, **Arrange local functions** or **Join XML documentation lines**. Preview and apply an individual fix, or use Fix All for the same rule in a document, project or solution. The providers load from this package; no separate VSIX is required.
 
-See [ZS0005](https://github.com/Zongsoft/Guidelines/blob/main/RULES.md#zs0005), [ZS2003](https://github.com/Zongsoft/Guidelines/blob/main/RULES.md#zs2003) and [ZS3003](https://github.com/Zongsoft/Guidelines/blob/main/RULES.md#zs3003) for fix scope and preservation guarantees. Opening rule help does not change source code.
+See [ZS0005](https://github.com/Zongsoft/Guidelines/blob/main/RULES.md#zs0005), [ZS2003](https://github.com/Zongsoft/Guidelines/blob/main/RULES.md#zs2003), [ZS2005](https://github.com/Zongsoft/Guidelines/blob/main/RULES.md#zs2005), [ZS2006](https://github.com/Zongsoft/Guidelines/blob/main/RULES.md#zs2006) and [ZS3003](https://github.com/Zongsoft/Guidelines/blob/main/RULES.md#zs3003) for fix scope and preservation guarantees. Opening rule help does not change source code.
 
 From the project directory, restrict CLI fixes to specific files and diagnostics:
 
 ```powershell
-dotnet format analyzers ./Example.csproj --diagnostics ZS0005 ZS2003 ZS3003 --include ./Example.cs
-dotnet format analyzers ./Example.csproj --diagnostics ZS0005 ZS2003 ZS3003 --include ./Example.cs --verify-no-changes
+dotnet format analyzers ./Example.csproj --diagnostics ZS0005 ZS2003 ZS2005 ZS2006 ZS3003 --include ./Example.cs
+dotnet format analyzers ./Example.csproj --diagnostics ZS0005 ZS2003 ZS2005 ZS2006 ZS3003 --include ./Example.cs --verify-no-changes
 ```
 
 The first command changes the selected file; the second only checks it. See the rule catalog for other rules and their fixes.
@@ -116,6 +116,8 @@ Use the workflow filename only, without `.github/workflows/` or the workflow dis
 Once configuration is complete and the workflow is on the default branch, the manual entry is **Actions → Publish Analyzer to NuGet → Run workflow**, selecting `main`. The package version comes from `analysis/analyzers/src/Zongsoft.CodeAnalysis.Analyzers.csproj`; update it before publishing changes. Other branches are skipped. Build or test failure prevents login and publication.
 
 ## Build and validation
+
+The analyzer and code-fix projects link the C# source files in [.shared](.shared). Shared code contains rule predicates, XML documentation content lookup, using-directive classification and source-text utilities; each project compiles it into its own assembly. Both project files include `.shared/*.cs`, so new shared files need no individual compile entries.
 
 Each test project defines its own package preparation and version lookup targets directly in its project file, so either project can be tested independently.
 

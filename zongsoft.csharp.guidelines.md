@@ -10,7 +10,7 @@
 
 1. [基本原则](#principles)
 2. [命名规范](#naming)
-3. [文件与布局](#layout)
+3. [文件与布局](#layout)：[嵌套控制体](#nested-control-bodies)、[逻辑分组](#statement-groups)、[返回布局](#return-spacing)、[局部函数](#local-functions)
 4. [注释与 API 文档](#documentation)
 5. [C# 语言与类型使用](#language)
 6. [设计范式与公共契约](#design)
@@ -36,8 +36,9 @@
 | 缩进换行 | Tab 缩进，显示宽度 4；新建文本文件使用 CRLF，平台脚本例外见第 3 节 |
 | 命名空间 | `using` 在前，文件范围命名空间在后 |
 | 成员访问 | 实例属性、方法和事件使用 `this.`；私有字段直接按名称访问，命名例外见第 2 节 |
-| 大花括号 | 多行块采用 Allman 风格；简单单语句分支可省略花括号 |
-| 控制语句 | 关键字与左括号之间不加空格；同层级的相邻独立控制结构之间留一个空行，连续同类型的简单无花括号 `if`、`for`、`foreach`、`while` 例外 |
+| 大花括号 | 多行块采用 Allman 风格；简单单语句分支可省略花括号；直接嵌套控制体须用块包围，限定例外见第 3.5 节 |
+| 控制语句 | 关键字与左括号之间不加空格；同层级的独立控制结构之间及含执行块的完整结构之后留空行；条件和循环的前置空行按普通语句数量判定；限定例外见第 3.4 节及 [ZS2003](RULES.zh-Hans.md#zs2003) |
+| 逻辑分组 | 按职责、对象和执行阶段分组，组间留空行；同构表格式段可紧凑，不设置物理行数硬上限；返回布局见第 3.7 节 |
 | 本地化文本 | 使用 `.resx` 和 `ResXFileCodeGenerator` 生成的 Designer 属性访问可翻译文本 |
 | 成员布局 | 非测试项目的文件内方法与属性合计超过 9 个时必须按职责使用中文 `#region`，不创建空分段并尽量让分段名保持 4 个汉字 |
 | 公共入口 | 校验和流程集中，重载转发；通过已有的窄扩展点参与流程 |
@@ -234,9 +235,14 @@ public abstract class TextProcessorBase
 - 参数特性列表之间，以及最后一个特性列表与参数类型或修饰符之间，可以省略空格。元组元素名的 `:` 前可加空格；三元表达式的 `:` 位于行尾时，其前空格可省略，同一行中的三元运算符仍按常规留空格。
 - 一行只写一条普通语句或一个普通声明；`for` 头部、解构声明、自动属性访问器及上述合规的单行块体不受此限制。
 - 空 `while` 循环体可以把 `;` 紧接条件写在同一行，如 `while(queue.TryDequeue(out _));`；确认空循环体符合真实意图。
-- 单语句且清晰的分支可以省略花括号，语句仍另起一行。多语句、多行复杂表达式或易产生悬空 `else` 的嵌套分支必须加花括号。
-- 按职责组织逻辑段。连续超过两条赋值或初始化语句后紧接条件判断或循环时，先留一个空行；声明、调用、返回之间不机械分隔。计数方式、边界和示例见 [ZS2003](RULES.zh-Hans.md#zs2003)。
-- 同一层级的相邻独立控制语句或显式语句块之间留一个空行，避免逻辑段粘连；连续的同类型简单控制语句（`if`、`for`、`foreach` 或 `while`）均无花括号、语句体为单条非控制语句且 `if` 不含 `else` 时，可以不插入空行；不同类型之间必须留一个空行。注释行不能代替空行。`if`／`else if`／`else`、`try`／`catch`／`finally` 和 `do`／`while` 属于同一结构，其关联子句之间不因此插入空行；控制语句与其嵌套语句体也不拆开。
+- 单语句且清晰的分支可以省略花括号，语句仍另起一行。多语句、多行复杂表达式或易产生悬空 `else` 的嵌套分支必须加花括号；直接嵌套的控制体另按第 3.5 节检查。
+- 按职责组织逻辑段。连续普通语句后紧接条件或循环时，带块或复杂结构前至少两条、简单无花括号结构前至少三条即须留空行。普通语句包括局部声明、赋值、调用（含 `await`）、自增和自减，混合出现也累计；按语句而非物理行计数。未达到门槛时可紧接，也可主动保留空行；声明、调用、返回之间不机械分隔。具体分类和示例见 [ZS2003](RULES.zh-Hans.md#zs2003)。
+- 同一层级的相邻独立控制语句或显式语句块之间留一个空行；含有执行语句块的完整复合语句或显式语句块之后，紧接任何独立语句时也须留空行。调用、断言、事件通知、赋值、声明、资源释放、返回及跳转不因用途而豁免；测试代码与生产代码使用相同标准。
+- `try`、`using(...)`、`lock`、`fixed`、`checked`／`unchecked`、`unsafe` 和显式语句块之前存在同层级独立语句时，须留一个空行，不因前面只有一条普通语句而豁免。条件和循环采用上一项的计数门槛；`switch`、`do`、带 `else`／`else if` 的分支、带块或嵌套控制语句体属于复杂结构。资源组和其他限定例外见 [ZS2003](RULES.zh-Hans.md#zs2003)。
+- `if`／`else if`／`else`、`try`／`catch`／`finally` 和 `do`／`while` 属于同一结构，其关联子句之间不因此插入空行；控制语句与其嵌套语句体也不拆开。前置分隔位于完整结构之前，后置分隔位于完整结构之后；`do` 的后置分隔在最终 `while(...);` 之后；最后一个分支无花括号也不改变带块结构的分隔要求。
+- 连续同类型的简单无花括号 `if`、`for`、`foreach`、`while`，连续完整单行的紧凑异常处理语句，以及紧接块的 switch 分支末尾 `break`，在限定条件下可以省略空行。具体检测条件和正反例集中见 [ZS2003](RULES.zh-Hans.md#zs2003)；其他返回或跳转不能套用 switch 的 `break` 例外。
+- 连续资源声明与其后直接嵌套的 `using(...)`／`await using(...)` 链可以作为紧凑资源组，前置分隔放在第一条资源声明之前，不拆开组内资源语句。普通语句打断资源组，两个已经结束的独立 `using` 块仍须分隔；完整条件和示例见 [ZS2003](RULES.zh-Hans.md#zs2003)。
+- 注释行和预处理指令行不能代替空行；块注释内部的空白行也不计作语句分隔。初始化器、模式、switch 表达式、lambda 和匿名方法的花括号属于表达式，不据此要求外围语句之间插入空行。
 - 优先使用提前返回减少嵌套。不要机械移除所有 `else`，成对分支在语义更清楚时保留。
 - 简单计算属性、转发方法、操作符和短构造函数优先使用表达式体；仅存储值的属性优先使用自动属性。包含多步操作、循环、异常处理或复杂分支时使用块体。
 - 表达式体方法与紧随其后的方法之间可以不留空行；表达式体写在同一行或在 `=>` 后换行均适用，也不要求后一个方法使用表达式体。
@@ -244,6 +250,441 @@ public abstract class TextProcessorBase
 - 长参数列表、链式调用和条件表达式按语义换行；避免多层三元表达式和为了压缩行数合并副作用。
 
 > 💡 **规则示例：** [语句组分隔与紧凑逻辑段](RULES.zh-Hans.md#zs2003)、[指令缩进](RULES.zh-Hans.md#zss0055)、[单行异常处理](RULES.zh-Hans.md#zss0056)、[简短方法与匿名函数](RULES.zh-Hans.md#zss2003)、[局部布局例外](RULES.zh-Hans.md#zss0057)。
+
+<a id="nested-control-bodies"></a>
+
+### 3.5 嵌套控制体
+
+- 控制语句的语句体如果又是一条控制语句，必须用 `{ ... }` 包围该语句体。直接嵌套两条控制语句即适用，例如 `for → if`；不是等到第三条控制语句才要求花括号。
+- 内层控制语句自身已有块，也不能替代外层语句体的块；更深的嵌套逐层检查。此要求用于控制语句与语句体的关系，不把方法体、条件表达式或参数列表算作控制语句层数。
+- 标准 `else if` 是关联分支，可以直接连接；`if` 的真分支或普通 `else` 分支内嵌另一控制结构时，仍须块。控制语句前后的空行继续遵守第 3.4 节，不在父语句与嵌套语句体之间机械插入空行。
+- 纯 `using(...)`／`await using(...)` 链、纯 `fixed` 链和纯 `lock` 链可以共享终端语句体；终端须为简单单语句或块。`using` 与 `await using` 属于同一资源链；`lock → using`、`using → lock` 等混合职责链不属于此例外。最后一个链头若直接接条件、循环或另一类控制语句，必须给这个语句体加块；前面的同类链头仍可保持紧接。
+- 简单终端语句与块的具体语法范围、生成代码边界和修复行为见 [ZS2005](RULES.zh-Hans.md#zs2005)。lambda、匿名方法和局部函数的函数体内部独立遵守本节，不因它们出现在表达式中而豁免。
+
+以下为独立的布局片段，假定 `items` 为 `int[]`，`enabled` 为 `bool`，`Process(int)` 和 `Complete()` 为已有的静态示例方法。标为“不符合”的片段用于展示问题。
+
+不符合：循环直接以另一控制语句为体。
+
+```csharp
+foreach(var item in items)
+	if(item > 0)
+		Process(item);
+```
+
+符合：给外层循环的语句体加块，内层简单分支仍可省略花括号。
+
+```csharp
+foreach(var item in items)
+{
+	if(item > 0)
+		Process(item);
+}
+```
+
+不符合：内层 `while` 的块不能包围外层 `if` 的语句体。
+
+```csharp
+if(enabled)
+	while(enabled)
+	{
+		enabled = false;
+	}
+```
+
+符合：更深的控制嵌套逐层包围；最终的简单单语句体仍可紧凑。
+
+```csharp
+foreach(var item in items)
+{
+	if(item > 0)
+	{
+		while(enabled)
+			enabled = false;
+	}
+}
+```
+
+符合：标准 `else if` 保留关联分支布局。
+
+```csharp
+if(items.Length == 0)
+	Process(0);
+else if(items.Length == 1)
+	Process(items[0]);
+else
+	Process(items.Length);
+```
+
+符合：纯资源链共享终端单语句。这是返回字符串的方法体片段，已导入 `System.IO`，`text` 为字符串。
+
+```csharp
+using(var stream = new MemoryStream(System.Text.Encoding.UTF8.GetBytes(text)))
+using(var reader = new StreamReader(stream))
+	return reader.ReadToEnd();
+```
+
+对应异步资源链也可共享终端单语句。以下为异步方法体片段，已导入 `System.IO`，`sourceBytes` 为 `byte[]`，`cancellation` 为 `CancellationToken`。
+
+```csharp
+await using(var source = new MemoryStream(sourceBytes, false))
+await using(var target = new MemoryStream())
+	await source.CopyToAsync(target, cancellation);
+```
+
+纯 `fixed` 链和纯 `lock` 链也可共享终端体。下面两个片段分别位于 `unsafe` 方法和普通实例方法中；`sourceBuffer`、`targetBuffer` 是长度均大于零的字节数组，`_outerSync`、`_innerSync` 是私有同步对象，各调用方遵守相同的锁定顺序。
+
+```csharp
+fixed(byte* source = sourceBuffer)
+fixed(byte* target = targetBuffer)
+	*target = *source;
+```
+
+```csharp
+lock(_outerSync)
+lock(_innerSync)
+	Complete();
+```
+
+混合资源与同步职责时必须加块。以下两个片段均已导入 `System.IO`，`_sync` 是私有同步对象；内存写入仅用于展示布局。
+
+```csharp
+lock(_sync)
+{
+	using(var stream = new MemoryStream())
+		stream.WriteByte(1);
+}
+```
+
+```csharp
+using(var stream = new MemoryStream())
+{
+	lock(_sync)
+		stream.WriteByte(1);
+}
+```
+
+<a id="statement-groups"></a>
+
+### 3.6 逻辑分组
+
+- 独立语句按职责、操作对象和执行阶段组织逻辑段，组间必须留空行。独立的准备阶段与执行、不同对象的配置、执行与发布状态、不同验证目标都是应识别的边界，不按物理行数设置硬上限。
+- 同一个接收者、同一种语句语法或前后存在数据依赖，不足以把整段代码归为一个逻辑组。普通声明、调用、赋值和返回之间也不逐项机械插入空行；判断的是职责是否切换。
+- 同一对象的元数据映射、同类值的批量初始化或注册、完整的中间件流水线、同阶段简单守卫、简单条件返回表，以及生成一个完整表达式的连续 `Emit` 指令，可以保留表格式紧凑布局。切换注册类别、对象或执行阶段时仍须分组；不能把所有同名调用或所有赋值都作为表格式例外。
+- 标题单元格设置与范围样式设置、报文准备与缓冲填充、连接配置与连接／Poller 注册、活动对象发布等阶段之间须留空行。一个阶段内可以混合声明、调用和赋值，不因语法类别变化再次切分。
+- 简单输入构造（例如单条局部变量声明）与紧接着使用该输入的执行可以组成一个紧凑组，不必因名称上属于准备与执行就拆段。多步环境搭建或对象配置形成独立准备阶段时，仍须与执行分隔；不能仅凭相邻语句有数据依赖就合并多个阶段。
+- 准备阶段中的前置断言（例如确认新建环境为空、待修复诊断存在或修复动作非空）可以紧接其直接对应的环境或数据获取操作。它们确认后续受测执行所需的条件，仍属于准备阶段；`await` 和 `Assert` 本身不构成阶段边界。受测执行后的结果验证仍须另起一组。
+- 测试代码按实际职责组织准备、执行和验证；简单输入准备可与紧接着的执行同组，执行与验证、不同验证目标之间留空行。验证目标按所验证的行为判定：同一次操作的成功状态、预期结果和相关错误检查可以共同验证一个结果，不因读取不同属性或使用不同断言方法就拆段。同一验证目标的辅助取值声明与断言可以同组，辅助取值不自动成为新的受测执行阶段。对多个独立字段逐项做取值验证和值验证时，每个字段组成一个小组，字段组之间须分隔。只有严格同质、每项仅一条断言、仅字段或属性名称变化的表格式验证，才可保持紧凑；不能豁免所有 `Assert` 调用。
+- 对象／集合初始化器、参数列表、流式调用链和 switch 表达式分支不是多条同级独立语句，不逐项强制空行。表达式内部的 lambda 等函数体仍独立检查。
+- 本节的职责和阶段划分由人工审查，不由语法类别推测自动诊断。它不撤销 [ZS2003](RULES.zh-Hans.md#zs2003) 的明确结构边界、资源组边界或条件／循环之前按普通语句数量判定的分隔要求。
+
+同一对象的元数据映射可以保持紧凑。以下为方法体片段，`source` 和 `target` 均为 `System.Data.DataColumn`。
+
+```csharp
+target.ColumnName = source.ColumnName;
+target.Caption = source.Caption;
+target.AllowDBNull = source.AllowDBNull;
+target.MaxLength = source.MaxLength;
+```
+
+同类批量注册可以紧凑，不同类别之间分组。以下片段已导入 `System.Xml`。
+
+```csharp
+var names = new NameTable();
+
+names.Add("schema");
+names.Add("entity");
+names.Add("property");
+
+names.Add("name");
+names.Add("type");
+names.Add("length");
+```
+
+完整中间件流水线可以保持相邻调用。以下为引用 ASP.NET Core 的方法体片段，已导入 `Microsoft.AspNetCore.Builder`，`app` 为 `IApplicationBuilder`。
+
+```csharp
+app.UseRouting();
+app.UseAuthentication();
+app.UseAuthorization();
+app.UseResponseCompression();
+```
+
+连续 IL 指令按所生成的表达式分组。以下片段已导入 `System.Reflection.Emit`，`generator` 为生成 `int → int` 静态方法的 `ILGenerator`，整个序列生成 `return argument + 1;`。
+
+```csharp
+generator.Emit(OpCodes.Ldarg_0);
+generator.Emit(OpCodes.Ldc_I4_1);
+generator.Emit(OpCodes.Add);
+generator.Emit(OpCodes.Ret);
+```
+
+不同对象的配置分组。以下为方法体片段，`first`、`second` 为 `System.Text.StringBuilder`，`firstText`、`secondText` 为字符串。
+
+```csharp
+first.Capacity = firstText.Length;
+first.Append(firstText);
+
+second.Capacity = secondText.Length;
+second.Append(secondText);
+```
+
+简单输入构造与紧接着的执行同组，验证另起一组。以下为 xUnit 方法体片段，已导入 `System.Linq` 和 `Xunit`；代码只展示布局，不是要求新增对 BCL 的测试。不推荐在 `values` 与 `result` 的声明之间再加空行，这会把一个紧密的操作拆得过细。
+
+```csharp
+var values = new[] { 1, 2, 3 };
+var result = values.Sum();
+
+Assert.Equal(6, result);
+```
+
+准备环境与确认其初始状态同组，继续配置环境时另起一组。以下为本仓库 [EditorConfigBuildTest](analysis/analyzers/test/EditorConfigBuildTest.cs) 的方法体片段，位于继承 `EditorConfigFixture` 的测试类中，已导入 `System.IO` 和 `Xunit`；`CreateAsync()` 为环境构造助手。
+
+```csharp
+var consumer = await CreateAsync();
+Assert.False(File.Exists(consumer.Config));
+
+var localConfig = Path.Combine(Path.GetDirectoryName(consumer.Project), ".editorconfig");
+var localContent = "[*.cs]\r\nindent_size = 2\r\n";
+File.WriteAllText(localConfig, localContent);
+```
+
+同一次操作的相关断言紧接。以下为 xUnit 方法体片段，已导入 `Xunit`；两条断言共同验证“解析成功且得到预期数值”，不应在它们之间再加空行。分析器测试中，同一次分析的成功状态、预期诊断和没有编译错误的检查也可以同组。
+
+```csharp
+var input = "42";
+var success = int.TryParse(input, out var value);
+
+Assert.True(success);
+Assert.Equal(42, value);
+```
+
+同一字段的多步验证紧接，不同字段的小组分隔。以下为 xUnit 方法体片段，`values` 为 `Dictionary<string, string>`。
+
+```csharp
+Assert.True(values.TryGetValue("Name", out var name));
+Assert.Equal("Alice", name);
+
+Assert.True(values.TryGetValue("Code", out var code));
+Assert.Equal("A001", code);
+```
+
+严格同质的单断言表可以保持紧凑。以下为 xUnit 方法体片段，`values` 为 `Dictionary<string, string>`；各项仅验证字段是否存在。
+
+```csharp
+Assert.False(values.ContainsKey("Property01"));
+Assert.False(values.ContainsKey("Property02"));
+Assert.False(values.ContainsKey("Property03"));
+Assert.False(values.ContainsKey("Property04"));
+```
+
+下列测试片段不符合分组要求：执行与验证未分隔，两个验证目标也连续混排。这里将获取数量与求和作为两次独立受测执行，断言分别验证它们的结果；`input` 为 `int[]`，`expectedCount`、`expectedSum` 为整数，已导入 `System.Linq` 和 `Xunit`。
+
+```csharp
+var values = input.ToArray();
+var count = values.Length;
+Assert.Equal(expectedCount, count);
+var sum = values.Sum();
+Assert.Equal(expectedSum, sum);
+```
+
+对应分组如下：输入构造与第一次执行同组，两次独立执行与各自验证均分隔：
+
+```csharp
+var values = input.ToArray();
+var count = values.Length;
+
+Assert.Equal(expectedCount, count);
+
+var sum = values.Sum();
+
+Assert.Equal(expectedSum, sum);
+```
+
+<a id="return-spacing"></a>
+
+### 3.7 返回布局
+
+`return` 表达独立的返回阶段时，前面必须留空行；如果只是直接完成紧邻的读取、包装、最终配置或简单状态操作，可以按下表紧凑书写。职责与返回阶段的判断由人工审查，不能仅凭前一句是声明、调用还是赋值自动推断。
+
+| 可以紧凑的末尾步骤 | 限定条件 |
+| --- | --- |
+| 简单获取后返回同一变量 | 同步或 `await` 获取结果后立即返回该结果，没有插入其他执行阶段。 |
+| 获取后包装返回 | 返回值只是对刚获取结果的直接包装，不包含独立处理流程。 |
+| 读取元数据后选择回退表达式 | `return` 内部的条件或合并表达式完成当前查询；条件表达式换成多行本身不要求前置空行。 |
+| 相关对象创建后返回元组 | 这些对象共同组成同一结果；仅为数量增加不机械切分。 |
+| 相关准备声明后 `return new ...` | 声明只准备该返回包装对象的参数，没有独立执行或发布阶段。 |
+| 最终配置回调后返回现有对象 | 回调完成当前对象的最终配置，随后直接返回它；此前的其他阶段仍按职责分组。 |
+| 单条相关操作或 `out` 设置后返回布尔结果 | 布尔值直接表达该步骤的约定结果，不夹带无关操作。 |
+| 资源声明后返回读取结果 | `return` 直接消费该资源，读取在资源释放前完成；异步读取必须在该作用域内等待。 |
+| 单条状态修改后 `return this` | 简单修改当前对象后返回自身，不据此豁免多阶段构建。 |
+
+以下情况必须分隔：简单条件返回表之后的独立兜底 `return`；报文填充等执行阶段之后的结果返回；完成锁对象创建、获取与发布到字段等多步操作后的返回。并非所有多步对象构建都一概要求在最终配置回调与返回之间分隔，但也不能把“返回同一对象”作为整个构建流程的广泛豁免。
+
+完整执行块结束后紧接 `return`，继续由 [ZS2003](RULES.zh-Hans.md#zs2003) 要求空行；不能用本节的紧凑例外跨过这个结构边界。其他返回形式及资源语义也不因布局例外改变。
+
+获取后立即返回可以紧凑。以下为返回字符串的异步方法体片段，已导入 `System.IO`，`path` 为字符串，`cancellation` 为 `CancellationToken`。
+
+```csharp
+var content = await File.ReadAllTextAsync(path, cancellation);
+return content;
+```
+
+读取元数据后的条件回退表达式可以紧凑，表达式跨行也不改变这一点。以下为返回字符串的方法体片段，已导入 `System.Reflection` 和 `System.ComponentModel`，`type` 为 `System.Type`。
+
+```csharp
+var description = type.GetCustomAttribute<DescriptionAttribute>()?.Description;
+return string.IsNullOrWhiteSpace(description) ?
+	type.Name :
+	description;
+```
+
+相关对象创建后返回元组可以紧凑。以下方法返回 `(byte[] Header, byte[] Payload)`，`length` 为非负整数。
+
+```csharp
+var header = new byte[4];
+var payload = new byte[length];
+return (header, payload);
+```
+
+相关声明只准备返回包装对象的参数时，可以紧凑。以下方法返回 `Tuple<string, int>`，`name` 为字符串，`count` 为整数。
+
+```csharp
+var normalizedName = name.Trim();
+var capacity = Math.Max(0, count);
+return new Tuple<string, int>(normalizedName, capacity);
+```
+
+最终配置回调后返回现有对象可以紧凑。以下方法返回 `System.Text.StringBuilder`，`capacity` 为非负整数，`configure` 为可选 `Action<System.Text.StringBuilder>`。
+
+```csharp
+var result = new System.Text.StringBuilder(capacity);
+configure?.Invoke(result);
+return result;
+```
+
+单条 `out` 设置和直接布尔返回可以紧凑。以下为具有 `out int value` 参数的失败路径片段。
+
+```csharp
+value = default;
+return false;
+```
+
+资源声明后直接返回读取结果可以紧凑。以下方法返回字符串，已导入 `System.IO`，`text` 为字符串。
+
+```csharp
+using var reader = new StringReader(text);
+return reader.ReadToEnd();
+```
+
+简单状态修改后返回自身可以紧凑。以下为实例方法体片段，方法返回当前类型，`_enabled` 为私有布尔字段。
+
+```csharp
+_enabled = true;
+return this;
+```
+
+简单条件返回表之后的独立兜底结果必须分隔。以下方法返回非负且小于 `1000` 的整数 `value` 的十进制位数。
+
+```csharp
+if(value < 10)
+	return 1;
+if(value < 100)
+	return 2;
+
+return 3;
+```
+
+报文准备、填充和结果返回分别分组。以下方法返回 `byte[]`，已导入 `System.Text`，`text` 为字符串；首字节是示例协议标记。
+
+```csharp
+var payload = Encoding.UTF8.GetBytes(text);
+var packet = new byte[payload.Length + 1];
+
+packet[0] = 1;
+payload.CopyTo(packet, 1);
+
+return packet;
+```
+
+完成锁对象的创建、获取与发布后，返回结果另成一组。以下方法返回示例类型 `Locker`，它提供 `void Acquire()`；`_locker` 为对象持有的私有字段。此类型仅表示示例职责，不是框架 API。
+
+```csharp
+var locker = new Locker();
+locker.Acquire();
+_locker = locker;
+
+return locker;
+```
+
+不符合：执行块后直接返回，不能套用“返回现有对象”的紧凑布局。下面两个片段的方法均返回 `int[]`，`items` 为 `int[]`。
+
+```csharp
+foreach(var item in items)
+{
+	Process(item);
+}
+return items;
+```
+
+符合：结构结束与返回之间留空行。
+
+```csharp
+foreach(var item in items)
+{
+	Process(item);
+}
+
+return items;
+```
+
+<a id="local-functions"></a>
+
+### 3.8 局部函数布局
+
+- 局部函数必须集中放在所在语句块或语句列表的末尾，后面不得再有同层级的普通语句。内部块保留原作用域，外层方法可以继续执行；所有允许声明局部函数的宿主均适用。
+- 主体代码与第一个局部函数之间必须恰好一个空行。局部函数的说明注释与函数组成整体，分隔空行放在说明注释之前；没有前置主体代码时，不额外要求空行。
+- 所在列表的全部主体代码仅占一个物理行、组首函数使用表达式体，且没有独立注释行或指令时，可以省略分隔空行；行尾注释不影响此例外。一条语句跨多行不属于单行主体。
+- 连续两个表达式体局部函数之间不得有空行；表达式体后接块体函数时，可以紧邻或留一个空行；块体函数之后必须留一个空行。函数说明注释仍与所属函数相邻，不用注释代替分隔空行。
+- 无表达式体的 `extern` 局部函数按非表达式体处理。检测、注释边界及安全修复范围见 [ZS2006](RULES.zh-Hans.md#zs2006)。
+
+以下为相互独立的方法声明，放在已导入 `System` 的类型中。
+
+主体代码在前，局部函数集中在末尾：
+
+```csharp
+static void Foo()
+{
+	Console.Write("before");
+	Console.Write(GetMessage());
+
+	static string GetMessage() => "This is a message.";
+}
+```
+
+不符合：局部函数插在主体代码中间。
+
+```csharp
+static void Foo()
+{
+	Console.Write("before");
+
+	static string GetMessage() => "This is a message."; //ZS2006
+
+	Console.Write(GetMessage());
+}
+```
+
+单行主体可省略分隔空行；连续表达式体函数必须紧凑：
+
+```csharp
+static void Foo()
+{
+	Console.Write(GetMessage());
+	static string GetMessage() => Format("message");
+	static string Format(string value) => value;
+}
+```
+
 
 <a id="documentation"></a>
 

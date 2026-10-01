@@ -5,9 +5,9 @@ using System.Collections.Immutable;
 
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
-using Microsoft.CodeAnalysis.CSharp.Syntax;
-using Microsoft.CodeAnalysis.Diagnostics;
 using Microsoft.CodeAnalysis.Operations;
+using Microsoft.CodeAnalysis.Diagnostics;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 namespace Zongsoft.CodeAnalysis.Analyzers;
 
@@ -94,6 +94,7 @@ public sealed class LocalizationAnalyzer : DiagnosticAnalyzer
 			return false;
 
 		var exception = compilation.GetTypeByMetadataName("System.Exception");
+
 		for(var type = creation.Type as INamedTypeSymbol; type != null; type = type.BaseType)
 		{
 			if(SymbolEqualityComparer.Default.Equals(type, exception))

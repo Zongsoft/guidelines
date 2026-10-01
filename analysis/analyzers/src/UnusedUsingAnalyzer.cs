@@ -44,10 +44,7 @@ public sealed class UnusedUsingAnalyzer : DiagnosticAnalyzer
 				continue;
 
 			//允许保留普通命名空间导入，不包括别名、using static 和 global using。
-			if(directive.Alias == null && directive.StaticKeyword.IsKind(SyntaxKind.None) &&
-				directive.GetFirstToken().IsKind(SyntaxKind.UsingKeyword) &&
-				directive.Name != null &&
-				context.SemanticModel.GetSymbolInfo(directive.Name, context.CancellationToken).Symbol is INamespaceSymbol)
+			if(UsingDirectives.IsOrdinaryNamespace(directive, context.SemanticModel, context.CancellationToken))
 				continue;
 
 			context.ReportDiagnostic(Diagnostic.Create(_rule, directive.GetLocation(), directive.Name?.ToString()));

@@ -2,7 +2,8 @@
 	<PropertyGroup>
 		<TargetFramework>netstandard2.0</TargetFramework>
 		<LangVersion>latest</LangVersion>
-		<Version>1.2.1</Version>
+		<Version>1.3.0</Version>
+		<PackageId>Zongsoft.CodeAnalysis</PackageId>
 		<IsPackable>true</IsPackable>
 		<IncludeBuildOutput>false</IncludeBuildOutput>
 		<NoDefaultExcludes>true</NoDefaultExcludes>
@@ -28,6 +29,7 @@
 	</PropertyGroup>
 
 	<ItemGroup>
+		<Compile Include="../../.shared/*.cs" Link="%(Filename)%(Extension)" />
 		<ProjectReference Include="../../fixes/src/Zongsoft.CodeAnalysis.Fixes.csproj" ReferenceOutputAssembly="false" PrivateAssets="all" />
 		<PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="5.9.0" PrivateAssets="all" />
 	</ItemGroup>
