@@ -63,7 +63,7 @@ Set `ZongsoftGuidelinesSynchronization` to the repository root to enable [automa
 
 From the `analysis` directory, the [Cake script](analysis/build.cake) handles building, testing, packaging and publishing. See the [Cake workflow](analysis/README.md#cake-workflow) for arguments and publication credentials.
 
-Manual GitHub Actions publication uses [publish-nuget.yml](.github/workflows/publish-nuget.yml). Initial setup requires the `release` environment, `NUGET_USER` and a nuget.org trusted publishing policy; see [GitHub Actions publishing](analysis/README.md#github-actions-publishing).
+Manual GitHub Actions publication uses [publish-nuget.yaml](.github/workflows/publish-nuget.yaml). Initial setup requires the `release` environment, `NUGET_USER` and a nuget.org trusted publishing policy; see [GitHub Actions publishing](analysis/README.md#github-actions-publishing).
 
 For direct .NET CLI usage, run from the guidelines repository root:
 

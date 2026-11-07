@@ -97,7 +97,7 @@ dotnet cake build.cake --target=pack
 
 ## GitHub Actions 发布
 
-[Publish Analyzer to NuGet 工作流](https://github.com/Zongsoft/Guidelines/blob/main/.github/workflows/publish-nuget.yml) 仅支持手动触发，并限定从 `main` 分支、`release` 环境发布。它先还原固定版本的 Cake 工具，构建并测试 Release 包，再通过 `NuGet/login@v1` 获取临时凭据，最后执行 Cake 的 `pack --exclusive` 发布同一个包。作业授予 `contents: read` 和 `id-token: write` 权限，GitHub 中无需保存长期 NuGet API Key。
+[Publish Analyzer to NuGet 工作流](https://github.com/Zongsoft/Guidelines/blob/main/.github/workflows/publish-nuget.yaml) 仅支持手动触发，并限定从 `main` 分支、`release` 环境发布。它先还原固定版本的 Cake 工具，构建并测试 Release 包，再通过 `NuGet/login@v1` 获取临时凭据，最后执行 Cake 的 `pack --exclusive` 发布同一个包。作业授予 `contents: read` 和 `id-token: write` 权限，GitHub 中无需保存长期 NuGet API Key。
 
 首次发布前完成以下配置：
 
@@ -108,7 +108,7 @@ dotnet cake build.cake --target=pack
 | --- | --- |
 | Repository Owner | `Zongsoft` |
 | Repository | `Guidelines` |
-| Workflow File | `publish-nuget.yml` |
+| Workflow File | `publish-nuget.yaml` |
 | Environment | `release` |
 
 工作流字段只填写文件名，不包含 `.github/workflows/`，也不填写工作流显示名称。策略所属账户需拥有 `Zongsoft.CodeAnalysis` 的发布权限，详细配置见 [官方 Trusted Publishing 说明](https://learn.microsoft.com/en-us/nuget/nuget-org/trusted-publishing)。

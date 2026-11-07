@@ -63,7 +63,7 @@
 
 可在 `analysis` 目录通过 [Cake 脚本](analysis/build.cake) 完成编译、测试、打包和发布；参数及发布密钥配置见 [Cake 构建流程](analysis/README.zh-Hans.md#cake-构建流程)。
 
-GitHub Actions 手动发布使用 [publish-nuget.yml](.github/workflows/publish-nuget.yml)，首次使用需要配置 `release` 环境、`NUGET_USER` 和 nuget.org 信任策略，详见 [GitHub Actions 发布](analysis/README.zh-Hans.md#github-actions-发布)。
+GitHub Actions 手动发布使用 [publish-nuget.yaml](.github/workflows/publish-nuget.yaml)，首次使用需要配置 `release` 环境、`NUGET_USER` 和 nuget.org 信任策略，详见 [GitHub Actions 发布](analysis/README.zh-Hans.md#github-actions-发布)。
 
 直接使用 .NET CLI 时，在 guidelines 根目录执行：
 

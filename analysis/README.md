@@ -97,7 +97,7 @@ Use `dotnet cake build.cake --target=pack --dryrun` to inspect task order withou
 
 ## GitHub Actions publishing
 
-The [Publish Analyzer to NuGet workflow](https://github.com/Zongsoft/Guidelines/blob/main/.github/workflows/publish-nuget.yml) supports manual dispatch only and publishes from `main` using the `release` environment. It restores the pinned Cake tool, builds and tests the Release package, obtains a temporary credential through `NuGet/login@v1`, then runs Cake's `pack --exclusive` to publish that same package. The job grants `contents: read` and `id-token: write`; no long-lived NuGet API key is required in GitHub.
+The [Publish Analyzer to NuGet workflow](https://github.com/Zongsoft/Guidelines/blob/main/.github/workflows/publish-nuget.yaml) supports manual dispatch only and publishes from `main` using the `release` environment. It restores the pinned Cake tool, builds and tests the Release package, obtains a temporary credential through `NuGet/login@v1`, then runs Cake's `pack --exclusive` to publish that same package. The job grants `contents: read` and `id-token: write`; no long-lived NuGet API key is required in GitHub.
 
 Before the first publication, configure:
 
@@ -108,7 +108,7 @@ Before the first publication, configure:
 | --- | --- |
 | Repository Owner | `Zongsoft` |
 | Repository | `Guidelines` |
-| Workflow File | `publish-nuget.yml` |
+| Workflow File | `publish-nuget.yaml` |
 | Environment | `release` |
 
 Use the workflow filename only, without `.github/workflows/` or the workflow display name. The policy account must have publication rights for `Zongsoft.CodeAnalysis`. See the [official Trusted Publishing guide](https://learn.microsoft.com/en-us/nuget/nuget-org/trusted-publishing).
