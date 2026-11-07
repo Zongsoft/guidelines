@@ -1,11 +1,11 @@
 var target = Argument("target", "default");
-var edition = Argument("edition", "Release");
+var compilation = Argument("compilation", "Release");
 
 var projectFile = "analyzers/src/Zongsoft.CodeAnalysis.Analyzers.csproj";
 var solutionFile = "Zongsoft.CodeAnalysis.slnx";
 
-if(edition != "Debug" && edition != "Release")
-	throw new ArgumentOutOfRangeException(nameof(edition), edition, null);
+if(compilation != "Debug" && compilation != "Release")
+	throw new ArgumentOutOfRangeException(nameof(compilation), compilation, null);
 
 if(!FileExists(projectFile) || !FileExists(solutionFile))
 	throw new System.IO.FileNotFoundException(null, !FileExists(projectFile) ? projectFile : solutionFile);
@@ -20,11 +20,11 @@ Task("clean")
 {
 	foreach(var project in new[] { "analyzers/src", "analyzers/test", "fixes/src", "fixes/test" })
 	{
-		CleanDirectories($"{project}/bin/{edition}");
-		CleanDirectories($"{project}/obj/{edition}");
+		CleanDirectories($"{project}/bin/{compilation}");
+		CleanDirectories($"{project}/obj/{compilation}");
 	}
 
-	CleanDirectories($"obj/packages/{edition}");
+	CleanDirectories($"obj/packages/{compilation}");
 });
 
 Task("restore")
@@ -33,7 +33,7 @@ Task("restore")
 {
 	DotNetRestore(solutionFile, new DotNetRestoreSettings
 	{
-		MSBuildSettings = new DotNetMSBuildSettings().WithProperty("Configuration", edition),
+		MSBuildSettings = new DotNetMSBuildSettings().WithProperty("Configuration", compilation),
 	});
 });
 
@@ -45,20 +45,20 @@ Task("build")
 {
 	DotNetBuild(projectFile, new DotNetBuildSettings
 	{
-		Configuration = edition,
+		Configuration = compilation,
 		NoRestore = true,
 	});
 
 	DotNetPack(projectFile, new DotNetPackSettings
 	{
-		Configuration = edition,
+		Configuration = compilation,
 		NoBuild = true,
 		NoRestore = true,
 	});
 
 	DotNetBuild(solutionFile, new DotNetBuildSettings
 	{
-		Configuration = edition,
+		Configuration = compilation,
 		NoRestore = true,
 		MSBuildSettings = new DotNetMSBuildSettings()
 			.WithProperty("CodeAnalysisPackagePrepared", "true")
@@ -73,7 +73,7 @@ Task("test")
 {
 	DotNetTest(solutionFile, new DotNetTestSettings
 	{
-		Configuration = edition,
+		Configuration = compilation,
 		NoBuild = true,
 		NoRestore = true,
 	});

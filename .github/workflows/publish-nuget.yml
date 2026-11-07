@@ -38,7 +38,7 @@ jobs:
 
       - name: Build, pack and test
         working-directory: analysis
-        run: dotnet cake build.cake --edition=Release --target=default
+        run: dotnet cake build.cake --compilation=Release --target=default
 
       - name: NuGet login
         id: login
@@ -50,4 +50,4 @@ jobs:
         working-directory: analysis
         env:
           NUGET_API_KEY: ${{ steps.login.outputs.NUGET_API_KEY }}
-        run: dotnet cake build.cake --edition=Release --target=pack --exclusive
+        run: dotnet cake build.cake --compilation=Release --target=pack --exclusive

@@ -75,7 +75,7 @@ Include `.editorconfig text eol=crlf` in the consuming repository's `.gitattribu
 
 ## Cake workflow
 
-Restore the pinned Cake.Tool version with `dotnet tool restore` from the repository root, then run from the `analysis` directory. [build.cake](https://github.com/Zongsoft/Guidelines/blob/main/analysis/build.cake) follows the deployer/packager conventions: `--edition` selects Debug or Release (default: Release), and `pack` publishes to nuget.org.
+Restore the pinned Cake.Tool version with `dotnet tool restore` from the repository root, then run from the `analysis` directory. [build.cake](https://github.com/Zongsoft/Guidelines/blob/main/analysis/build.cake) follows the deployer/packager conventions: `--compilation` selects Debug or Release (default: Release), and `pack` publishes to nuget.org.
 
 ```powershell
 dotnet cake build.cake
@@ -91,7 +91,7 @@ dotnet cake build.cake --target=pack
 | `test` / `default` | Builds the package and runs the consumer regression tests |
 | `pack` | Runs tests, then pushes `analysis/Zongsoft.CodeAnalysis.<Version>.nupkg` to nuget.org |
 
-Set `NUGET_API_KEY` in the environment before invoking `pack`; the script reads it without printing its value. Existing published versions are skipped. Both Cake test projects validate the same package in analysis. Standalone dotnet test uses temporary packages under `analysis/obj/packages/<edition>`. Increment the analyzer project's version before publishing changes.
+Set `NUGET_API_KEY` in the environment before invoking `pack`; the script reads it without printing its value. Existing published versions are skipped. Both Cake test projects validate the same package in analysis. Standalone dotnet test uses temporary packages under `analysis/obj/packages/<compilation>`. Increment the analyzer project's version before publishing changes.
 
 Use `dotnet cake build.cake --target=pack --dryrun` to inspect task order without running tasks. `--target=build` generates a local package for manual publication. Cake runner options are documented in the [official guide](https://cakebuild.net/docs/running-builds/runners/dotnet-tool).
 

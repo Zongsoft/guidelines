@@ -75,7 +75,7 @@ Tab 缩进、CRLF 和各类文件例外等编辑器设置保留在仓库的 `.ed
 
 ## Cake 构建流程
 
-先在仓库根目录执行 `dotnet tool restore` 还原固定版本的 Cake.Tool，再从 `analysis` 目录运行。[build.cake](https://github.com/Zongsoft/Guidelines/blob/main/analysis/build.cake) 沿用 deployer/packager 的参数和任务约定：`--edition` 可选 Debug 或 Release，默认 Release；`pack` 表示发布到 nuget.org。
+先在仓库根目录执行 `dotnet tool restore` 还原固定版本的 Cake.Tool，再从 `analysis` 目录运行。[build.cake](https://github.com/Zongsoft/Guidelines/blob/main/analysis/build.cake) 沿用 deployer/packager 的参数和任务约定：`--compilation` 可选 Debug 或 Release，默认 Release；`pack` 表示发布到 nuget.org。
 
 ```powershell
 dotnet cake build.cake
@@ -91,7 +91,7 @@ dotnet cake build.cake --target=pack
 | `test` / `default` | 构建包并运行消费回归测试 |
 | `pack` | 测试通过后，将 `analysis/Zongsoft.CodeAnalysis.<Version>.nupkg` 推送到 nuget.org |
 
-调用 `pack` 前设置环境变量 `NUGET_API_KEY`，脚本读取密钥而不打印其内容；已发布的重复版本会跳过。Cake 的两套测试共同验证 analysis 目录中的本次包；单独运行 dotnet test 时使用 `analysis/obj/packages/<edition>` 内的测试临时包。发布变更前先递增分析器项目中的版本号。
+调用 `pack` 前设置环境变量 `NUGET_API_KEY`，脚本读取密钥而不打印其内容；已发布的重复版本会跳过。Cake 的两套测试共同验证 analysis 目录中的本次包；单独运行 dotnet test 时使用 `analysis/obj/packages/<compilation>` 内的测试临时包。发布变更前先递增分析器项目中的版本号。
 
 可用 `dotnet cake build.cake --target=pack --dryrun` 查看任务顺序而不执行任务。手动发布时，使用 `--target=build` 生成本地包即可。Cake 运行器参数见 [官方说明](https://cakebuild.net/docs/running-builds/runners/dotnet-tool)。
 
