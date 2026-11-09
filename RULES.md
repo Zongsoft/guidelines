@@ -1020,7 +1020,7 @@ Passing analysis does not establish full compliance. Continue reviewing design, 
 - [Return spacing](zongsoft.csharp.guidelines.md#return-spacing): compact acquisition, wrapping and status-result units may precede a return directly. Separate independent fallback returns and returns after completed multi-step packet filling or creation/acquisition/publication stages. A multiline conditional expression alone does not force separation; a final configuration callback may stay with its return. Do not add blank lines before every return.
 - ZS2003 checks only its listed deterministic syntax boundaries. It does not infer these logical separators from method names, receiver identity or business phases and does not fix manually judged boundaries. Compact logical groups cannot override existing ZS2003 boundaries.
 
-- Alias restrictions, production global imports, test Global.cs, dependency groups and namespace-length ordering.
+- Alias restrictions, production global imports, test project-level Using, dependency groups and namespace-length ordering.
 - Chinese responsibility regions, member ordering, adjacent overloads, domain names, external interface names and public compatibility.
 - Localization intent, fixed-key lookup wrappers, generator configuration and ResX/Designer synchronization.
 - Constructor arguments, comparers, enumeration timing, resource ownership, cancellation, concurrency and background-task lifetimes.

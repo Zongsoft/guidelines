@@ -10,8 +10,6 @@ using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CodeFixes;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 
-using Xunit;
-
 namespace Zongsoft.CodeAnalysis.Fixes.Tests;
 
 public partial class CodeFixTest

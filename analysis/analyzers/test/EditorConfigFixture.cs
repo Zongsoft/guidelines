@@ -9,8 +9,6 @@ using System.Diagnostics;
 using System.IO.Compression;
 using System.Threading.Tasks;
 
-using Xunit;
-
 namespace Zongsoft.CodeAnalysis.Analyzers.Tests;
 
 public abstract class EditorConfigFixture

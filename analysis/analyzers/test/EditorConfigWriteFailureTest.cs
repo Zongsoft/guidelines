@@ -2,8 +2,6 @@ using System;
 using System.IO;
 using System.Threading.Tasks;
 
-using Xunit;
-
 namespace Zongsoft.CodeAnalysis.Analyzers.Tests;
 
 public sealed class EditorConfigWriteFailureTest : EditorConfigFixture

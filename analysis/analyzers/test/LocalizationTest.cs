@@ -1,8 +1,6 @@
 using System.Linq;
 using System.Threading.Tasks;
 
-using Xunit;
-
 namespace Zongsoft.CodeAnalysis.Analyzers.Tests;
 
 public sealed class LocalizationTest

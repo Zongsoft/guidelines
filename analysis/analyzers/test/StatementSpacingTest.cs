@@ -3,8 +3,6 @@ using System.Linq;
 using System.Threading.Tasks;
 using System.Text.RegularExpressions;
 
-using Xunit;
-
 namespace Zongsoft.CodeAnalysis.Analyzers.Tests;
 
 public sealed class StatementSpacingTest

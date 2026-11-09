@@ -4,8 +4,6 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-using Xunit;
-
 namespace Zongsoft.CodeAnalysis.Analyzers.Tests;
 
 public sealed class EditorConfigBuildTest : EditorConfigFixture

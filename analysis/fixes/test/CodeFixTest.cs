@@ -17,8 +17,6 @@ using Microsoft.CodeAnalysis.CodeFixes;
 using Microsoft.CodeAnalysis.CodeActions;
 using Microsoft.CodeAnalysis.Diagnostics;
 
-using Xunit;
-
 namespace Zongsoft.CodeAnalysis.Fixes.Tests;
 
 public partial class CodeFixTest

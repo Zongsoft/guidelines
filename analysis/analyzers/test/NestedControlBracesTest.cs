@@ -5,8 +5,6 @@ using System.Text.RegularExpressions;
 
 using Microsoft.CodeAnalysis.Text;
 
-using Xunit;
-
 namespace Zongsoft.CodeAnalysis.Analyzers.Tests;
 
 public sealed class NestedControlBracesTest
