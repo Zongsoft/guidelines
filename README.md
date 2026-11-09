@@ -139,3 +139,7 @@ The [📋 rule catalog](RULES.md#index) is the single reference for diagnostic I
 ### Tool references
 
 See the [official references in the rule catalog](RULES.md#references), including Microsoft's code-style index, diagnostic help links, configuration and formatting documentation.
+
+## License
+
+This project is licensed under the [MIT](LICENSE) license. Third-party content retains its own copyright and license notices.

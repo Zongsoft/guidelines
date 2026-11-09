@@ -139,3 +139,7 @@ dotnet format whitespace ./Zongsoft.Core/src/Zongsoft.Core.csproj --no-restore -
 ### 工具依据
 
 参考 [规则列表中的官方资料](RULES.zh-Hans.md#references)，包括微软代码样式规则索引、诊断帮助链接、配置及格式化工具说明。
+
+## 许可
+
+本项目采用 [MIT](LICENSE) 许可协议。第三方内容保留各自的版权和许可声明。

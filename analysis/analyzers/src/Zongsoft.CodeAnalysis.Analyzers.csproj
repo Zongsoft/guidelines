@@ -42,6 +42,7 @@
 		<None Include="../../../zongsoft-logo(48x48).png" Pack="true" PackagePath="zongsoft-logo.png" Visible="false" />
 		<None Include="../../Zongsoft.CodeAnalysis.props" Pack="true" PackagePath="buildTransitive" />
 		<None Include="../../Zongsoft.CodeAnalysis.targets" Pack="true" PackagePath="buildTransitive" />
+		<None Include="../../../LICENSE" Pack="true" PackagePath="\" Visible="false" />
 		<None Update="Unicode.LICENSE.txt" Pack="true" PackagePath="licenses/Unicode.LICENSE.txt" />
 		<None Update="Zongsoft.CodeAnalysis.Analyzers.globalconfig" Pack="true" PackagePath="/" />
 		<None Include="../../../.editorconfig" Pack="true" PackagePath="/" />
